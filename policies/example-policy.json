@@ -1,0 +1,7 @@
+{
+  "dailyCapUsdc": 10,
+  "perCallCapUsdc": 0.5,
+  "allowedHosts": ["api.myceliasignal.com", "api.dexter.cash", "orbisapi.com"],
+  "blockedHosts": ["localhost", "127.0.0.1"],
+  "allowedNetworks": ["eip155:8453", "base", "solana"]
+}
