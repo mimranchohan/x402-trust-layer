@@ -38,7 +38,10 @@ export type ReceiptAuditorInput = {
 export type RiskGateInput = {
   targetUrl: string;
   estimatedCostUsdc?: number;
-  policy?: Pick<Policy, "perCallCapUsdc" | "blockedHosts">;
+  policy?: {
+    perCallCapUsdc?: number;
+    blockedHosts?: string[];
+  };
 };
 
 export type RouterInput = {
