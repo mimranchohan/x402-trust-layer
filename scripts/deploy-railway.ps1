@@ -1,4 +1,4 @@
-# Railway deploy helper (run from project root)
+# Railway deploy helper — run from project root
 # Requires: npm i -g @railway/cli  &&  railway login
 
 $ErrorActionPreference = "Stop"
@@ -12,12 +12,12 @@ if (-not (Get-Command railway -ErrorAction SilentlyContinue)) {
 }
 
 if (-not (Test-Path .env)) {
-  Write-Host "WARNING: .env missing. Set variables in Railway dashboard after deploy." -ForegroundColor Yellow
+  Write-Host "WARNING: .env missing. Set variables in the Railway dashboard after deploy." -ForegroundColor Yellow
 }
 
 $payTo = (Get-Content .env -ErrorAction SilentlyContinue | Where-Object { $_ -match '^PAY_TO_ADDRESS=' }) -replace '^PAY_TO_ADDRESS=', ''
 if (-not $payTo) {
-  $payTo = Read-Host "Enter PAY_TO_ADDRESS (Solana wallet)"
+  $payTo = Read-Host "Enter PAY_TO_ADDRESS (Solana or EVM wallet)"
 }
 
 Write-Host "Linking project (first time only)..."
@@ -34,4 +34,4 @@ railway domain
 
 Write-Host ""
 Write-Host "Done. Test: curl https://YOUR-DOMAIN/health" -ForegroundColor Green
-Write-Host "Then: npm run demo  (set PUBLIC_BASE_URL in .env to Railway URL)" -ForegroundColor Green
+Write-Host "Then set PUBLIC_BASE_URL in local .env and run: npm run demo" -ForegroundColor Green
