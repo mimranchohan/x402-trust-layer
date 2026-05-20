@@ -1,7 +1,7 @@
 {
   "name": "x402-agent-suite",
-  "version": "1.0.0",
-  "description": "Five x402 infrastructure agents: Spend Governor, Receipt Auditor, Risk Gate, API Router, Research Brief",
+  "version": "2.0.0",
+  "description": "x402 Agent Suite Pro — 15 paid infrastructure APIs for AI agent fleets",
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",

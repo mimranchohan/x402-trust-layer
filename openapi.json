@@ -1,66 +1,106 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "x402 Agent Suite",
-    "version": "1.0.0",
-    "description": "Infrastructure agents for x402: spend control, receipt audit, risk scan, API routing, research briefs. All routes return HTTP 402 until USDC payment via Dexter facilitator."
+    "title": "x402 Agent Suite Pro",
+    "version": "2.0.0",
+    "description": "Fifteen paid x402 infrastructure APIs for AI agent fleets. USDC settlement via Dexter facilitator."
   },
-  "servers": [{ "url": "http://localhost:3402" }],
+  "servers": [{ "url": "https://x402-agent-suite-production.up.railway.app" }],
   "paths": {
-    "/api/spend-governor/check": {
+    "/api/payment-intent/compile": {
       "post": {
-        "summary": "Evaluate agent spend policy before a paid API call",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["agentId", "estimatedCostUsdc", "policy"],
-                "properties": {
-                  "agentId": { "type": "string" },
-                  "estimatedCostUsdc": { "type": "number" },
-                  "targetUrl": { "type": "string" },
-                  "network": { "type": "string" },
-                  "policy": {
-                    "type": "object",
-                    "properties": {
-                      "dailyCapUsdc": { "type": "number" },
-                      "perCallCapUsdc": { "type": "number" },
-                      "allowedHosts": { "type": "array", "items": { "type": "string" } },
-                      "blockedHosts": { "type": "array", "items": { "type": "string" } }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "200": { "description": "Allow/deny decision" }, "402": { "description": "Payment required ($0.03 USDC)" } }
+        "summary": "Compile a multi-step x402 execution plan from natural language",
+        "responses": { "200": { "description": "Execution DAG" }, "402": { "description": "$0.15 USDC" } }
       }
     },
-    "/api/receipt-auditor/verify": {
+    "/api/facilitator/failover": {
       "post": {
-        "summary": "Verify x402 settlement receipt or on-chain transaction",
-        "responses": { "200": { "description": "Audit result" }, "402": { "description": "Payment required ($0.05 USDC)" } }
+        "summary": "Rank facilitators and recommend failover path",
+        "responses": { "200": { "description": "Failover routing" }, "402": { "description": "$0.05 USDC" } }
+      }
+    },
+    "/api/mpp/session-plan": {
+      "post": {
+        "summary": "Estimate MPP session vs per-call settlement savings",
+        "responses": { "200": { "description": "Session plan" }, "402": { "description": "$0.02 USDC" } }
+      }
+    },
+    "/api/spend-governor/check": {
+      "post": {
+        "summary": "Enforce agent spend policy before payment",
+        "responses": { "200": { "description": "Allow or deny" }, "402": { "description": "$0.03 USDC" } }
+      }
+    },
+    "/api/identity-gate/check": {
+      "post": {
+        "summary": "Wallet identity and risk tier check",
+        "responses": { "200": { "description": "Tier result" }, "402": { "description": "$0.05 USDC" } }
       }
     },
     "/api/risk-gate/scan": {
       "post": {
-        "summary": "Probe a paid API URL and return risk score before calling",
-        "responses": { "200": { "description": "Risk report" }, "402": { "description": "Payment required ($0.08 USDC)" } }
+        "summary": "Probe paid API URL and return risk score",
+        "responses": { "200": { "description": "Risk report" }, "402": { "description": "$0.08 USDC" } }
       }
     },
     "/api/router/route": {
       "post": {
-        "summary": "Find best verified x402 API for a natural-language capability",
-        "responses": { "200": { "description": "Router result" }, "402": { "description": "Payment required ($0.02 USDC)" } }
+        "summary": "Find best verified x402 API for a capability query",
+        "responses": { "200": { "description": "Router result" }, "402": { "description": "$0.02 USDC" } }
       }
     },
     "/api/research/brief": {
       "post": {
-        "summary": "Build a paid-API research pipeline and cost estimate for a topic",
-        "responses": { "200": { "description": "Brief markdown" }, "402": { "description": "Payment required ($0.20 USDC)" } }
+        "summary": "Build research pipeline and cost estimate",
+        "responses": { "200": { "description": "Brief" }, "402": { "description": "$0.20 USDC" } }
+      }
+    },
+    "/api/receipt-auditor/verify": {
+      "post": {
+        "summary": "Verify x402 settlement receipt",
+        "responses": { "200": { "description": "Audit result" }, "402": { "description": "$0.05 USDC" } }
+      }
+    },
+    "/api/refund-arbiter/evaluate": {
+      "post": {
+        "summary": "Evaluate refund eligibility from verification signals",
+        "responses": { "200": { "description": "Refund decision" }, "402": { "description": "$0.08 USDC" } }
+      }
+    },
+    "/api/budget-allocator/run": {
+      "post": {
+        "summary": "Allocate shared USDC pool across agent fleet",
+        "responses": { "200": { "description": "Allocations" }, "402": { "description": "$0.03 USDC" } }
+      }
+    },
+    "/api/settlement-graph/next": {
+      "post": {
+        "summary": "Recommend next paid APIs after a settlement",
+        "responses": { "200": { "description": "Recommendations" }, "402": { "description": "$0.02 USDC" } }
+      }
+    },
+    "/api/quality-monitor/probe": {
+      "post": {
+        "summary": "Regression probe up to 10 x402 endpoints",
+        "responses": { "200": { "description": "Quality scores" }, "402": { "description": "$0.03 USDC" } }
+      }
+    },
+    "/api/evidence-locker/export": {
+      "post": {
+        "summary": "Export compliance audit bundle for settlements",
+        "responses": { "200": { "description": "Audit bundle" }, "402": { "description": "$0.10 USDC" } }
+      }
+    },
+    "/api/agent-escrow": {
+      "post": {
+        "summary": "Create, status, or release agent-to-agent escrow",
+        "responses": { "200": { "description": "Escrow record" }, "402": { "description": "$0.12 USDC" } }
+      }
+    },
+    "/api/pipeline/full": {
+      "get": {
+        "summary": "Recommended full pipeline order (free metadata)",
+        "responses": { "200": { "description": "Pipeline definition" } }
       }
     }
   }

@@ -2,12 +2,6 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-function required(name: string): string {
-  const value = process.env[name];
-  if (!value) throw new Error(`Missing env: ${name}`);
-  return value;
-}
-
 function resolvePublicBaseUrl(port: number): string {
   if (process.env.PUBLIC_BASE_URL) return process.env.PUBLIC_BASE_URL;
   if (process.env.RAILWAY_PUBLIC_DOMAIN) {
@@ -27,11 +21,21 @@ export const config = {
 };
 
 export const pricing = {
+  paymentCompiler: "0.15",
+  facilitatorFailover: "0.05",
+  mppBroker: "0.02",
   spendGovernor: "0.03",
-  receiptAuditor: "0.05",
+  identityGate: "0.05",
   riskGate: "0.08",
   apiRouter: "0.02",
   researchBrief: "0.20",
+  receiptAuditor: "0.05",
+  refundArbiter: "0.08",
+  budgetAllocator: "0.03",
+  settlementGraph: "0.02",
+  qualityMonitor: "0.03",
+  evidenceLocker: "0.10",
+  agentEscrow: "0.12",
 } as const;
 
 export function assertConfig(): void {

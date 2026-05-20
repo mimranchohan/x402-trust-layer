@@ -1,6 +1,6 @@
 # Deployment Guide
 
-Deploy **x402-agent-suite** to Railway (recommended), Render, or any Docker host.
+Deploy **x402 Agent Suite Pro** (v2 — 15 endpoints) to Railway, Render, or Docker.
 
 ## Prerequisites
 
