@@ -2,11 +2,23 @@
   "openapi": "3.1.0",
   "info": {
     "title": "x402 Agent Suite Pro",
-    "version": "2.0.0",
-    "description": "Fifteen paid x402 infrastructure APIs for AI agent fleets. USDC settlement via Dexter facilitator."
+    "version": "2.1.0",
+    "description": "Seventeen paid x402 infrastructure APIs for AI agent fleets. Bundle entrypoints for OpenDexter and Cursor agents. USDC via Dexter facilitator."
   },
   "servers": [{ "url": "https://x402-agent-suite-production.up.railway.app" }],
   "paths": {
+    "/api/guard/pre-x402": {
+      "post": {
+        "summary": "Pre-x402 guard: spend + identity + risk in one call",
+        "responses": { "200": { "description": "allowed + breakdown" }, "402": { "description": "$0.05 USDC" } }
+      }
+    },
+    "/api/pipeline/execute": {
+      "post": {
+        "summary": "One-shot pipeline: guard, plan, facilitator, marketplace routing",
+        "responses": { "200": { "description": "Pipeline result" }, "402": { "description": "$0.25 USDC" } }
+      }
+    },
     "/api/payment-intent/compile": {
       "post": {
         "summary": "Compile a multi-step x402 execution plan from natural language",

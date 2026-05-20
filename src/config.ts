@@ -36,6 +36,8 @@ export const pricing = {
   qualityMonitor: "0.03",
   evidenceLocker: "0.10",
   agentEscrow: "0.12",
+  preX402Guard: "0.05",
+  pipelineExecute: "0.25",
 } as const;
 
 export function assertConfig(): void {

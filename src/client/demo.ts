@@ -47,6 +47,31 @@ async function post(path: string, body: unknown) {
   }
 }
 
+await post("/api/guard/pre-x402", {
+  agentId: "demo-fleet-1",
+  walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
+  targetUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
+  estimatedCostUsdc: 0.05,
+  network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+  policy: { dailyCapUsdc: 10, perCallCapUsdc: 1, allowedHosts: ["myceliasignal.com"] },
+});
+
+await sleep(2000);
+
+await post("/api/pipeline/execute", {
+  agentId: "demo-fleet-1",
+  walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
+  targetUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
+  estimatedCostUsdc: 0.05,
+  policy: { dailyCapUsdc: 10, perCallCapUsdc: 1 },
+  task: "ETH oracle with guard and routing under one dollar",
+  maxBudgetUsdc: 1,
+  marketplaceQuery: "ETH USD spot price oracle",
+  preferNetwork: "solana",
+});
+
+await sleep(2000);
+
 await post("/api/payment-intent/compile", {
   task: "ETH price check with risk scan and audit trail, max budget $1",
   maxBudgetUsdc: 1,

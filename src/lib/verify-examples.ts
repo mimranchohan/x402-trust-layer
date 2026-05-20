@@ -1,5 +1,25 @@
 /** Canonical probe bodies used when Dexter AI verifier sends an empty POST body */
 export const VERIFY_EXAMPLES: Record<string, unknown> = {
+  "/api/guard/pre-x402": {
+    agentId: "dexter-verifier-probe",
+    walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
+    targetUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
+    estimatedCostUsdc: 0.05,
+    network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+    policy: { dailyCapUsdc: 10, perCallCapUsdc: 0.5, allowedHosts: ["myceliasignal.com"] },
+  },
+  "/api/pipeline/execute": {
+    agentId: "dexter-verifier-probe",
+    walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
+    targetUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
+    estimatedCostUsdc: 0.05,
+    network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+    policy: { dailyCapUsdc: 10, perCallCapUsdc: 0.5, allowedHosts: ["myceliasignal.com"] },
+    task: "ETH oracle with guard and marketplace routing under one dollar",
+    maxBudgetUsdc: 1,
+    marketplaceQuery: "ETH USD spot price oracle",
+    preferNetwork: "solana",
+  },
   "/api/payment-intent/compile": {
     task: "Verify spend policy for ETH oracle call under one dollar budget",
     maxBudgetUsdc: 1,

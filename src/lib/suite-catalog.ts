@@ -25,6 +25,8 @@ export const SUITE_PRICES = {
   identityGate: 0.05,
   evidenceLocker: 0.1,
   agentEscrow: 0.12,
+  preX402Guard: 0.05,
+  pipelineExecute: 0.25,
 } as const;
 
 export function suiteUrl(path: string): string {
@@ -39,27 +41,11 @@ export function buildDefaultPipeline(options: {
   const steps: SuiteStep[] = [
     {
       step: 1,
-      agent: "spend-governor",
+      agent: "pre-x402-guard",
       method: "POST",
-      path: "/api/spend-governor/check",
-      priceUsdc: SUITE_PRICES.spendGovernor,
-      purpose: "Enforce daily and per-call budget before spending",
-    },
-    {
-      step: 2,
-      agent: "identity-gate",
-      method: "POST",
-      path: "/api/identity-gate/check",
-      priceUsdc: SUITE_PRICES.identityGate,
-      purpose: "Validate payer wallet risk tier",
-    },
-    {
-      step: 3,
-      agent: "risk-gate",
-      method: "POST",
-      path: "/api/risk-gate/scan",
-      priceUsdc: SUITE_PRICES.riskGate,
-      purpose: "Probe target paid API safety",
+      path: "/api/guard/pre-x402",
+      priceUsdc: SUITE_PRICES.preX402Guard,
+      purpose: "Single call: spend + identity + risk before any x402 payment",
     },
   ];
 

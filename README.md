@@ -1,10 +1,25 @@
 # x402 Agent Suite Pro
 
-**15 paid x402 APIs** for production AI agent fleets — orchestration, trust, routing, audit, and enterprise controls. All endpoints settle in USDC via the [Dexter facilitator](https://x402.dexter.cash).
+**17 paid x402 APIs** for production AI agent fleets — orchestration, trust, routing, audit, and enterprise controls. All endpoints settle in USDC via the [Dexter facilitator](https://x402.dexter.cash).
 
 **Live:** https://x402-agent-suite-production.up.railway.app
 
+## Start here (integrations)
+
+| Endpoint | Price | Use when |
+|----------|-------|----------|
+| `POST /api/guard/pre-x402` | **$0.05** | Before **every** `x402_fetch` / OpenDexter paid call |
+| `POST /api/pipeline/execute` | **$0.25** | One call: guard + plan + facilitator + marketplace pick |
+
+See [docs/INTEGRATE.md](docs/INTEGRATE.md) for copy-paste OpenDexter / TypeScript examples.
+
 ## Agents
+
+### Bundles (recommended)
+| Endpoint | Price | Description |
+|----------|-------|-------------|
+| `POST /api/guard/pre-x402` | $0.05 | Spend + identity + risk (replaces 3 calls, was $0.16) |
+| `POST /api/pipeline/execute` | $0.25 | Full pre-flight pipeline in one payment |
 
 ### Orchestration
 | Endpoint | Price | Description |
@@ -42,16 +57,14 @@
 ## Full pipeline
 
 ```
-payment-intent/compile
-  → spend-governor
-  → identity-gate
-  → risk-gate
+POST /api/pipeline/execute   ← preferred (one payment)
+  OR
+POST /api/guard/pre-x402     ← before each downstream x402_fetch
   → facilitator/failover
   → router/route
   → (downstream x402 API)
   → receipt-auditor
   → settlement-graph/next
-  → refund-arbiter (if needed)
 ```
 
 ## Quick start

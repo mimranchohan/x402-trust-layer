@@ -1,7 +1,7 @@
 {
   "name": "x402-agent-suite",
-  "version": "2.0.0",
-  "description": "x402 Agent Suite Pro — 15 paid infrastructure APIs for AI agent fleets",
+  "version": "2.1.0",
+  "description": "x402 Agent Suite Pro — 17 paid APIs with pre-x402 guard and pipeline execute bundles",
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",

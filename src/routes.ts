@@ -14,6 +14,8 @@ import { runRefundArbiter } from "./agents/refund-arbiter.js";
 import { runResearchBrief } from "./agents/research-brief.js";
 import { runRiskGate } from "./agents/risk-gate.js";
 import { runSettlementGraph } from "./agents/settlement-graph.js";
+import { runPipelineExecute } from "./agents/pipeline-execute.js";
+import { runPreX402Guard } from "./agents/pre-x402-guard.js";
 import { runSpendGovernor } from "./agents/spend-governor.js";
 import { pricing } from "./config.js";
 import { SUITE_PRICES } from "./lib/suite-catalog.js";
@@ -33,6 +35,8 @@ const policySchema = z.object({
 
 export function listEndpoints() {
   return [
+    { path: "POST /api/guard/pre-x402", price: `$${pricing.preX402Guard}`, tier: "bundle" },
+    { path: "POST /api/pipeline/execute", price: `$${pricing.pipelineExecute}`, tier: "bundle" },
     { path: "POST /api/payment-intent/compile", price: `$${pricing.paymentCompiler}`, tier: "orchestration" },
     { path: "POST /api/facilitator/failover", price: `$${pricing.facilitatorFailover}`, tier: "orchestration" },
     { path: "POST /api/mpp/session-plan", price: `$${pricing.mppBroker}`, tier: "orchestration" },
@@ -53,7 +57,64 @@ export function listEndpoints() {
 
 type PaidFn = (amount: string, description: string) => PaidMw;
 
+const guardBodySchema = z.object({
+  agentId: z.string().min(1),
+  walletAddress: z.string().min(16),
+  targetUrl: z.string().url(),
+  estimatedCostUsdc: z.number().nonnegative(),
+  network: z.string().optional(),
+  policy: policySchema,
+  maxTierSpendUsdc: z.number().optional(),
+});
+
 export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRoute) {
+  app.post(
+    "/api/guard/pre-x402",
+    paid(
+      pricing.preX402Guard,
+      "Pre-x402 safety bundle: spend policy + wallet identity + URL risk probe in one call",
+    ),
+    asyncRoute(async (req, res) => {
+      const parsed = guardBodySchema.safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(await runPreX402Guard(parsed.data));
+    }),
+  );
+
+  app.post(
+    "/api/pipeline/execute",
+    paid(
+      pricing.pipelineExecute,
+      "One-shot agent pipeline: guard, optional NL plan, facilitator routing, marketplace pick",
+    ),
+    asyncRoute(async (req, res) => {
+      const parsed = guardBodySchema
+        .extend({
+          task: z.string().min(3).optional(),
+          maxBudgetUsdc: z.number().positive().optional(),
+          marketplaceQuery: z.string().min(2).optional(),
+          preferNetwork: z.string().optional(),
+          maxPriceUsdc: z.number().optional(),
+          includePlan: z.boolean().optional(),
+          includeRouter: z.boolean().optional(),
+          includeFailover: z.boolean().optional(),
+          settlement: z
+            .object({
+              transactionHash: z.string().optional(),
+              network: z.string().min(1),
+              expectedAmountUsdc: z.number().optional(),
+              payTo: z.string().optional(),
+              payer: z.string().optional(),
+              amountUsdc: z.number().optional(),
+            })
+            .optional(),
+        })
+        .safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(await runPipelineExecute(parsed.data));
+    }),
+  );
+
   app.post(
     "/api/payment-intent/compile",
     paid(pricing.paymentCompiler, "Compile multi-step x402 agent execution plans from natural language tasks"),
@@ -354,11 +415,14 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
   app.get("/api/pipeline/full", (_req, res) => {
     res.json({
       name: "x402 Agent Suite Pro — Full Pipeline",
+      primaryEntrypoints: [
+        "POST /api/guard/pre-x402 — call before every x402_fetch ($0.05)",
+        "POST /api/pipeline/execute — guard + plan + routing in one call ($0.25)",
+      ],
       recommendedOrder: [
+        "POST /api/pipeline/execute (or guard + steps below)",
         "POST /api/payment-intent/compile",
-        "POST /api/spend-governor/check",
-        "POST /api/identity-gate/check",
-        "POST /api/risk-gate/scan",
+        "POST /api/guard/pre-x402",
         "POST /api/facilitator/failover",
         "POST /api/router/route",
         "(downstream x402 call)",
@@ -367,6 +431,7 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         "POST /api/refund-arbiter/evaluate",
       ],
       estimatedSuiteOnlyUsdc: Object.values(SUITE_PRICES).reduce((a, b) => a + b, 0).toFixed(2),
+      bundleSavingsNote: "pre-x402 guard replaces 3 calls ($0.16 → $0.05); pipeline/execute replaces guard+plan+failover+router ($0.27+ → $0.25)",
     });
   });
 }
