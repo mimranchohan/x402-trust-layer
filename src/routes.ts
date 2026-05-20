@@ -51,10 +51,12 @@ export function listEndpoints() {
   ];
 }
 
-export function registerRoutes(app: Express, paid: (amount: string) => PaidMw, asyncRoute: AsyncRoute) {
+type PaidFn = (amount: string, description: string) => PaidMw;
+
+export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRoute) {
   app.post(
     "/api/payment-intent/compile",
-    paid(pricing.paymentCompiler),
+    paid(pricing.paymentCompiler, "Compile multi-step x402 agent execution plans from natural language tasks"),
     asyncRoute(async (req, res) => {
       const parsed = z
         .object({
@@ -72,7 +74,7 @@ export function registerRoutes(app: Express, paid: (amount: string) => PaidMw, a
 
   app.post(
     "/api/facilitator/failover",
-    paid(pricing.facilitatorFailover),
+    paid(pricing.facilitatorFailover, "Rank x402 facilitators and recommend healthy failover routing"),
     asyncRoute(async (req, res) => {
       const parsed = z
         .object({
@@ -87,7 +89,7 @@ export function registerRoutes(app: Express, paid: (amount: string) => PaidMw, a
 
   app.post(
     "/api/mpp/session-plan",
-    paid(pricing.mppBroker),
+    paid(pricing.mppBroker, "Estimate Solana MPP session savings versus per-call settlement"),
     asyncRoute(async (req, res) => {
       const parsed = z
         .object({
@@ -104,7 +106,7 @@ export function registerRoutes(app: Express, paid: (amount: string) => PaidMw, a
 
   app.post(
     "/api/spend-governor/check",
-    paid(pricing.spendGovernor),
+    paid(pricing.spendGovernor, "Enforce per-call and daily USDC spend policies for AI agents"),
     asyncRoute(async (req, res) => {
       const parsed = z
         .object({
@@ -122,7 +124,7 @@ export function registerRoutes(app: Express, paid: (amount: string) => PaidMw, a
 
   app.post(
     "/api/identity-gate/check",
-    paid(pricing.identityGate),
+    paid(pricing.identityGate, "Wallet identity tier and risk scoring before paid API calls"),
     asyncRoute(async (req, res) => {
       const parsed = z
         .object({
@@ -138,7 +140,7 @@ export function registerRoutes(app: Express, paid: (amount: string) => PaidMw, a
 
   app.post(
     "/api/risk-gate/scan",
-    paid(pricing.riskGate),
+    paid(pricing.riskGate, "Probe x402 endpoint safety and return risk score before payment"),
     asyncRoute(async (req, res) => {
       const parsed = z
         .object({
@@ -159,7 +161,7 @@ export function registerRoutes(app: Express, paid: (amount: string) => PaidMw, a
 
   app.post(
     "/api/router/route",
-    paid(pricing.apiRouter),
+    paid(pricing.apiRouter, "Select the best verified x402 marketplace API for a capability query"),
     asyncRoute(async (req, res) => {
       const parsed = z
         .object({
@@ -176,7 +178,7 @@ export function registerRoutes(app: Express, paid: (amount: string) => PaidMw, a
 
   app.post(
     "/api/research/brief",
-    paid(pricing.researchBrief),
+    paid(pricing.researchBrief, "Build a paid-API research pipeline and cost estimate for any topic"),
     asyncRoute(async (req, res) => {
       const parsed = z
         .object({
@@ -192,7 +194,7 @@ export function registerRoutes(app: Express, paid: (amount: string) => PaidMw, a
 
   app.post(
     "/api/receipt-auditor/verify",
-    paid(pricing.receiptAuditor),
+    paid(pricing.receiptAuditor, "Verify x402 settlement receipts and on-chain transaction alignment"),
     asyncRoute(async (req, res) => {
       const parsed = z
         .object({
@@ -217,7 +219,7 @@ export function registerRoutes(app: Express, paid: (amount: string) => PaidMw, a
 
   app.post(
     "/api/refund-arbiter/evaluate",
-    paid(pricing.refundArbiter),
+    paid(pricing.refundArbiter, "Evaluate buyer refund eligibility from verification signals"),
     asyncRoute(async (req, res) => {
       const parsed = z
         .object({
@@ -236,7 +238,7 @@ export function registerRoutes(app: Express, paid: (amount: string) => PaidMw, a
 
   app.post(
     "/api/budget-allocator/run",
-    paid(pricing.budgetAllocator),
+    paid(pricing.budgetAllocator, "Allocate shared USDC budget across a fleet of agents by priority"),
     asyncRoute(async (req, res) => {
       const parsed = z
         .object({
@@ -259,7 +261,7 @@ export function registerRoutes(app: Express, paid: (amount: string) => PaidMw, a
 
   app.post(
     "/api/settlement-graph/next",
-    paid(pricing.settlementGraph),
+    paid(pricing.settlementGraph, "Recommend next paid APIs after a settlement receipt"),
     asyncRoute(async (req, res) => {
       const parsed = z
         .object({
@@ -275,7 +277,7 @@ export function registerRoutes(app: Express, paid: (amount: string) => PaidMw, a
 
   app.post(
     "/api/quality-monitor/probe",
-    paid(pricing.qualityMonitor),
+    paid(pricing.qualityMonitor, "Regression probe x402 endpoints and return quality scores"),
     asyncRoute(async (req, res) => {
       const parsed = z.object({ urls: z.array(z.string().url()).min(1).max(10) }).safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
@@ -285,7 +287,7 @@ export function registerRoutes(app: Express, paid: (amount: string) => PaidMw, a
 
   app.post(
     "/api/evidence-locker/export",
-    paid(pricing.evidenceLocker),
+    paid(pricing.evidenceLocker, "Export tamper-evident compliance bundles for x402 settlements"),
     asyncRoute(async (req, res) => {
       const parsed = z
         .object({
@@ -309,7 +311,7 @@ export function registerRoutes(app: Express, paid: (amount: string) => PaidMw, a
 
   app.post(
     "/api/agent-escrow",
-    paid(pricing.agentEscrow),
+    paid(pricing.agentEscrow, "Create and manage agent-to-agent USDC escrow records"),
     asyncRoute(async (req, res) => {
       const parsed = z
         .object({
