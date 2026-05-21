@@ -40,6 +40,36 @@ https://x402-agent-suite-production.up.railway.app/x402/api/services.json
 
 ## Step-by-step: list all 22 agents on Agentic Market
 
+### Step 0 — Railway variables (required for Agentic simulate)
+
+Agentic’s simulator expects **HTTPS resource URLs** and **Base USDC** (`eip155:8453`) as the first payment option.
+
+In **Railway → Variables** set:
+
+```env
+PUBLIC_BASE_URL=https://x402-agent-suite-production.up.railway.app
+NETWORKS=base,solana
+PAY_TO_ADDRESS=9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt
+PAY_TO_EVM=0xYourBaseWalletAddress
+FACILITATOR_URL=https://x402.dexter.cash
+```
+
+Redeploy, then check:
+
+```powershell
+curl.exe https://x402-agent-suite-production.up.railway.app/health
+```
+
+Expect: `"agenticReady": true` and `"chains":["base","solana"]`.
+
+Test 402 (first `accepts` entry should be Base):
+
+```powershell
+curl.exe -i -X GET https://x402-agent-suite-production.up.railway.app/api/x402/proxy
+```
+
+Decode `Payment-Required` header — `resource.url` must start with `https://` and `accepts[0].network` should be `eip155:8453`.
+
 ### Step 1 — Deploy discovery routes
 
 Push latest `main` to Railway. Confirm:

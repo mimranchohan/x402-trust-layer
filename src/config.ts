@@ -12,18 +12,20 @@ function resolvePublicBaseUrl(port: number): string {
 
   const raw = (process.env.PUBLIC_BASE_URL ?? "").trim();
 
-  if (raw) return raw.replace(/\/$/, "");
-
-  if (process.env.RAILWAY_PUBLIC_DOMAIN) {
-
-    return `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
-
+  let url = "";
+  if (raw) url = raw.replace(/\/$/, "");
+  else if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+    url = `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
+  } else if (process.env.RENDER_EXTERNAL_URL) {
+    url = process.env.RENDER_EXTERNAL_URL.replace(/\/$/, "");
+  } else {
+    url = `http://127.0.0.1:${port}`;
   }
 
-  if (process.env.RENDER_EXTERNAL_URL) return process.env.RENDER_EXTERNAL_URL.replace(/\/$/, "");
-
-  return `http://127.0.0.1:${port}`;
-
+  if (url.startsWith("http://") && !url.includes("127.0.0.1") && !url.includes("localhost")) {
+    url = `https://${url.slice(7)}`;
+  }
+  return url;
 }
 
 
@@ -36,7 +38,9 @@ function env(name: string): string {
 
 
 
-const chains = parseChainList(env("NETWORKS") || env("NETWORK") || "solana,base");
+const chains = parseChainList(
+  env("NETWORKS") || env("NETWORK") || (env("PAY_TO_EVM") ? "base,solana" : "solana,base"),
+);
 
 
 

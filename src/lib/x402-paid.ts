@@ -1,10 +1,29 @@
 import type { Request, Response, NextFunction } from "express";
 import { x402Middleware } from "@dexterai/x402/server";
 import { config } from "../config.js";
+import { CHAIN_IDS } from "./chains.js";
 import { VERIFY_EXAMPLES } from "./verify-examples.js";
 
+function resolvePayTo(): string | Record<string, string> {
+  if (!config.payToEvm) return config.payTo;
+  const map: Record<string, string> = {
+    [CHAIN_IDS.solana]: config.payTo,
+    [CHAIN_IDS.base]: config.payToEvm,
+  };
+  if (config.chains.includes("polygon")) {
+    map[CHAIN_IDS.polygon] = config.payToEvm;
+  }
+  return map;
+}
+
+function resourceUrl(path: string): string {
+  const base = config.publicBaseUrl.replace(/\/$/, "");
+  const p = path.startsWith("/") ? path : `/${path}`;
+  return `${base}${p}`;
+}
+
 const baseMiddleware = {
-  payTo: config.payTo,
+  payTo: resolvePayTo(),
   facilitatorUrl: config.facilitatorUrl,
   network: [...config.networks],
   onSettlement: (info: { transaction?: string; payer?: string; network?: string }) => {
@@ -75,6 +94,10 @@ function injectBazaarExtension(encoded: string, req: Request): string {
     };
     const extensions = (parsed.extensions as Record<string, unknown> | undefined) ?? {};
     parsed.extensions = { ...extensions, bazaar };
+    const resource = parsed.resource as { url?: string } | undefined;
+    if (resource) {
+      resource.url = resourceUrl(path);
+    }
     return Buffer.from(JSON.stringify(parsed)).toString("base64");
   } catch {
     return encoded;
@@ -93,6 +116,7 @@ export function createPaidMiddleware(): (
       description,
       verbose: false,
       timeoutSeconds: 120,
+      getResourceUrl: (req) => resourceUrl(req.path),
     });
 
     return (req: Request, res: Response, next: NextFunction) => {

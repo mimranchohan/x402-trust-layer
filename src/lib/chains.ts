@@ -7,8 +7,10 @@ export const CHAIN_IDS = {
 
 export type ChainKey = keyof typeof CHAIN_IDS;
 
+const CHAIN_ORDER: ChainKey[] = ["base", "solana", "polygon"];
+
 export function parseChainList(raw: string | undefined): ChainKey[] {
-  if (!raw || raw === "all") return ["solana", "base"];
+  if (!raw || raw === "all") return ["base", "solana"];
   const keys = raw
     .split(",")
     .map((s) => s.trim().toLowerCase())
@@ -17,7 +19,8 @@ export function parseChainList(raw: string | undefined): ChainKey[] {
   for (const k of keys) {
     if (k in CHAIN_IDS && !out.includes(k as ChainKey)) out.push(k as ChainKey);
   }
-  return out.length ? out : ["solana"];
+  const list = out.length ? out : ["solana"];
+  return [...list].sort((a, b) => CHAIN_ORDER.indexOf(a) - CHAIN_ORDER.indexOf(b));
 }
 
 export function caip2Networks(chains: ChainKey[]): string[] {

@@ -10,11 +10,14 @@ import {
   buildWellKnownX402,
 } from "./lib/bazaar.js";
 import { VERIFY_EXAMPLES } from "./lib/verify-examples.js";
+import { registerAgenticProbes, stripTrailingSlash } from "./lib/agentic-probes.js";
 import { listEndpoints, registerRoutes } from "./routes.js";
 
 assertConfig();
 
 const app = express();
+app.set("trust proxy", true);
+app.use(stripTrailingSlash);
 app.use(express.json({ limit: "512kb" }));
 
 /** Inject example JSON when AI verifier sends empty body (improves Dexter quality score) */
@@ -48,8 +51,14 @@ app.get("/health", (_req, res) => {
     networks: config.networks,
     endpointCount: listEndpoints().length,
     gitCommit: process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) ?? null,
-    /** Present after Agentic GET-probe deploy (commit a7b615a+) */
     agenticGetProbes: true,
+    agenticReady:
+      config.publicBaseUrl.startsWith("https://") &&
+      config.chains.includes("base") &&
+      config.payToEvm.length > 0,
+    agenticHint: !config.payToEvm
+      ? "Set PAY_TO_EVM + NETWORKS=base,solana on Railway for agentic.market"
+      : null,
   });
 });
 
@@ -90,6 +99,21 @@ app.get("/", (_req, res) => {
 });
 
 registerRoutes(app, paid, asyncRoute);
+registerAgenticProbes(app, paid);
+
+/** Copy-paste URLs for Agentic Validate Endpoint (free) */
+app.get("/api/agentic/validate-urls", (_req, res) => {
+  const base = config.publicBaseUrl;
+  res.json({
+    note: "Paste these exact URLs into agentic.market Validate Endpoint. No trailing slash.",
+    agenticGetProbes: true,
+    urls: listEndpoints().map((e) => {
+      const [, path] = e.path.split(" ");
+      return `${base}${path}`;
+    }),
+    example: `${base}/api/x402/proxy`,
+  });
+});
 
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   console.error("[api error]", err);
