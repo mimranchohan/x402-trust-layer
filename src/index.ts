@@ -10,11 +10,13 @@ import { buildAgentCashOpenApi, buildWellKnownX402Resources } from "./lib/openap
 import { VERIFY_EXAMPLES } from "./lib/verify-examples.js";
 import { registerAgenticProbes, stripTrailingSlash } from "./lib/agentic-probes.js";
 import { listEndpoints, registerRoutes } from "./routes.js";
+import { registerX402gleHostVerification } from "./lib/x402gle-host-verify.js";
 
 assertConfig();
 
 const app = express();
 app.set("trust proxy", true);
+registerX402gleHostVerification(app);
 app.use(stripTrailingSlash);
 app.use(express.json({ limit: "512kb" }));
 
