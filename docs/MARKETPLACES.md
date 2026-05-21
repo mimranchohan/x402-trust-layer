@@ -17,13 +17,28 @@ Agents discover you via semantic search after Dexter indexes your URLs.
 
 **Optimize titles in middleware descriptions** (already set in code).
 
-## 3. Coinbase x402 Bazaar / ecosystem listings
+## 3. Agentic Market (https://agentic.market/)
+
+Coinbase-operated agent directory. **Full guide:** [AGENTIC-MARKET.md](./AGENTIC-MARKET.md)
+
+Quick steps:
+
+1. Deploy latest code — exposes:
+   - `/.well-known/x402.json`
+   - `/x402/api/services.json` (22 routes, `bazaar.discoverable: true`)
+   - `/x402/api/discover`
+2. **Validate Endpoint** on agentic.market for each resource URL (or use CDP facilitator for auto-index).
+3. Optional: GitHub issue on [x402-foundation/x402](https://github.com/x402-foundation/x402) with manifest URLs.
+
+**Note:** Dexter settlements index **Dexter**, not Agentic automatically. Use Agentic steps above in addition to Dexter demo.
+
+## 4. Coinbase x402 Bazaar / CDP discovery
 
 - Publish your `openapi.json` publicly
-- Register in Coinbase Developer x402 Bazaar (manual, when available in your region)
-- URL: https://x402-agent-suite-production.up.railway.app/openapi.json
+- CDP facilitator: `https://api.cdp.coinbase.com/platform/v2/x402` + `declareDiscoveryExtension()` per route
+- Manifest: https://x402-agent-suite-production.up.railway.app/x402/api/services.json
 
-## 4. PayAI / x402.echo network
+## 5. PayAI / x402.echo network
 
 Many agents use `x402.payai.network` patterns. To appear nearby:
 
@@ -31,7 +46,7 @@ Many agents use `x402.payai.network` patterns. To appear nearby:
 - Document integration in GitHub README
 - Post your seller profile + OpenAPI link in community channels
 
-## 5. Self-hosted discovery (recommended)
+## 6. Self-hosted discovery (recommended)
 
 Ship an npm helper:
 
@@ -43,7 +58,7 @@ Point default preflight to:
 
 `https://x402-agent-suite-production.up.railway.app/api/x402/proxy`
 
-## 6. GitHub + README badges
+## 7. GitHub + README badges
 
 Add to README:
 

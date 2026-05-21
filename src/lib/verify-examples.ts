@@ -85,7 +85,14 @@ export const VERIFY_EXAMPLES: Record<string, unknown> = {
   "/api/receipt-auditor/verify": {
     network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
     expectedAmountUsdc: 0.03,
-    settlement: { amountUsdc: 0.03, network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp" },
+    transactionHash:
+      "5VERv8NMvzbJMEkV8xnrLkEbWRPnf7wDQUJwo9aH7H9f3aDu4xfVVbmAJnW9MJz6HTWu7jnQvuKv4W4vKMnBiix",
+    settlement: {
+      transaction:
+        "5VERv8NMvzbJMEkV8xnrLkEbWRPnf7wDQUJwo9aH7H9f3aDu4xfVVbmAJnW9MJz6HTWu7jnQvuKv4W4vKMnBiix",
+      amountUsdc: 0.03,
+      network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+    },
   },
   "/api/refund-arbiter/evaluate": {
     verificationScore: 85,

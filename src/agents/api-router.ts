@@ -12,6 +12,30 @@ const SUITE_ROUTES: Array<{ match: RegExp; path: string; name: string; priceUsdc
   { match: /spend|budget|governor/i, path: "/api/spend-governor/check", name: "Spend Governor", priceUsdc: 0.03 },
 ];
 
+/** Curated external x402 APIs for common agent queries (before Dexter catalog search) */
+const CURATED_ROUTES: Array<{
+  match: RegExp;
+  url: string;
+  name: string;
+  description: string;
+  priceUsdc: number;
+}> = [
+  {
+    match: /eth.*(price|oracle|usd|spot)|ethereum.*(price|usd)|\beth\b.*\busd\b/i,
+    url: "https://api.myceliasignal.com/oracle/price/eth/usd",
+    name: "Mycelia ETH/USD Oracle",
+    description: "ETH spot price oracle (x402-protected)",
+    priceUsdc: 0.05,
+  },
+  {
+    match: /btc.*(price|oracle|usd)|bitcoin.*price/i,
+    url: "https://api.myceliasignal.com/oracle/price/btc/usd",
+    name: "Mycelia BTC/USD Oracle",
+    description: "BTC spot price oracle (x402-protected)",
+    priceUsdc: 0.05,
+  },
+];
+
 export type RouterResult = {
   query: string;
   selected: ReturnType<typeof pickBestResource> extends infer T ? T : never;
@@ -22,6 +46,26 @@ export type RouterResult = {
 };
 
 export async function runApiRouter(input: RouterInput): Promise<RouterResult> {
+  const curatedHit = CURATED_ROUTES.find((r) => r.match.test(input.query));
+  if (curatedHit) {
+    const probe = await probeEndpoint(curatedHit.url);
+    return {
+      query: input.query,
+      selected: {
+        name: curatedHit.name,
+        url: curatedHit.url,
+        description: curatedHit.description,
+        priceUsdc: probe.priceUsdc ?? curatedHit.priceUsdc,
+        network: input.preferNetwork ?? "solana",
+        qualityScore: 88,
+      },
+      alternatives: [],
+      executed: false,
+      executionNote: "Curated oracle route for ETH/BTC price queries",
+      probedPriceUsdc: probe.priceUsdc ?? curatedHit.priceUsdc,
+    };
+  }
+
   const suiteHit = SUITE_ROUTES.find((r) => r.match.test(input.query));
   if (suiteHit) {
     const suiteUrl = `${config.publicBaseUrl}${suiteHit.path}`;
@@ -48,7 +92,7 @@ export async function runApiRouter(input: RouterInput): Promise<RouterResult> {
     maxPriceUsdc: input.maxPriceUsdc,
   });
 
-  const selected = pickBestResource(resources, input.preferNetwork);
+  const selected = pickBestResource(resources, input.preferNetwork, input.query);
 
   if (!selected?.url) {
     return {

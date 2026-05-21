@@ -4,6 +4,11 @@ import { fileURLToPath } from "node:url";
 import express, { type Request, type Response, type NextFunction } from "express";
 import { x402Middleware } from "@dexterai/x402/server";
 import { assertConfig, config } from "./config.js";
+import {
+  buildDiscoverCatalog,
+  buildServicesManifest,
+  buildWellKnownX402,
+} from "./lib/bazaar.js";
 import { VERIFY_EXAMPLES } from "./lib/verify-examples.js";
 import { listEndpoints, registerRoutes } from "./routes.js";
 
@@ -63,11 +68,26 @@ app.get("/openapi.json", (_req, res) => {
   res.type("application/json").send(spec);
 });
 
+app.get("/.well-known/x402.json", (_req, res) => {
+  res.json(buildWellKnownX402());
+});
+
+app.get("/x402/api/services.json", (_req, res) => {
+  res.json(buildServicesManifest());
+});
+
+app.get("/x402/api/discover", (_req, res) => {
+  res.json(buildDiscoverCatalog());
+});
+
 app.get("/", (_req, res) => {
   res.json({
     name: "x402 Agent Suite Pro",
-    description: "20 paid x402 infrastructure agents — multi-chain guard, proxy, MPP v2, attestation",
+    description: "22 paid x402 infrastructure agents — multi-chain guard, proxy, MPP v2, attestation",
     docs: `${config.publicBaseUrl}/openapi.json`,
+    discovery: `${config.publicBaseUrl}/x402/api/discover`,
+    bazaar: `${config.publicBaseUrl}/x402/api/services.json`,
+    agenticMarket: "https://agentic.market/",
     pipeline: `${config.publicBaseUrl}/api/pipeline/full`,
     endpoints: listEndpoints(),
   });

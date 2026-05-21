@@ -142,8 +142,9 @@ await post("/api/facilitator/failover", {
 await sleep(1500);
 
 await post("/api/router/route", {
-  query: "ETH price oracle",
+  query: "ETH USD spot price oracle",
   maxPriceUsdc: 0.1,
+  preferNetwork: "solana",
 });
 
 await sleep(1500);
@@ -159,6 +160,14 @@ await sleep(1500);
 await post("/api/receipt-auditor/verify", {
   network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
   expectedAmountUsdc: 0.03,
+  transactionHash:
+    "5VERv8NMvzbJMEkV8xnrLkEbWRPnf7wDQUJwo9aH7H9f3aDu4xfVVbmAJnW9MJz6HTWu7jnQvuKv4W4vKMnBiix",
+  settlement: {
+    transaction:
+      "5VERv8NMvzbJMEkV8xnrLkEbWRPnf7wDQUJwo9aH7H9f3aDu4xfVVbmAJnW9MJz6HTWu7jnQvuKv4W4vKMnBiix",
+    amountUsdc: 0.03,
+    network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+  },
 });
 
 await sleep(1500);

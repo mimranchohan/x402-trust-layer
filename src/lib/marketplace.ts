@@ -151,6 +151,7 @@ export async function searchMarketplace(
 export function pickBestResource(
   resources: MarketplaceResource[],
   preferNetwork?: string,
+  query?: string,
 ): MarketplaceResource | null {
   if (resources.length === 0) return null;
 
@@ -161,7 +162,15 @@ export function pickBestResource(
       const latencyPenalty = (r.latencyP50Ms ?? 0) / 100_000;
       const networkBoost =
         preferNetwork && r.network?.toLowerCase().includes(preferNetwork.toLowerCase()) ? 5 : 0;
-      return { r, score: quality * 2 - price * 10 - latencyPenalty + networkBoost };
+      const haystack = [r.name, r.description, r.url].filter(Boolean).join(" ").toLowerCase();
+      const q = (query ?? "").toLowerCase();
+      const wantsOracle = /eth|ethereum|oracle|price|usd|btc|bitcoin/.test(q);
+      const oracleBoost =
+        wantsOracle && /mycelia|oracle\/price/.test(haystack) ? 12 : 0;
+      return {
+        r,
+        score: quality * 2 - price * 10 - latencyPenalty + networkBoost + oracleBoost,
+      };
     })
     .sort((a, b) => b.score - a.score);
 

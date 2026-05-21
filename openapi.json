@@ -2,117 +2,169 @@
   "openapi": "3.1.0",
   "info": {
     "title": "x402 Agent Suite Pro",
-    "version": "2.1.0",
-    "description": "Seventeen paid x402 infrastructure APIs for AI agent fleets. Bundle entrypoints for OpenDexter and Cursor agents. USDC via Dexter facilitator."
+    "version": "3.0.0",
+    "description": "22 paid x402 infrastructure APIs for AI agent fleets. Multi-chain guard, proxy, MPP v2, attestation registry. USDC via Dexter facilitator."
   },
   "servers": [{ "url": "https://x402-agent-suite-production.up.railway.app" }],
   "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check (free)",
+        "responses": { "200": { "description": "Service health and endpoint count" } }
+      }
+    },
+    "/api/x402/proxy": {
+      "post": {
+        "summary": "x402 proxy: guard + security + attestation in one call",
+        "tags": ["killer"],
+        "responses": { "200": { "description": "Preflight result" }, "402": { "description": "$0.08 USDC" } }
+      }
+    },
+    "/api/mpp/session": {
+      "post": {
+        "summary": "MPP session v2: open, voucher, close",
+        "tags": ["killer"],
+        "responses": { "200": { "description": "Session state" }, "402": { "description": "$0.03 USDC" } }
+      }
+    },
+    "/api/attestation/issue": {
+      "post": {
+        "summary": "Issue signed preflight attestation",
+        "tags": ["killer"],
+        "responses": { "200": { "description": "Attestation" }, "402": { "description": "$0.04 USDC" } }
+      }
+    },
+    "/api/attestation/verify": {
+      "post": {
+        "summary": "Verify attestation signature",
+        "tags": ["killer"],
+        "responses": { "200": { "description": "Verification result" }, "402": { "description": "$0.02 USDC" } }
+      }
+    },
+    "/api/attestation/registry": {
+      "get": {
+        "summary": "Query attestation registry",
+        "tags": ["killer"],
+        "responses": { "200": { "description": "Registry entries" }, "402": { "description": "$0.02 USDC" } }
+      }
+    },
     "/api/guard/pre-x402": {
       "post": {
         "summary": "Pre-x402 guard: spend + identity + risk in one call",
+        "tags": ["bundle"],
         "responses": { "200": { "description": "allowed + breakdown" }, "402": { "description": "$0.05 USDC" } }
       }
     },
     "/api/pipeline/execute": {
       "post": {
         "summary": "One-shot pipeline: guard, plan, facilitator, marketplace routing",
+        "tags": ["bundle"],
         "responses": { "200": { "description": "Pipeline result" }, "402": { "description": "$0.25 USDC" } }
       }
     },
     "/api/payment-intent/compile": {
       "post": {
         "summary": "Compile a multi-step x402 execution plan from natural language",
+        "tags": ["orchestration"],
         "responses": { "200": { "description": "Execution DAG" }, "402": { "description": "$0.15 USDC" } }
       }
     },
     "/api/facilitator/failover": {
       "post": {
         "summary": "Rank facilitators and recommend failover path",
+        "tags": ["orchestration"],
         "responses": { "200": { "description": "Failover routing" }, "402": { "description": "$0.05 USDC" } }
       }
     },
     "/api/mpp/session-plan": {
       "post": {
         "summary": "Estimate MPP session vs per-call settlement savings",
+        "tags": ["orchestration"],
         "responses": { "200": { "description": "Session plan" }, "402": { "description": "$0.02 USDC" } }
       }
     },
     "/api/spend-governor/check": {
       "post": {
         "summary": "Enforce agent spend policy before payment",
+        "tags": ["core"],
         "responses": { "200": { "description": "Allow or deny" }, "402": { "description": "$0.03 USDC" } }
       }
     },
     "/api/identity-gate/check": {
       "post": {
         "summary": "Wallet identity and risk tier check",
+        "tags": ["core"],
         "responses": { "200": { "description": "Tier result" }, "402": { "description": "$0.05 USDC" } }
       }
     },
     "/api/risk-gate/scan": {
       "post": {
-        "summary": "Probe paid API URL and return risk score",
+        "summary": "Probe paid API URL and return risk score with security grade",
+        "tags": ["core"],
         "responses": { "200": { "description": "Risk report" }, "402": { "description": "$0.08 USDC" } }
       }
     },
     "/api/router/route": {
       "post": {
-        "summary": "Find best verified x402 API for a capability query",
+        "summary": "Find best x402 API for a capability query (suite-first, ETH oracle curated)",
+        "tags": ["core"],
         "responses": { "200": { "description": "Router result" }, "402": { "description": "$0.02 USDC" } }
       }
     },
     "/api/research/brief": {
       "post": {
         "summary": "Build research pipeline and cost estimate",
+        "tags": ["core"],
         "responses": { "200": { "description": "Brief" }, "402": { "description": "$0.20 USDC" } }
       }
     },
     "/api/receipt-auditor/verify": {
       "post": {
-        "summary": "Verify x402 settlement receipt",
+        "summary": "Verify x402 settlement receipt on-chain",
+        "tags": ["core"],
         "responses": { "200": { "description": "Audit result" }, "402": { "description": "$0.05 USDC" } }
       }
     },
     "/api/refund-arbiter/evaluate": {
       "post": {
         "summary": "Evaluate refund eligibility from verification signals",
+        "tags": ["trust"],
         "responses": { "200": { "description": "Refund decision" }, "402": { "description": "$0.08 USDC" } }
       }
     },
     "/api/budget-allocator/run": {
       "post": {
         "summary": "Allocate shared USDC pool across agent fleet",
+        "tags": ["enterprise"],
         "responses": { "200": { "description": "Allocations" }, "402": { "description": "$0.03 USDC" } }
       }
     },
     "/api/settlement-graph/next": {
       "post": {
         "summary": "Recommend next paid APIs after a settlement",
+        "tags": ["intelligence"],
         "responses": { "200": { "description": "Recommendations" }, "402": { "description": "$0.02 USDC" } }
       }
     },
     "/api/quality-monitor/probe": {
       "post": {
         "summary": "Regression probe up to 10 x402 endpoints",
+        "tags": ["intelligence"],
         "responses": { "200": { "description": "Quality scores" }, "402": { "description": "$0.03 USDC" } }
       }
     },
     "/api/evidence-locker/export": {
       "post": {
         "summary": "Export compliance audit bundle for settlements",
+        "tags": ["enterprise"],
         "responses": { "200": { "description": "Audit bundle" }, "402": { "description": "$0.10 USDC" } }
       }
     },
     "/api/agent-escrow": {
       "post": {
         "summary": "Create, status, or release agent-to-agent escrow",
+        "tags": ["enterprise"],
         "responses": { "200": { "description": "Escrow record" }, "402": { "description": "$0.12 USDC" } }
-      }
-    },
-    "/api/pipeline/full": {
-      "get": {
-        "summary": "Recommended full pipeline order (free metadata)",
-        "responses": { "200": { "description": "Pipeline definition" } }
       }
     }
   }
