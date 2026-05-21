@@ -73,8 +73,8 @@ export const VERIFY_EXAMPLES: Record<string, unknown> = {
   },
   "/api/risk-gate/scan": {
     targetUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
-    estimatedCostUsdc: 0.01,
-    policy: { perCallCapUsdc: 0.25 },
+    estimatedCostUsdc: 0.05,
+    policy: { dailyCapUsdc: 10, perCallCapUsdc: 0.5 },
   },
   "/api/router/route": {
     query: "ETH USD spot price oracle",

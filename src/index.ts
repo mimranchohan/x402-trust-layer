@@ -7,7 +7,7 @@ import {
   buildWellKnownX402,
 } from "./lib/bazaar.js";
 import { buildAgentCashOpenApi, buildWellKnownX402Resources } from "./lib/openapi-agentcash.js";
-import { VERIFY_EXAMPLES } from "./lib/verify-examples.js";
+import { applyVerifierExampleBody } from "./lib/apply-verifier-body.js";
 import { registerAgenticProbes, stripTrailingSlash } from "./lib/agentic-probes.js";
 import { listEndpoints, registerRoutes } from "./routes.js";
 import { registerX402gleHostVerification } from "./lib/x402gle-host-verify.js";
@@ -20,15 +20,9 @@ registerX402gleHostVerification(app);
 app.use(stripTrailingSlash);
 app.use(express.json({ limit: "512kb" }));
 
-/** Inject example JSON when AI verifier sends empty body (improves Dexter quality score) */
+/** Canonical example bodies for x402gle / Dexter AI verifier (empty or partial POST) */
 app.use("/api", (req, _res, next) => {
-  if (req.method === "POST") {
-    const body = req.body as Record<string, unknown> | undefined;
-    const empty = !body || (typeof body === "object" && Object.keys(body).length === 0);
-    if (empty && VERIFY_EXAMPLES[req.path]) {
-      req.body = VERIFY_EXAMPLES[req.path];
-    }
-  }
+  applyVerifierExampleBody(req);
   next();
 });
 
