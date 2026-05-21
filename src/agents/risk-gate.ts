@@ -20,8 +20,10 @@ export async function runRiskGate(input: RiskGateInput): Promise<RiskGateResult>
     return {
       safe: false,
       riskScore: 100,
+      securityGrade: "F",
       reasons: ["Invalid URL"],
       probe: await probeEndpoint(input.targetUrl),
+      securityRecommendations: ["Use HTTPS public endpoints only"],
     };
   }
 
