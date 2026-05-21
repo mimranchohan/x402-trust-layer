@@ -10,7 +10,9 @@
     "demo": "tsx src/client/demo.ts",
     "doctor": "tsx scripts/doctor.ts",
     "typecheck": "tsc --noEmit",
-    "openapi:generate": "tsx scripts/generate-openapi.ts"
+    "openapi:generate": "tsx scripts/generate-openapi.ts",
+    "discovery:discover": "npx -y @agentcash/discovery@latest discover",
+    "discovery:check": "npx -y @agentcash/discovery@latest check"
   },
   "engines": {
     "node": ">=20"

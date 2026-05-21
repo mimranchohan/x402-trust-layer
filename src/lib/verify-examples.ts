@@ -22,6 +22,9 @@ export const VERIFY_EXAMPLES: Record<string, unknown> = {
     estimatedCostUsdc: 0.03,
     policy: { dailyCapUsdc: 10, perCallCapUsdc: 0.5 },
   },
+  "/api/attestation/verify": {
+    attestationId: "att_verifier_probe_example",
+  },
   "/api/guard/pre-x402": {
     agentId: "dexter-verifier-probe",
     walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",

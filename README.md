@@ -48,6 +48,13 @@ Or use the helper package: [`packages/x402-preflight`](packages/x402-preflight/R
 | `POST /api/attestation/verify` | $0.02 | Verify attestation before downstream pay |
 | `GET /api/attestation/registry` | $0.02 | Query valid attestations |
 
+## Discovery (AgentCash / Agentic / x402scan)
+
+- **AgentCash OpenAPI:** `GET /openapi.json` (`x-payment-info`, `info.x-guidance`, request schemas)
+- **x402scan fan-out:** `GET /.well-known/x402`
+- Guide: [docs/AGENTCASH.md](docs/AGENTCASH.md)
+- Register: [x402scan.com/resources/register](https://www.x402scan.com/resources/register)
+
 ## Discovery (Agentic Market / Bazaar)
 
 | URL | Purpose |

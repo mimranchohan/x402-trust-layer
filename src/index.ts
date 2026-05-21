@@ -1,6 +1,3 @@
-import { readFileSync } from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import express, { type Request, type Response, type NextFunction } from "express";
 import { assertConfig, config } from "./config.js";
 import { createPaidMiddleware } from "./lib/x402-paid.js";
@@ -9,6 +6,7 @@ import {
   buildServicesManifest,
   buildWellKnownX402,
 } from "./lib/bazaar.js";
+import { buildAgentCashOpenApi, buildWellKnownX402Resources } from "./lib/openapi-agentcash.js";
 import { VERIFY_EXAMPLES } from "./lib/verify-examples.js";
 import { registerAgenticProbes, stripTrailingSlash } from "./lib/agentic-probes.js";
 import { listEndpoints, registerRoutes } from "./routes.js";
@@ -59,13 +57,22 @@ app.get("/health", (_req, res) => {
     agenticHint: !config.payToEvm
       ? "Set PAY_TO_EVM + NETWORKS=base,solana on Railway for agentic.market"
       : null,
+    agentCashDiscovery: {
+      openapi: `${config.publicBaseUrl}/openapi.json`,
+      wellKnown: `${config.publicBaseUrl}/.well-known/x402`,
+      ready:
+        config.publicBaseUrl.startsWith("https://") && config.payToEvm.length > 0,
+    },
   });
 });
 
-const rootDir = path.dirname(fileURLToPath(import.meta.url));
 app.get("/openapi.json", (_req, res) => {
-  const spec = readFileSync(path.join(rootDir, "..", "openapi.json"), "utf8");
-  res.type("application/json").send(spec);
+  res.json(buildAgentCashOpenApi());
+});
+
+/** AgentCash / x402scan discovery fan-out (canonical path) */
+app.get("/.well-known/x402", (_req, res) => {
+  res.json(buildWellKnownX402Resources());
 });
 
 app.get("/.well-known/x402.json", (_req, res) => {
@@ -93,6 +100,8 @@ app.get("/", (_req, res) => {
     discovery: `${config.publicBaseUrl}/x402/api/discover`,
     bazaar: `${config.publicBaseUrl}/x402/api/services.json`,
     agenticMarket: "https://agentic.market/",
+    agentCash: "https://agentcash.dev/",
+    x402scanRegister: "https://www.x402scan.com/resources/register",
     pipeline: `${config.publicBaseUrl}/api/pipeline/full`,
     endpoints: listEndpoints(),
   });
