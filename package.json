@@ -14,7 +14,8 @@
     "discovery:discover": "npx -y @agentcash/discovery@latest discover",
     "discovery:check": "npx -y @agentcash/discovery@latest check",
     "verify:bazaar": "tsx scripts/verify-bazaar-shape.ts",
-    "audition:x402gle": "tsx scripts/run-x402gle-audition.ts"
+    "audition:x402gle": "tsx scripts/run-x402gle-audition.ts",
+    "probe:production": "node scripts/probe-production.mjs"
   },
   "engines": {
     "node": ">=20"

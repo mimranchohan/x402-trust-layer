@@ -88,4 +88,12 @@ export const ENDPOINT_META: Record<string, { summary: string; tags: string[] }> 
     summary: "Create, status, or release agent-to-agent USDC escrow",
     tags: ["escrow", "agents"],
   },
+  "/api/market/buy-advisor": {
+    summary: "x402 buy quote: rank paid APIs, policy, chain, MPP before you pay",
+    tags: ["marketplace", "quote", "discovery", "jupiter-like"],
+  },
+  "/api/seller/audition-coach": {
+    summary: "Seller audition coach: OpenAPI, 402 probes, Bazaar fixes before Dexter ingest",
+    tags: ["seller", "audition", "discovery", "quality"],
+  },
 };

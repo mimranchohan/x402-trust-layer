@@ -188,7 +188,7 @@ export function buildAgentCashOpenApi(): Record<string, unknown> {
       title: "x402 Agent Suite Pro",
       version: "3.0.0",
       description:
-        "22 paid x402 infrastructure APIs for AI agent fleets: guard, proxy, MPP sessions, attestations, spend policy, and pipeline orchestration.",
+        "24 paid x402 infrastructure APIs for AI agent fleets: buy advisor, audition coach, guard, proxy, MPP, attestations, and pipeline orchestration.",
       "x-guidance": AGENT_GUIDANCE,
     },
     "x-discovery": {

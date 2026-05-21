@@ -135,4 +135,18 @@ export const VERIFY_EXAMPLES: Record<string, unknown> = {
     amountUsdc: 0.05,
     releaseCondition: "receipt-auditor valid:true",
   },
+  "/api/market/buy-advisor": {
+    intent: "ETH USD spot price oracle for trading bot",
+    agentId: "dexter-verifier-probe",
+    walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
+    preferNetwork: "eip155:8453",
+    maxPriceUsdc: 0.15,
+    expectedCalls: 12,
+    policy: { dailyCapUsdc: 10, perCallCapUsdc: 0.5, allowedHosts: ["myceliasignal.com", "dexter.cash"] },
+    dryRunTarget: true,
+  },
+  "/api/seller/audition-coach": {
+    origin: "https://x402-agent-suite-production.up.railway.app",
+    maxRoutes: 22,
+  },
 };

@@ -5,7 +5,9 @@ import type { RouterInput } from "../types.js";
 
 const SUITE_ROUTES: Array<{ match: RegExp; path: string; name: string; priceUsdc: number }> = [
   { match: /guard|preflight|pre-x402/i, path: "/api/guard/pre-x402", name: "Pre-x402 Guard", priceUsdc: 0.05 },
+  { match: /buy|quote|market|compare|jupiter|before.?pay/i, path: "/api/market/buy-advisor", name: "x402 Buy Advisor", priceUsdc: 0.08 },
   { match: /proxy|bundle/i, path: "/api/x402/proxy", name: "x402 Proxy", priceUsdc: 0.08 },
+  { match: /audition|seller|coach|x402gle|discovery.?fix/i, path: "/api/seller/audition-coach", name: "Audition Coach", priceUsdc: 0.06 },
   { match: /mpp|session|batch/i, path: "/api/mpp/session", name: "MPP Session v2", priceUsdc: 0.03 },
   { match: /attest|trust/i, path: "/api/attestation/issue", name: "Attestation Issue", priceUsdc: 0.04 },
   { match: /pipeline|orchestrat/i, path: "/api/pipeline/execute", name: "Pipeline Execute", priceUsdc: 0.25 },

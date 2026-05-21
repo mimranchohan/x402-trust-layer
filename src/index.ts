@@ -91,7 +91,7 @@ app.get("/discover", (_req, res) => res.redirect(301, "/x402/api/discover"));
 app.get("/", (_req, res) => {
   res.json({
     name: "x402 Agent Suite Pro",
-    description: "22 paid x402 infrastructure agents — multi-chain guard, proxy, MPP v2, attestation",
+    description: "24 paid x402 infrastructure agents — buy advisor, audition coach, guard, proxy, MPP v2",
     docs: `${config.publicBaseUrl}/openapi.json`,
     discovery: `${config.publicBaseUrl}/x402/api/discover`,
     bazaar: `${config.publicBaseUrl}/x402/api/services.json`,

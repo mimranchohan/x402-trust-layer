@@ -1,0 +1,36 @@
+{
+  "origin": "https://x402-agent-suite-production.up.railway.app",
+  "at": "2026-05-21T19:58:16.257Z",
+  "checks": {
+    "root": {
+      "status": 200,
+      "x402gleVerify": "W1TecNeKofr3Aij3lm0zVEfWnTjmOXocGjV4u6v0cS4",
+      "gitCommit": null
+    },
+    "health": {
+      "status": 200,
+      "gitCommit": "fd3bc11",
+      "agenticReady": true,
+      "agentCashReady": true
+    },
+    "proxyEmptyBody": {
+      "status": 402,
+      "is402": true,
+      "hasAccepts": true,
+      "bodyPreview": [
+        "error",
+        "accepts",
+        "resource",
+        "extensions"
+      ]
+    },
+    "guardEmptyBody": {
+      "status": 402,
+      "is402": true
+    },
+    "wellKnown": {
+      "status": 200,
+      "resourceCount": 22
+    }
+  }
+}

@@ -19,6 +19,8 @@ import { runMppSessionV2 } from "./agents/mpp-session-v2.js";
 import { runPipelineExecute } from "./agents/pipeline-execute.js";
 import { runPreX402Guard } from "./agents/pre-x402-guard.js";
 import { runSpendGovernor } from "./agents/spend-governor.js";
+import { runAuditionCoach } from "./agents/audition-coach.js";
+import { runMarketBuyAdvisor } from "./agents/market-buy-advisor.js";
 import { runX402Proxy } from "./agents/x402-proxy.js";
 import { pricing } from "./config.js";
 import { SUITE_PRICES } from "./lib/suite-catalog.js";
@@ -38,6 +40,8 @@ const policySchema = z.object({
 
 export function listEndpoints() {
   return [
+    { path: "POST /api/market/buy-advisor", price: `$${pricing.marketBuyAdvisor}`, tier: "killer" },
+    { path: "POST /api/seller/audition-coach", price: `$${pricing.auditionCoach}`, tier: "killer" },
     { path: "POST /api/x402/proxy", price: `$${pricing.x402Proxy}`, tier: "killer" },
     { path: "POST /api/mpp/session", price: `$${pricing.mppSessionV2}`, tier: "killer" },
     { path: "POST /api/attestation/issue", price: `$${pricing.attestationIssue}`, tier: "killer" },
@@ -304,6 +308,50 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runRiskGate(parsed.data));
+    }),
+  );
+
+  app.post(
+    "/api/market/buy-advisor",
+    paid(
+      pricing.marketBuyAdvisor,
+      "x402 buy intelligence: rank marketplace APIs, policy preflight, chain and MPP advice before payment",
+    ),
+    asyncRoute(async (req, res) => {
+      const parsed = z
+        .object({
+          intent: z.string().min(2),
+          targetUrl: z.string().url().optional(),
+          agentId: z.string().min(1).optional(),
+          walletAddress: z.string().min(16).optional(),
+          policy: policySchema.optional(),
+          preferNetwork: z.string().optional(),
+          maxPriceUsdc: z.number().positive().optional(),
+          expectedCalls: z.number().int().positive().optional(),
+          limit: z.number().int().min(1).max(10).optional(),
+          dryRunTarget: z.boolean().optional(),
+        })
+        .safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(await runMarketBuyAdvisor(parsed.data));
+    }),
+  );
+
+  app.post(
+    "/api/seller/audition-coach",
+    paid(
+      pricing.auditionCoach,
+      "Seller audition coach: audit OpenAPI, well-known x402, and unpaid 402 probes with fix instructions",
+    ),
+    asyncRoute(async (req, res) => {
+      const parsed = z
+        .object({
+          origin: z.string().url(),
+          maxRoutes: z.number().int().min(1).max(30).optional(),
+        })
+        .safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(await runAuditionCoach(parsed.data));
     }),
   );
 

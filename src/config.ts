@@ -118,6 +118,10 @@ export const pricing = {
 
   trustRegistry: "0.02",
 
+  marketBuyAdvisor: "0.08",
+
+  auditionCoach: "0.06",
+
 } as const;
 
 

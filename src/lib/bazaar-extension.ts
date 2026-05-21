@@ -49,6 +49,15 @@ function defaultOutputExample(path: string): Record<string, unknown> {
   if (path.includes("mpp")) {
     return { ok: true, session: { sessionId: "mpp_example", status: "open" } };
   }
+  if (path.includes("buy-advisor")) {
+    return {
+      recommendation: { action: "pay_external", confidence: 0.85 },
+      quotes: [{ rank: 1, name: "Example API", allInCostUsdc: 0.05 }],
+    };
+  }
+  if (path.includes("audition-coach")) {
+    return { hostScoreEstimate: 78, summary: "Audited routes with fix list", routes: [] };
+  }
   return { ok: true, allowed: true, summary: "Paid response after x402 settlement" };
 }
 

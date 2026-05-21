@@ -32,6 +32,8 @@ export const SUITE_PRICES = {
   attestationIssue: 0.04,
   attestationVerify: 0.02,
   trustRegistry: 0.02,
+  marketBuyAdvisor: 0.08,
+  auditionCoach: 0.06,
 } as const;
 
 export function suiteUrl(path: string): string {
