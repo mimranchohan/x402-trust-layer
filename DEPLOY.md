@@ -1,6 +1,6 @@
 # Deployment Guide
 
-Deploy **x402 Agent Suite Pro** (v2 — 15 endpoints) to Railway, Render, or Docker.
+Deploy **x402 Agent Suite Pro** (v2.1 — 17 endpoints) to Railway, Render, or Docker.
 
 ## Prerequisites
 
@@ -38,17 +38,18 @@ git push -u origin main
 
 1. Open [railway.app](https://railway.app) and sign in with GitHub
 2. **New Project** → **Deploy from GitHub repo** → select `x402-agent-suite`
-3. Open **Variables** and set:
+3. Open **Variables** and set (**required** — deploy crashes without `PAY_TO_ADDRESS`):
 
-| Variable | Example |
-|----------|---------|
-| `PAY_TO_ADDRESS` | Your Solana or EVM receive address |
-| `NETWORK` | `solana` or `base` |
-| `FACILITATOR_URL` | `https://x402.dexter.cash` |
-
-`PUBLIC_BASE_URL` is optional — the app auto-detects `RAILWAY_PUBLIC_DOMAIN`.
+| Variable | Required | Value |
+|----------|----------|--------|
+| `PAY_TO_ADDRESS` | **Yes** | Your Solana USDC receive wallet (same as Dexter seller) |
+| `NETWORK` | **Yes** | `solana` |
+| `FACILITATOR_URL` | No | `https://x402.dexter.cash` (default) |
+| `PUBLIC_BASE_URL` | No | Auto from `RAILWAY_PUBLIC_DOMAIN` if unset |
 
 Do **not** add `SOLANA_PRIVATE_KEY` to Railway (server only receives payments).
+
+**Crash loop in logs?** If you see `Set PAY_TO_ADDRESS` / `Missing PAY_TO_ADDRESS`, add the variables above → **Redeploy**.
 
 4. **Settings** → **Networking** → **Generate Domain**
 5. Wait for the deploy to finish (~2–3 minutes)

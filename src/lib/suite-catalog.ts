@@ -27,6 +27,11 @@ export const SUITE_PRICES = {
   agentEscrow: 0.12,
   preX402Guard: 0.05,
   pipelineExecute: 0.25,
+  x402Proxy: 0.08,
+  mppSessionV2: 0.03,
+  attestationIssue: 0.04,
+  attestationVerify: 0.02,
+  trustRegistry: 0.02,
 } as const;
 
 export function suiteUrl(path: string): string {

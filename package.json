@@ -1,7 +1,7 @@
 {
   "name": "x402-agent-suite",
-  "version": "2.1.0",
-  "description": "x402 Agent Suite Pro — 17 paid APIs with pre-x402 guard and pipeline execute bundles",
+  "version": "3.0.0",
+  "description": "x402 Agent Suite Pro v3 — 20 paid APIs, multi-chain, proxy, MPP v2, attestation registry",
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",

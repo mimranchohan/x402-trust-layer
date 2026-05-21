@@ -14,9 +14,12 @@ import { runRefundArbiter } from "./agents/refund-arbiter.js";
 import { runResearchBrief } from "./agents/research-brief.js";
 import { runRiskGate } from "./agents/risk-gate.js";
 import { runSettlementGraph } from "./agents/settlement-graph.js";
+import { runAttestationIssue, runAttestationVerify, runTrustRegistryQuery } from "./agents/attestation-registry.js";
+import { runMppSessionV2 } from "./agents/mpp-session-v2.js";
 import { runPipelineExecute } from "./agents/pipeline-execute.js";
 import { runPreX402Guard } from "./agents/pre-x402-guard.js";
 import { runSpendGovernor } from "./agents/spend-governor.js";
+import { runX402Proxy } from "./agents/x402-proxy.js";
 import { pricing } from "./config.js";
 import { SUITE_PRICES } from "./lib/suite-catalog.js";
 
@@ -35,6 +38,11 @@ const policySchema = z.object({
 
 export function listEndpoints() {
   return [
+    { path: "POST /api/x402/proxy", price: `$${pricing.x402Proxy}`, tier: "killer" },
+    { path: "POST /api/mpp/session", price: `$${pricing.mppSessionV2}`, tier: "killer" },
+    { path: "POST /api/attestation/issue", price: `$${pricing.attestationIssue}`, tier: "killer" },
+    { path: "POST /api/attestation/verify", price: `$${pricing.attestationVerify}`, tier: "killer" },
+    { path: "GET /api/attestation/registry", price: `$${pricing.trustRegistry}`, tier: "killer" },
     { path: "POST /api/guard/pre-x402", price: `$${pricing.preX402Guard}`, tier: "bundle" },
     { path: "POST /api/pipeline/execute", price: `$${pricing.pipelineExecute}`, tier: "bundle" },
     { path: "POST /api/payment-intent/compile", price: `$${pricing.paymentCompiler}`, tier: "orchestration" },
@@ -112,6 +120,85 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runPipelineExecute(parsed.data));
+    }),
+  );
+
+  app.post(
+    "/api/x402/proxy",
+    paid(
+      pricing.x402Proxy,
+      "All-in-one x402 proxy: guard + security grade + attestation + downstream probe in one payment",
+    ),
+    asyncRoute(async (req, res) => {
+      const parsed = guardBodySchema
+        .extend({
+          downstreamMethod: z.enum(["GET", "POST"]).optional(),
+          downstreamBody: z.record(z.unknown()).optional(),
+          issueAttestation: z.boolean().optional(),
+          preferredChain: z.enum(["solana", "base", "polygon"]).optional(),
+        })
+        .safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(await runX402Proxy(parsed.data));
+    }),
+  );
+
+  app.post(
+    "/api/mpp/session",
+    paid(
+      pricing.mppSessionV2,
+      "MPP session lifecycle: open, voucher, close — batch settlement savings on Solana/Base",
+    ),
+    asyncRoute(async (req, res) => {
+      const parsed = z
+        .object({
+          action: z.enum(["open", "voucher", "close", "status"]),
+          sessionId: z.string().optional(),
+          expectedCalls: z.number().int().positive().optional(),
+          avgPricePerCallUsdc: z.number().positive().optional(),
+          chain: z.enum(["solana", "base", "polygon"]).optional(),
+          maxBudgetUsdc: z.number().positive().optional(),
+          agentId: z.string().optional(),
+        })
+        .safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(await runMppSessionV2(parsed.data));
+    }),
+  );
+
+  app.post(
+    "/api/attestation/issue",
+    paid(pricing.attestationIssue, "Issue signed preflight attestation for partner agent trust networks"),
+    asyncRoute(async (req, res) => {
+      const parsed = guardBodySchema.safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(await runAttestationIssue(parsed.data));
+    }),
+  );
+
+  app.post(
+    "/api/attestation/verify",
+    paid(pricing.attestationVerify, "Verify attestation signature and expiry before downstream payment"),
+    asyncRoute(async (req, res) => {
+      const parsed = z.object({ attestationId: z.string().min(8) }).safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(await runAttestationVerify(parsed.data.attestationId));
+    }),
+  );
+
+  app.get(
+    "/api/attestation/registry",
+    paid(pricing.trustRegistry, "Query trust registry of valid attestations for agent fleets"),
+    asyncRoute(async (req, res) => {
+      const parsed = z
+        .object({
+          minGrade: z.string().optional(),
+          agentId: z.string().optional(),
+          limit: z.coerce.number().optional(),
+        })
+        .safeParse(req.query);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(await runTrustRegistryQuery(parsed.data));
     }),
   );
 
@@ -416,8 +503,11 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
     res.json({
       name: "x402 Agent Suite Pro — Full Pipeline",
       primaryEntrypoints: [
-        "POST /api/guard/pre-x402 — call before every x402_fetch ($0.05)",
-        "POST /api/pipeline/execute — guard + plan + routing in one call ($0.25)",
+        "POST /api/x402/proxy — killer all-in-one preflight ($0.08)",
+        "POST /api/guard/pre-x402 — lightweight guard ($0.05)",
+        "POST /api/mpp/session — MPP batch savings ($0.03)",
+        "POST /api/attestation/issue — trust registry ($0.04)",
+        "POST /api/pipeline/execute — full orchestration ($0.25)",
       ],
       recommendedOrder: [
         "POST /api/pipeline/execute (or guard + steps below)",

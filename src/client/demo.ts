@@ -47,6 +47,39 @@ async function post(path: string, body: unknown) {
   }
 }
 
+console.log("=== v3 killer apps ===\n");
+
+await post("/api/x402/proxy", {
+  agentId: "demo-fleet-1",
+  walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
+  targetUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
+  estimatedCostUsdc: 0.05,
+  policy: { dailyCapUsdc: 10, perCallCapUsdc: 1 },
+  issueAttestation: true,
+});
+
+await sleep(2000);
+
+await post("/api/mpp/session", {
+  action: "open",
+  expectedCalls: 30,
+  avgPricePerCallUsdc: 0.03,
+  chain: "solana",
+  agentId: "demo-fleet-1",
+});
+
+await sleep(2000);
+
+await post("/api/attestation/issue", {
+  agentId: "demo-fleet-1",
+  walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
+  targetUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
+  estimatedCostUsdc: 0.03,
+  policy: { dailyCapUsdc: 10, perCallCapUsdc: 1 },
+});
+
+await sleep(2000);
+
 await post("/api/guard/pre-x402", {
   agentId: "demo-fleet-1",
   walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",

@@ -12,15 +12,10 @@ assertConfig();
 const app = express();
 app.use(express.json({ limit: "512kb" }));
 
-const networks =
-  config.network === "base"
-    ? (["eip155:8453"] as const)
-    : (["solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"] as const);
-
 const baseMiddleware = {
   payTo: config.payTo,
   facilitatorUrl: config.facilitatorUrl,
-  network: [...networks],
+  network: [...config.networks],
   onSettlement: (info: { transaction?: string; payer?: string; network?: string }) => {
     console.log(`[x402] settled tx=${info.transaction} payer=${info.payer} network=${info.network}`);
   },
@@ -54,9 +49,11 @@ app.get("/health", (_req, res) => {
   res.json({
     ok: true,
     service: "x402-agent-suite-pro",
-    version: "2.1.0",
-    network: config.network,
+    version: "3.0.0",
+    chains: config.chains,
+    networks: config.networks,
     endpointCount: listEndpoints().length,
+    gitCommit: process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) ?? null,
   });
 });
 
@@ -69,7 +66,7 @@ app.get("/openapi.json", (_req, res) => {
 app.get("/", (_req, res) => {
   res.json({
     name: "x402 Agent Suite Pro",
-    description: "15 paid x402 infrastructure agents for agent fleets",
+    description: "20 paid x402 infrastructure agents — multi-chain guard, proxy, MPP v2, attestation",
     docs: `${config.publicBaseUrl}/openapi.json`,
     pipeline: `${config.publicBaseUrl}/api/pipeline/full`,
     endpoints: listEndpoints(),
@@ -87,10 +84,10 @@ app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
 
 const host = "0.0.0.0";
 app.listen(config.port, host, () => {
+  console.log(`[boot] version=3.0.0 endpoints=${listEndpoints().length} chains=${config.chains.join(",")}`);
+  console.log(`[boot] payToConfigured=${config.payTo.length > 0} git=${process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`);
   console.log(`x402 Agent Suite Pro listening on http://127.0.0.1:${config.port}`);
-  console.log(`payTo=${config.payTo} network=${config.network}`);
   console.log(`public=${config.publicBaseUrl}`);
-  console.log(`${listEndpoints().length} paid endpoints registered`);
 });
 
 process.on("uncaughtException", (err) => {

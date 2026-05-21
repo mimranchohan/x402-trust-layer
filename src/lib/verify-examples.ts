@@ -1,5 +1,27 @@
 /** Canonical probe bodies used when Dexter AI verifier sends an empty POST body */
 export const VERIFY_EXAMPLES: Record<string, unknown> = {
+  "/api/x402/proxy": {
+    agentId: "dexter-verifier-probe",
+    walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
+    targetUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
+    estimatedCostUsdc: 0.05,
+    policy: { dailyCapUsdc: 10, perCallCapUsdc: 0.5 },
+    issueAttestation: true,
+  },
+  "/api/mpp/session": {
+    action: "open",
+    expectedCalls: 25,
+    avgPricePerCallUsdc: 0.03,
+    chain: "solana",
+    agentId: "dexter-verifier-probe",
+  },
+  "/api/attestation/issue": {
+    agentId: "dexter-verifier-probe",
+    walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
+    targetUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
+    estimatedCostUsdc: 0.03,
+    policy: { dailyCapUsdc: 10, perCallCapUsdc: 0.5 },
+  },
   "/api/guard/pre-x402": {
     agentId: "dexter-verifier-probe",
     walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",

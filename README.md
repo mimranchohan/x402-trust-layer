@@ -1,71 +1,46 @@
-# x402 Agent Suite Pro
+# x402 Agent Suite Pro v3
 
-**17 paid x402 APIs** for production AI agent fleets — orchestration, trust, routing, audit, and enterprise controls. All endpoints settle in USDC via the [Dexter facilitator](https://x402.dexter.cash).
+**20 paid x402 APIs** for AI agent fleets — multi-chain, MPP sessions, security grades, and trust attestations. Settles USDC via the [Dexter facilitator](https://x402.dexter.cash).
 
 **Live:** https://x402-agent-suite-production.up.railway.app
 
-## Start here (integrations)
+## Killer apps (v3 — start here)
 
-| Endpoint | Price | Use when |
-|----------|-------|----------|
-| `POST /api/guard/pre-x402` | **$0.05** | Before **every** `x402_fetch` / OpenDexter paid call |
-| `POST /api/pipeline/execute` | **$0.25** | One call: guard + plan + facilitator + marketplace pick |
-
-See [docs/INTEGRATE.md](docs/INTEGRATE.md) for copy-paste OpenDexter / TypeScript examples.
-
-## Agents
-
-### Bundles (recommended)
 | Endpoint | Price | Description |
 |----------|-------|-------------|
-| `POST /api/guard/pre-x402` | $0.05 | Spend + identity + risk (replaces 3 calls, was $0.16) |
-| `POST /api/pipeline/execute` | $0.25 | Full pre-flight pipeline in one payment |
+| `POST /api/x402/proxy` | $0.08 | Guard + security grade + attestation + probe — **one payment** |
+| `POST /api/mpp/session` | $0.03 | MPP open → voucher → close (batch settlement savings) |
+| `POST /api/attestation/issue` | $0.04 | Signed preflight attestation for trust networks |
+| `POST /api/attestation/verify` | $0.02 | Verify attestation before downstream pay |
+| `GET /api/attestation/registry` | $0.02 | Query valid attestations |
 
-### Orchestration
+## Bundles
+
 | Endpoint | Price | Description |
 |----------|-------|-------------|
-| `POST /api/payment-intent/compile` | $0.15 | NL task → multi-step execution plan |
-| `POST /api/facilitator/failover` | $0.05 | Multi-facilitator health + routing |
-| `POST /api/mpp/session-plan` | $0.02 | MPP batch settlement estimator |
+| `POST /api/guard/pre-x402` | $0.05 | Spend + identity + risk + security grade |
+| `POST /api/pipeline/execute` | $0.25 | Full orchestration in one call |
 
-### Core pipeline
-| Endpoint | Price | Description |
-|----------|-------|-------------|
-| `POST /api/spend-governor/check` | $0.03 | Budget / policy enforcement |
-| `POST /api/identity-gate/check` | $0.05 | Wallet risk tier |
-| `POST /api/risk-gate/scan` | $0.08 | Pre-call URL risk probe |
-| `POST /api/router/route` | $0.02 | Marketplace API selection |
-| `POST /api/research/brief` | $0.20 | Research pipeline builder |
-| `POST /api/receipt-auditor/verify` | $0.05 | Settlement verification |
+## Documentation (English)
 
-### Trust & intelligence
-| Endpoint | Price | Description |
-|----------|-------|-------------|
-| `POST /api/refund-arbiter/evaluate` | $0.08 | Refund eligibility |
-| `POST /api/settlement-graph/next` | $0.02 | Next-call recommendations |
-| `POST /api/quality-monitor/probe` | $0.03 | Endpoint regression scores |
+| Doc | Topic |
+|-----|--------|
+| [WHY-USE-THESE-SERVICES.md](docs/WHY-USE-THESE-SERVICES.md) | Why agents should pay for each layer |
+| [INTEGRATE.md](docs/INTEGRATE.md) | OpenDexter / TypeScript integration |
+| [SECURITY.md](docs/SECURITY.md) | Security grades, policies, attestations |
+| [MULTI-CHAIN.md](docs/MULTI-CHAIN.md) | Solana + Base + Polygon |
+| [MARKETPLACES.md](docs/MARKETPLACES.md) | Dexter + listing beyond Dexter |
+| [DEXTER-SCORE.md](docs/DEXTER-SCORE.md) | Verification score 75+ |
 
-### Enterprise
-| Endpoint | Price | Description |
-|----------|-------|-------------|
-| `POST /api/budget-allocator/run` | $0.03 | Fleet budget allocation |
-| `POST /api/evidence-locker/export` | $0.10 | Compliance audit export |
-| `POST /api/agent-escrow` | $0.12 | Agent-to-agent escrow |
+## Multi-chain
 
-**Free metadata:** `GET /api/pipeline/full` — recommended call order.
-
-## Full pipeline
-
+```env
+NETWORKS=solana,base
+PAY_TO_ADDRESS=YourSolanaWallet
+PAY_TO_EVM=0xYourEvmWallet
 ```
-POST /api/pipeline/execute   ← preferred (one payment)
-  OR
-POST /api/guard/pre-x402     ← before each downstream x402_fetch
-  → facilitator/failover
-  → router/route
-  → (downstream x402 API)
-  → receipt-auditor
-  → settlement-graph/next
-```
+
+Health returns `chains` and `networks` arrays.
 
 ## Quick start
 
@@ -77,30 +52,18 @@ npm install
 npm run dev
 ```
 
-## Environment
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `PAY_TO_ADDRESS` | Yes | USDC receive wallet |
-| `NETWORK` | Yes | `solana` or `base` |
-| `PUBLIC_BASE_URL` | Deploy | Public HTTPS URL |
-| `SOLANA_PRIVATE_KEY` | Demo | Local payer only — never commit |
-
-## Demo (production)
+## Demo (production indexing)
 
 ```bash
-# .env
 PUBLIC_BASE_URL=https://x402-agent-suite-production.up.railway.app
 npm run demo
 ```
 
+Paid settlements index resources on [Dexter sellers](https://dexter.cash/sellers) within ~15–30 minutes.
+
 ## Deploy
 
-See [DEPLOY.md](./DEPLOY.md). Railway auto-deploys from `main` when connected.
-
-## Marketplace
-
-Endpoints auto-list on [OpenDexter](https://open.dexter.cash/) after real settlements. Claim seller profile at [dexter.cash/sellers](https://dexter.cash/sellers) (use `/seller` dashboard for wallet sign-in).
+[Railway](DEPLOY.md) — set `PAY_TO_ADDRESS`, `NETWORKS`, redeploy.
 
 ## License
 

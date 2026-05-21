@@ -1,3 +1,4 @@
+import { assessUrlSecurity } from "../lib/security.js";
 import { runIdentityGate } from "./identity-gate.js";
 import { runRiskGate } from "./risk-gate.js";
 import { runSpendGovernor } from "./spend-governor.js";
@@ -16,6 +17,7 @@ export type PreX402GuardInput = {
 export type PreX402GuardResult = {
   allowed: boolean;
   summary: string;
+  securityGrade: string;
   savingsVsSeparateUsdc: number;
   spend: Awaited<ReturnType<typeof runSpendGovernor>>;
   identity: ReturnType<typeof runIdentityGate>;
@@ -55,10 +57,12 @@ export async function runPreX402Guard(input: PreX402GuardInput): Promise<PreX402
   if (!identity.allowed) blockers.push(`identity: ${identity.reasons.join("; ")}`);
   if (!risk.safe) blockers.push(`risk: ${risk.reasons.join("; ") || `score ${risk.riskScore}`}`);
 
-  const allowed = blockers.length === 0;
+  const urlSec = assessUrlSecurity(input.targetUrl);
+  const allowed = blockers.length === 0 && urlSec.grade !== "F";
 
   return {
     allowed,
+    securityGrade: urlSec.grade,
     summary: allowed
       ? "Safe to proceed with x402 payment on targetUrl"
       : `Blocked — ${blockers.join(" | ")}`,

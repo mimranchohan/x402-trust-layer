@@ -1,11 +1,14 @@
 import { hostOf, probeEndpoint } from "../lib/probe.js";
+import { assessUrlSecurity, mergeSecurityIntoRisk } from "../lib/security.js";
 import type { RiskGateInput } from "../types.js";
 
 export type RiskGateResult = {
   safe: boolean;
   riskScore: number;
+  securityGrade: string;
   reasons: string[];
   probe: Awaited<ReturnType<typeof probeEndpoint>>;
+  securityRecommendations: string[];
 };
 
 export async function runRiskGate(input: RiskGateInput): Promise<RiskGateResult> {
@@ -53,6 +56,17 @@ export async function runRiskGate(input: RiskGateInput): Promise<RiskGateResult>
     }
   }
 
-  const safe = riskScore < 50 && reasons.length === 0;
-  return { safe, riskScore, reasons, probe };
+  const urlSec = assessUrlSecurity(input.targetUrl);
+  const merged = mergeSecurityIntoRisk(riskScore, urlSec);
+  const allReasons = [...reasons, ...merged.combinedThreats];
+  const safe = merged.riskScore < 50 && allReasons.length === 0;
+
+  return {
+    safe,
+    riskScore: merged.riskScore,
+    securityGrade: merged.securityGrade,
+    reasons: allReasons,
+    probe,
+    securityRecommendations: urlSec.recommendations,
+  };
 }

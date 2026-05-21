@@ -1,8 +1,26 @@
-# Integrate x402 Agent Suite (5 minutes)
-
-Use these **two URLs** so other agents call your suite by default.
+# Integrate x402 Agent Suite v3 (5 minutes)
 
 **Base:** `https://x402-agent-suite-production.up.railway.app`
+
+## Recommended: x402 proxy (one call)
+
+```typescript
+const proxy = await x402Fetch(`${BASE}/api/x402/proxy`, {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({
+    agentId: "my-agent-1",
+    walletAddress: process.env.PAY_TO_ADDRESS,
+    targetUrl: "https://downstream-x402-api.example/endpoint",
+    estimatedCostUsdc: 0.05,
+    policy: { dailyCapUsdc: 10, perCallCapUsdc: 1 },
+    issueAttestation: true,
+  }),
+});
+const body = await proxy.json();
+if (!body.allowed) throw new Error(body.summary);
+// then: x402_fetch targetUrl
+```
 
 ---
 
