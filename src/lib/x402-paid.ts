@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { x402Middleware } from "@dexterai/x402/server";
 import { config } from "../config.js";
-import { CHAIN_IDS } from "./chains.js";
+import { CHAIN_IDS, usdcAssetForCaip2, type ChainKey } from "./chains.js";
 import { VERIFY_EXAMPLES } from "./verify-examples.js";
 
 function resolvePayTo(): string | Record<string, string> {
@@ -80,6 +80,33 @@ function buildBazaarSchema(inputExample: unknown) {
   };
 }
 
+type PaymentAccept = {
+  network?: string;
+  asset?: string;
+  payTo?: string;
+};
+
+function normalizeAccepts(parsed: Record<string, unknown>): void {
+  const accepts = parsed.accepts as PaymentAccept[] | undefined;
+  if (!Array.isArray(accepts)) return;
+
+  const chainOrder = config.chains.map((c) => CHAIN_IDS[c as ChainKey]);
+
+  for (const accept of accepts) {
+    if (!accept.network) continue;
+    const correctAsset = usdcAssetForCaip2(accept.network);
+    if (correctAsset) accept.asset = correctAsset;
+  }
+
+  accepts.sort((a, b) => {
+    const ia = chainOrder.indexOf(a.network ?? "");
+    const ib = chainOrder.indexOf(b.network ?? "");
+    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+  });
+
+  parsed.accepts = accepts;
+}
+
 function injectBazaarExtension(encoded: string, req: Request): string {
   try {
     const path = req.path;
@@ -87,6 +114,7 @@ function injectBazaarExtension(encoded: string, req: Request): string {
       string,
       unknown
     >;
+    normalizeAccepts(parsed);
     const example = VERIFY_EXAMPLES[path];
     const bazaar = {
       info: buildBazaarInfo(req.method, example),
@@ -120,6 +148,14 @@ export function createPaidMiddleware(): (
     });
 
     return (req: Request, res: Response, next: NextFunction) => {
+      const origJson = res.json.bind(res);
+      res.json = ((body?: unknown) => {
+        if (res.statusCode === 402 && body && typeof body === "object") {
+          normalizeAccepts(body as Record<string, unknown>);
+        }
+        return origJson(body);
+      }) as typeof res.json;
+
       const origSetHeader = res.setHeader.bind(res);
       const patchedSetHeader = (
         name: string,
