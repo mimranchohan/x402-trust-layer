@@ -19,7 +19,7 @@ export function parseChainList(raw: string | undefined): ChainKey[] {
   for (const k of keys) {
     if (k in CHAIN_IDS && !out.includes(k as ChainKey)) out.push(k as ChainKey);
   }
-  const list = out.length ? out : ["solana"];
+  const list: ChainKey[] = out.length ? out : ["solana"];
   return [...list].sort((a, b) => CHAIN_ORDER.indexOf(a) - CHAIN_ORDER.indexOf(b));
 }
 
