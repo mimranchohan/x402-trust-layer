@@ -499,6 +499,29 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
     }),
   );
 
+  /** Agentic Market / Bazaar validators send GET — return 402 + PAYMENT-REQUIRED on GET */
+  for (const ep of listEndpoints()) {
+    const [method, path] = ep.path.split(" ");
+    if (method !== "POST") continue;
+    const amount = ep.price.replace(/^\$/, "");
+    app.get(
+      path,
+      paid(
+        amount,
+        `x402 discovery probe (GET) for ${path} — POST for full response`,
+      ),
+      (_req, res) => {
+        res.json({
+          ok: true,
+          endpoint: path,
+          method: "POST",
+          version: "3.0.0",
+          hint: "Paid GET probe passed. Send POST with JSON body for full agent response.",
+        });
+      },
+    );
+  }
+
   app.get("/api/pipeline/full", (_req, res) => {
     res.json({
       name: "x402 Agent Suite Pro — Full Pipeline",

@@ -54,6 +54,14 @@ You should see `"endpointCount": 22` and a `resources` array.
 
 ### Step 2 — Validate each endpoint (fastest for Dexter-only sellers)
 
+**Important:** Agentic’s validator sends an unauthenticated **GET** request. Our suite registers a **GET probe** on every POST path so you get **HTTP 402** (not 404). After you deploy the latest code, validate URLs like:
+
+```
+https://x402-agent-suite-production.up.railway.app/api/x402/proxy
+```
+
+(not `/discover` — that is a catalog, not a paid API).
+
 1. Open https://agentic.market/
 2. Go to **Seller Tools** → **Validate Endpoint** (or “Get started” → seller flow)
 3. For **each** paid URL, submit the full resource URL, for example:
@@ -65,7 +73,11 @@ https://x402-agent-suite-production.up.railway.app/api/mpp/session
 ... (all 22 from /x402/api/discover)
 ```
 
-4. Each URL must return **HTTP 402** on unpaid `POST` (or `GET` for registry) with USDC pricing — your suite already does this via `@dexterai/x402`.
+4. Each URL must return **HTTP 402** on unpaid **GET** with:
+   - `PAYMENT-REQUIRED` response header (x402 v2)
+   - `extensions.bazaar` in the encoded payload (latest suite injects this)
+5. If you see **404**, redeploy latest `main` — GET probes were added for Agentic.
+6. **Bazaar indexing on Agentic** may still require settlements via **CDP facilitator**; Dexter + GET 402 is enough for **Validate Endpoint** to pass transport checks.
 
 **Tip:** Run one paid `npm run demo` call per endpoint so Agentic sees real settlement activity.
 

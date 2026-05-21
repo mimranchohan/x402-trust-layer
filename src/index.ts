@@ -2,8 +2,8 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import express, { type Request, type Response, type NextFunction } from "express";
-import { x402Middleware } from "@dexterai/x402/server";
 import { assertConfig, config } from "./config.js";
+import { createPaidMiddleware } from "./lib/x402-paid.js";
 import {
   buildDiscoverCatalog,
   buildServicesManifest,
@@ -17,15 +17,6 @@ assertConfig();
 const app = express();
 app.use(express.json({ limit: "512kb" }));
 
-const baseMiddleware = {
-  payTo: config.payTo,
-  facilitatorUrl: config.facilitatorUrl,
-  network: [...config.networks],
-  onSettlement: (info: { transaction?: string; payer?: string; network?: string }) => {
-    console.log(`[x402] settled tx=${info.transaction} payer=${info.payer} network=${info.network}`);
-  },
-};
-
 /** Inject example JSON when AI verifier sends empty body (improves Dexter quality score) */
 app.use("/api", (req, _res, next) => {
   if (req.method === "POST") {
@@ -38,9 +29,7 @@ app.use("/api", (req, _res, next) => {
   next();
 });
 
-function paid(amount: string, description: string) {
-  return x402Middleware({ ...baseMiddleware, amount, description, verbose: false });
-}
+const paid = createPaidMiddleware();
 
 function asyncRoute(
   handler: (req: Request, res: Response) => Promise<void>,
