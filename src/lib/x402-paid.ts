@@ -82,7 +82,7 @@ function injectBazaarExtension(encoded: string, req: Request): string {
     attachBazaarToPayload(parsed, req);
     const resource = parsed.resource as { url?: string } | undefined;
     if (resource) {
-      resource.url = resourceUrl(path);
+      resource.url = resourceUrl(req.path);
     }
     return Buffer.from(JSON.stringify(parsed)).toString("base64");
   } catch (err) {
