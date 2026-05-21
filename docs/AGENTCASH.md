@@ -27,7 +27,13 @@ npm run discovery:check -- https://x402-agent-suite-production.up.railway.app/ap
 npm run discovery:discover -- https://x402-agent-suite-production.up.railway.app
 ```
 
-Runtime 402 must include `extensions.bazaar.schema.properties.input` and `.output` (fixed in `bazaar-extension.ts`).
+Runtime 402 must match `@agentcash/discovery` extractor shape (see `bazaar-extension.ts`):
+
+- `extensions.bazaar.schema.properties.input.properties.body` — POST JSON schema
+- `extensions.bazaar.schema.properties.input.properties.queryParams` — GET query schema
+- `extensions.bazaar.schema.properties.output.properties.example` — response example object
+
+Local shape test: `npm run verify:bazaar`
 
 ## Register
 

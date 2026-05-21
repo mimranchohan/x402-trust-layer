@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "openapi:generate": "tsx scripts/generate-openapi.ts",
     "discovery:discover": "npx -y @agentcash/discovery@latest discover",
-    "discovery:check": "npx -y @agentcash/discovery@latest check"
+    "discovery:check": "npx -y @agentcash/discovery@latest check",
+    "verify:bazaar": "tsx scripts/verify-bazaar-shape.ts"
   },
   "engines": {
     "node": ">=20"

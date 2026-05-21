@@ -1,4 +1,5 @@
 import type { Request } from "express";
+import { listEndpoints } from "../routes.js";
 import { VERIFY_EXAMPLES } from "./verify-examples.js";
 
 type JsonSchema = Record<string, unknown>;
@@ -33,90 +34,124 @@ function exampleToJsonSchema(value: unknown): JsonSchema {
   }
 }
 
-function registryQueryInputSchema(): JsonSchema {
+function declaredHttpMethod(path: string): string {
+  const entry = listEndpoints().find((e) => e.path.endsWith(path));
+  return entry?.path.split(" ")[0] ?? "POST";
+}
+
+function defaultOutputExample(path: string): Record<string, unknown> {
+  if (path === "/api/attestation/registry") {
+    return { count: 0, records: [], policy: "Attestation registry entries" };
+  }
+  if (path.includes("attestation")) {
+    return { ok: true, attestation: { attestationId: "att_example", allowed: true } };
+  }
+  if (path.includes("mpp")) {
+    return { ok: true, session: { sessionId: "mpp_example", status: "open" } };
+  }
+  return { ok: true, allowed: true, summary: "Paid response after x402 settlement" };
+}
+
+/**
+ * AgentCash @agentcash/discovery extractSchemas2 expects:
+ * - schema.properties.input.properties.body (POST JSON body schema), or
+ * - schema.properties.input.properties.queryParams (GET query schema)
+ * - schema.properties.output.properties.example (response example object)
+ */
+function buildInputSchemaProperty(
+  path: string,
+  method: string,
+  inputExample: unknown,
+): JsonSchema {
+  if (method.toUpperCase() === "GET") {
+    const querySchema =
+      path === "/api/attestation/registry"
+        ? {
+            type: "object",
+            properties: {
+              minGrade: { type: "string", description: "Minimum security grade (A–F)" },
+              agentId: { type: "string", description: "Filter by agent id" },
+              limit: { type: "integer", description: "Max records to return" },
+            },
+          }
+        : { type: "object", properties: {} };
+    return {
+      type: "object",
+      properties: { queryParams: querySchema },
+      required: ["queryParams"],
+    };
+  }
+
+  const bodySchema =
+    inputExample && typeof inputExample === "object"
+      ? exampleToJsonSchema(inputExample)
+      : { type: "object", properties: {} };
+
+  return {
+    type: "object",
+    properties: { body: bodySchema },
+    required: ["body"],
+  };
+}
+
+function buildOutputSchemaProperty(path: string): JsonSchema {
   return {
     type: "object",
     properties: {
-      minGrade: { type: "string", description: "Minimum security grade (A–F)" },
-      agentId: { type: "string", description: "Filter by agent id" },
-      limit: { type: "integer", description: "Max records to return" },
+      example: defaultOutputExample(path),
+    },
+    required: ["example"],
+  };
+}
+
+function buildBazaarInfo(
+  path: string,
+  method: string,
+  inputExample: unknown,
+): Record<string, unknown> {
+  if (method.toUpperCase() === "GET") {
+    return {
+      input: {
+        type: "http",
+        method: "GET",
+        queryParams:
+          path === "/api/attestation/registry"
+            ? { minGrade: "C", limit: 20 }
+            : {},
+      },
+      output: {
+        type: "json",
+        example: defaultOutputExample(path),
+      },
+    };
+  }
+  return {
+    input: {
+      type: "http",
+      method: "POST",
+      bodyType: "json",
+      body: inputExample ?? {},
+    },
+    output: {
+      type: "json",
+      example: defaultOutputExample(path),
     },
   };
 }
 
-function buildInputJsonSchema(path: string, method: string, inputExample: unknown): JsonSchema {
-  if (method.toUpperCase() === "GET" && path === "/api/attestation/registry") {
-    return registryQueryInputSchema();
-  }
-  if (inputExample && typeof inputExample === "object") {
-    return exampleToJsonSchema(inputExample);
-  }
-  return {
-    type: "object",
-    properties: { _body: { type: "object", description: "JSON request body" } },
-  };
-}
-
-function buildOutputJsonSchema(): JsonSchema {
-  return {
-    type: "object",
-    properties: {
-      ok: { type: "boolean" },
-      allowed: { type: "boolean" },
-      summary: { type: "string" },
-      securityGrade: { type: "string" },
-      riskScore: { type: "number" },
-    },
-    additionalProperties: true,
-  };
-}
-
-/** CDP / AgentCash Bazaar v2: schema.properties.input + schema.properties.output */
+/** CDP / AgentCash Bazaar v2 extension payload */
 export function buildBazaarExtension(
   path: string,
   method: string,
   inputExample: unknown,
 ): { info: Record<string, unknown>; schema: JsonSchema } {
-  const upper = method.toUpperCase();
-  const inputSchema = buildInputJsonSchema(path, method, inputExample);
-  const outputSchema = buildOutputJsonSchema();
-
-  const info =
-    upper === "GET"
-      ? {
-          input: {
-            type: "http",
-            method: "GET",
-            queryParams:
-              path === "/api/attestation/registry"
-                ? { minGrade: "C", limit: 20 }
-                : {},
-          },
-          output: {
-            type: "json",
-            example: { ok: true, count: 0, records: [] },
-          },
-        }
-      : {
-          input: {
-            type: "http",
-            method: "POST",
-            bodyType: "json",
-            body: inputExample ?? {},
-          },
-          output: {
-            type: "json",
-            example: { ok: true, allowed: true },
-          },
-        };
-
   return {
-    info,
+    info: buildBazaarInfo(path, method, inputExample),
     schema: {
       type: "object",
       properties: {
-        input: inputSchema,
-        output: outputSchema,
+        input: buildInputSchemaProperty(path, method, inputExample),
+        output: buildOutputSchemaProperty(path),
       },
       required: ["input", "output"],
     },
@@ -128,5 +163,6 @@ export function bazaarExtensionForRequest(req: Request): {
   schema: JsonSchema;
 } {
   const example = VERIFY_EXAMPLES[req.path];
-  return buildBazaarExtension(req.path, req.method, example);
+  const method = declaredHttpMethod(req.path);
+  return buildBazaarExtension(req.path, method, example);
 }
