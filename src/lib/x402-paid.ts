@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import { USDC_BASE, x402Middleware } from "@dexterai/x402/server";
 import { config } from "../config.js";
 import { CHAIN_IDS, usdcAssetForCaip2, type ChainKey } from "./chains.js";
-import { VERIFY_EXAMPLES } from "./verify-examples.js";
+import { bazaarExtensionForRequest } from "./bazaar-extension.js";
 
 function resolvePayTo(): string | Record<string, string> {
   if (!config.payToEvm) return config.payTo;
@@ -33,51 +33,10 @@ const baseMiddleware = {
 
 type PaidMw = ReturnType<typeof x402Middleware>;
 
-function buildBazaarInfo(method: string, inputExample: unknown) {
-  const upper = method.toUpperCase();
-  if (upper === "GET") {
-    return {
-      input: { type: "http" as const, method: "GET" as const, queryParams: {} },
-      output: {
-        type: "json" as const,
-        example: { ok: true, method: "GET", note: "Use POST for full API response" },
-      },
-    };
-  }
-  return {
-    input: {
-      type: "http" as const,
-      method: "POST" as const,
-      bodyType: "json" as const,
-      body: inputExample ?? {},
-    },
-    output: {
-      type: "json" as const,
-      example: { ok: true },
-    },
-  };
-}
-
-function buildBazaarSchema(inputExample: unknown) {
-  const props =
-    inputExample && typeof inputExample === "object"
-      ? Object.fromEntries(
-          Object.keys(inputExample as Record<string, unknown>).map((k) => [
-            k,
-            { type: "string", description: k },
-          ]),
-        )
-      : {};
-  return {
-    input: {
-      type: "object",
-      properties: Object.keys(props).length ? props : { _placeholder: { type: "string" } },
-    },
-    output: {
-      type: "object",
-      properties: { ok: { type: "boolean" } },
-    },
-  };
+function attachBazaarToPayload(parsed: Record<string, unknown>, req: Request): void {
+  const bazaar = bazaarExtensionForRequest(req);
+  const extensions = (parsed.extensions as Record<string, unknown> | undefined) ?? {};
+  parsed.extensions = { ...extensions, bazaar };
 }
 
 type PaymentAccept = {
@@ -115,19 +74,12 @@ function normalizeAccepts(parsed: Record<string, unknown>): void {
 
 function injectBazaarExtension(encoded: string, req: Request): string {
   try {
-    const path = req.path;
     const parsed = JSON.parse(Buffer.from(encoded, "base64").toString("utf8")) as Record<
       string,
       unknown
     >;
     normalizeAccepts(parsed);
-    const example = VERIFY_EXAMPLES[path];
-    const bazaar = {
-      info: buildBazaarInfo(req.method, example),
-      schema: buildBazaarSchema(example),
-    };
-    const extensions = (parsed.extensions as Record<string, unknown> | undefined) ?? {};
-    parsed.extensions = { ...extensions, bazaar };
+    attachBazaarToPayload(parsed, req);
     const resource = parsed.resource as { url?: string } | undefined;
     if (resource) {
       resource.url = resourceUrl(path);
@@ -166,7 +118,9 @@ export function createPaidMiddleware(): (
       const origJson = res.json.bind(res);
       res.json = ((body?: unknown) => {
         if (bodyHasAccepts(body)) {
-          normalizeAccepts(body);
+          const payload = body as Record<string, unknown>;
+          normalizeAccepts(payload);
+          attachBazaarToPayload(payload, req);
         }
         return origJson(body);
       }) as typeof res.json;

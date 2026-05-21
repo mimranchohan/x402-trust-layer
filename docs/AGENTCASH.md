@@ -22,9 +22,12 @@ Settlement remains **Dexter** (`FACILITATOR_URL`). CDP keys are optional if you 
 
 ```powershell
 npm run openapi:generate
-npm run discovery:check -- https://x402-agent-suite-production.up.railway.app
+# check probes one paid route (root URL returns L3_NOT_FOUND — expected)
+npm run discovery:check -- https://x402-agent-suite-production.up.railway.app/api/x402/proxy
 npm run discovery:discover -- https://x402-agent-suite-production.up.railway.app
 ```
+
+Runtime 402 must include `extensions.bazaar.schema.properties.input` and `.output` (fixed in `bazaar-extension.ts`).
 
 ## Register
 

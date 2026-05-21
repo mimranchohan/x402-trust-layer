@@ -99,6 +99,7 @@ function buildOperation(
     summary: meta.summary,
     description: `${meta.summary} — ${priceDisplay} USDC via x402 (Dexter facilitator ${config.facilitatorUrl}).`,
     tags: [tier, ...(meta.tags ?? [])],
+    security: [{ x402: [] }],
     "x-payment-info": {
       price: { mode: "fixed", currency: "USD", amount: priceUsd },
       protocols: paymentProtocols(path),
@@ -156,6 +157,7 @@ export function buildAgentCashOpenApi(): Record<string, unknown> {
       operationId: "get_health",
       summary: "Health check (free)",
       tags: ["meta"],
+      security: [],
       responses: {
         "200": {
           description: "Service health",
@@ -194,6 +196,16 @@ export function buildAgentCashOpenApi(): Record<string, unknown> {
 
   return {
     openapi: "3.1.0",
+    components: {
+      securitySchemes: {
+        x402: {
+          type: "apiKey",
+          in: "header",
+          name: "Payment-Signature",
+          description: "x402 v2 payment payload (base64)",
+        },
+      },
+    },
     info: {
       title: "x402 Agent Suite Pro",
       version: "3.0.0",
