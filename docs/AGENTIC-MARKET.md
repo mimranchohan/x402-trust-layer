@@ -27,7 +27,7 @@ Replace `BASE` with your Railway URL:
 |-----|---------|
 | `BASE/.well-known/x402.json` | Well-known x402 config |
 | `BASE/x402/api/services.json` | Bazaar-style manifest (`extensions.bazaar.discoverable`) |
-| `BASE/x402/api/discover` | Discovery catalog (all 22 resources) |
+| `BASE/x402/api/discover` | Discovery catalog (all 22 resources) — **note `/api/` in path** |
 | `BASE/openapi.json` | OpenAPI 3.1 (v3, all paths) |
 
 Example:
@@ -46,6 +46,8 @@ Push latest `main` to Railway. Confirm:
 
 ```powershell
 curl.exe https://x402-agent-suite-production.up.railway.app/x402/api/discover
+
+Wrong (404 until alias deploy): `/discover` or `/x402/discover` — use `/x402/api/discover`.
 ```
 
 You should see `"endpointCount": 22` and a `resources` array.
