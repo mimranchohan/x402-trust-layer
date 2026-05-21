@@ -90,7 +90,7 @@ function normalizeAccepts(parsed: Record<string, unknown>): void {
   const accepts = parsed.accepts as PaymentAccept[] | undefined;
   if (!Array.isArray(accepts)) return;
 
-  const chainOrder = config.chains.map((c) => CHAIN_IDS[c as ChainKey]);
+  const chainOrder: string[] = config.chains.map((c) => CHAIN_IDS[c as ChainKey]);
 
   for (const accept of accepts) {
     if (!accept.network) continue;
