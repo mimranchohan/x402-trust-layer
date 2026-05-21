@@ -39,7 +39,12 @@ Local shape test: `npm run verify:bazaar`
 
 1. **x402scan:** https://www.x402scan.com/resources/register  
    - **Add Server:** `https://x402-agent-suite-production.up.railway.app`  
-   - Or **Register URL Only** per paid path from `/api/agentic/validate-urls`
+   - Or **Register URL Only** per paid path from `/api/agentic/validate-urls`  
+   - **`/health` is intentionally omitted** from `/openapi.json` (free 200 for Railway; not an x402-paid route)
+
+## x402scan: `/health` registration failure
+
+If x402scan reports `No valid x402 response found (HTTP 200)` for `/health`, that path must **not** be registered. After deploy, `/openapi.json` lists **22 paid routes only** — no `/health`. Re-run **Add Server** on x402scan.
 
 2. **AgentCash:** agents discover via OpenAPI + runtime 402 after registration.
 

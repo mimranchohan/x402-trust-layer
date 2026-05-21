@@ -18,7 +18,9 @@ Typical flow:
 4. POST /api/attestation/issue then pass X-Suite-Attestation on partner calls; POST /api/attestation/verify to validate.
 5. POST /api/receipt-auditor/verify after external settlements.
 
-Pay with x402 (USDC). Unpaid GET probes return 402; send Payment-Signature on POST for full JSON responses.`;
+Pay with x402 (USDC). Unpaid GET probes return 402; send Payment-Signature on POST for full JSON responses.
+
+Free (not in this catalog): GET /health — Railway/monitoring only, returns 200 without payment.`;
 
 type JsonSchema = Record<string, unknown>;
 
@@ -152,31 +154,7 @@ function buildOperation(
 export function buildAgentCashOpenApi(): Record<string, unknown> {
   const paths: Record<string, unknown> = {};
 
-  paths["/health"] = {
-    get: {
-      operationId: "get_health",
-      summary: "Health check (free)",
-      tags: ["meta"],
-      security: [],
-      responses: {
-        "200": {
-          description: "Service health",
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  ok: { type: "boolean" },
-                  endpointCount: { type: "integer" },
-                  agenticReady: { type: "boolean" },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  };
+  /** Omit /health — free 200 endpoint; x402scan must not register it as a paid x402 route */
 
   for (const entry of listEndpoints()) {
     const [method, route] = entry.path.split(" ");
@@ -215,6 +193,7 @@ export function buildAgentCashOpenApi(): Record<string, unknown> {
     },
     "x-discovery": {
       ownershipProofs,
+      publicEndpoints: [`${config.publicBaseUrl.replace(/\/$/, "")}/health`],
     },
     servers: [{ url: config.publicBaseUrl }],
     paths,

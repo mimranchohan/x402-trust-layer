@@ -7,12 +7,6 @@
   },
   "servers": [{ "url": "https://x402-agent-suite-production.up.railway.app" }],
   "paths": {
-    "/health": {
-      "get": {
-        "summary": "Health check (free)",
-        "responses": { "200": { "description": "Service health and endpoint count" } }
-      }
-    },
     "/api/x402/proxy": {
       "post": {
         "summary": "x402 proxy: guard + security + attestation in one call",
