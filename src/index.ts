@@ -76,9 +76,14 @@ app.get("/x402/api/services.json", (_req, res) => {
   res.json(buildServicesManifest());
 });
 
-app.get("/x402/api/discover", (_req, res) => {
+function sendDiscoverCatalog(_req: Request, res: Response): void {
   res.json(buildDiscoverCatalog());
-});
+}
+
+app.get("/x402/api/discover", sendDiscoverCatalog);
+/** Redirects — canonical path is /x402/api/discover */
+app.get("/x402/discover", (_req, res) => res.redirect(301, "/x402/api/discover"));
+app.get("/discover", (_req, res) => res.redirect(301, "/x402/api/discover"));
 
 app.get("/", (_req, res) => {
   res.json({
