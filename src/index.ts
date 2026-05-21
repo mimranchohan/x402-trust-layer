@@ -48,6 +48,8 @@ app.get("/health", (_req, res) => {
     networks: config.networks,
     endpointCount: listEndpoints().length,
     gitCommit: process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) ?? null,
+    /** Present after Agentic GET-probe deploy (commit a7b615a+) */
+    agenticGetProbes: true,
   });
 });
 

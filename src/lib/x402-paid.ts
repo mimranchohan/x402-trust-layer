@@ -97,16 +97,20 @@ export function createPaidMiddleware(): (
 
     return (req: Request, res: Response, next: NextFunction) => {
       const origSetHeader = res.setHeader.bind(res);
-      res.setHeader = ((name: string | number, value: string | number | readonly string[]) => {
+      const patchedSetHeader = (
+        name: string,
+        value?: string | number | readonly string[],
+      ): Response => {
+        let headerValue = value;
         if (
-          typeof name === "string" &&
           name.toUpperCase() === "PAYMENT-REQUIRED" &&
-          typeof value === "string"
+          typeof headerValue === "string"
         ) {
-          value = injectBazaarExtension(value, req);
+          headerValue = injectBazaarExtension(headerValue, req);
         }
-        return origSetHeader(name, value);
-      }) as typeof res.setHeader;
+        return origSetHeader(name, headerValue);
+      };
+      res.setHeader = patchedSetHeader as typeof res.setHeader;
 
       inner(req, res, next);
     };
