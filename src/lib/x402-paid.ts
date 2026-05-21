@@ -99,7 +99,7 @@ export function createPaidMiddleware(): (
       const origSetHeader = res.setHeader.bind(res);
       const patchedSetHeader = (
         name: string,
-        value?: string | number | readonly string[],
+        value: string | number | readonly string[],
       ): Response => {
         let headerValue = value;
         if (
