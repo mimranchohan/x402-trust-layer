@@ -5,6 +5,8 @@ export const CHAIN_IDS = {
   polygon: "eip155:137",
 } as const;
 
+export type ChainKey = keyof typeof CHAIN_IDS;
+
 /** USDC token address / mint per chain (Agentic + CDP expect network-correct asset) */
 export const USDC_ASSET: Record<ChainKey, string> = {
   solana: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
@@ -18,8 +20,6 @@ export function usdcAssetForCaip2(network: string): string | undefined {
   }
   return undefined;
 }
-
-export type ChainKey = keyof typeof CHAIN_IDS;
 
 const CHAIN_ORDER: ChainKey[] = ["base", "solana", "polygon"];
 

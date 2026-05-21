@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import { x402Middleware } from "@dexterai/x402/server";
+import { USDC_BASE, x402Middleware } from "@dexterai/x402/server";
 import { config } from "../config.js";
 import { CHAIN_IDS, usdcAssetForCaip2, type ChainKey } from "./chains.js";
 import { VERIFY_EXAMPLES } from "./verify-examples.js";
@@ -94,8 +94,14 @@ function normalizeAccepts(parsed: Record<string, unknown>): void {
 
   for (const accept of accepts) {
     if (!accept.network) continue;
-    const correctAsset = usdcAssetForCaip2(accept.network);
-    if (correctAsset) accept.asset = correctAsset;
+    if (accept.network === CHAIN_IDS.base) {
+      accept.asset = USDC_BASE;
+    } else if (accept.network.startsWith("solana:")) {
+      accept.asset = usdcAssetForCaip2(accept.network) ?? accept.asset;
+    } else {
+      const correctAsset = usdcAssetForCaip2(accept.network);
+      if (correctAsset) accept.asset = correctAsset;
+    }
   }
 
   accepts.sort((a, b) => {
@@ -127,9 +133,18 @@ function injectBazaarExtension(encoded: string, req: Request): string {
       resource.url = resourceUrl(path);
     }
     return Buffer.from(JSON.stringify(parsed)).toString("base64");
-  } catch {
+  } catch (err) {
+    console.error("[x402-paid] injectBazaarExtension failed:", err);
     return encoded;
   }
+}
+
+function bodyHasAccepts(body: unknown): body is Record<string, unknown> {
+  return (
+    !!body &&
+    typeof body === "object" &&
+    Array.isArray((body as { accepts?: unknown }).accepts)
+  );
 }
 
 /** x402 middleware with PAYMENT-REQUIRED header + Bazaar extension for Agentic Market */
@@ -150,8 +165,8 @@ export function createPaidMiddleware(): (
     return (req: Request, res: Response, next: NextFunction) => {
       const origJson = res.json.bind(res);
       res.json = ((body?: unknown) => {
-        if (res.statusCode === 402 && body && typeof body === "object") {
-          normalizeAccepts(body as Record<string, unknown>);
+        if (bodyHasAccepts(body)) {
+          normalizeAccepts(body);
         }
         return origJson(body);
       }) as typeof res.json;
