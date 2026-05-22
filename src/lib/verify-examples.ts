@@ -147,6 +147,6 @@ export const VERIFY_EXAMPLES: Record<string, unknown> = {
   },
   "/api/seller/audition-coach": {
     origin: "https://x402-agent-suite-production.up.railway.app",
-    maxRoutes: 22,
+    maxRoutes: 24,
   },
 };

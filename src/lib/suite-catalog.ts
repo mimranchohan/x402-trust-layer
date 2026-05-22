@@ -9,6 +9,44 @@ export type SuiteStep = {
   purpose: string;
 };
 
+/** Buyer onboarding — only these three in README / INTEGRATE lead */
+export const PRIMARY_ENTRYPOINTS = [
+  {
+    path: "/api/x402/proxy",
+    method: "POST",
+    priceUsdc: 0.08,
+    label: "Default preflight (guard + probe + optional attestation)",
+  },
+  {
+    path: "/api/guard/pre-x402",
+    method: "POST",
+    priceUsdc: 0.05,
+    label: "Lightweight bundle (spend + identity + risk)",
+  },
+  {
+    path: "/api/pipeline/execute",
+    method: "POST",
+    priceUsdc: 0.25,
+    label: "Full orchestration for multi-step tasks",
+  },
+] as const;
+
+/** Seller / marketplace growth */
+export const KILLER_SELLER_ENDPOINTS = [
+  {
+    path: "/api/market/buy-advisor",
+    method: "POST",
+    priceUsdc: 0.08,
+    label: "Rank paid APIs before you spend (Jupiter-style quote)",
+  },
+  {
+    path: "/api/seller/audition-coach",
+    method: "POST",
+    priceUsdc: 0.06,
+    label: "Pre-audition fix list before Dexter ingest",
+  },
+] as const;
+
 export const SUITE_PRICES = {
   spendGovernor: 0.03,
   receiptAuditor: 0.05,

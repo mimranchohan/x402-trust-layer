@@ -2,7 +2,7 @@
 
 [Agentic Market](https://agentic.market/) is Coinbase’s public directory of **x402-paid HTTP services**. Agents discover, pay, and call APIs without API keys.
 
-Your suite already runs on Railway with **22 paid endpoints**. Listing is **not automatic from Dexter alone** — Agentic indexes the **x402 Bazaar / CDP discovery** pipeline and validated x402 endpoints.
+Your suite already runs on Railway with **24 paid endpoints** (3 primary buyer entry points + 2 seller killers + 19 advanced). Listing is **not automatic from Dexter alone** — Agentic indexes the **x402 Bazaar / CDP discovery** pipeline and validated x402 endpoints.
 
 ---
 
@@ -27,7 +27,7 @@ Replace `BASE` with your Railway URL:
 |-----|---------|
 | `BASE/.well-known/x402.json` | Well-known x402 config |
 | `BASE/x402/api/services.json` | Bazaar-style manifest (`extensions.bazaar.discoverable`) |
-| `BASE/x402/api/discover` | Discovery catalog (all 22 resources) — **note `/api/` in path** |
+| `BASE/x402/api/discover` | Discovery catalog (all 24 resources) — **note `/api/` in path** |
 | `BASE/openapi.json` | OpenAPI 3.1 (v3, all paths) |
 
 Example:
@@ -38,7 +38,7 @@ https://x402-agent-suite-production.up.railway.app/x402/api/services.json
 
 ---
 
-## Step-by-step: list all 22 agents on Agentic Market
+## Step-by-step: list all 24 paid routes on Agentic Market
 
 ### Step 0 — Railway variables (required for Agentic simulate)
 
@@ -80,7 +80,7 @@ curl.exe https://x402-agent-suite-production.up.railway.app/x402/api/discover
 Wrong (404 until alias deploy): `/discover` or `/x402/discover` — use `/x402/api/discover`.
 ```
 
-You should see `"endpointCount": 22` and a `resources` array.
+You should see `"endpointCount": 24` and a `resources` array.
 
 ### Step 2 — Validate each endpoint (fastest for Dexter-only sellers)
 
@@ -144,7 +144,7 @@ Agentic UI shows **Services** and **Endpoints**:
 - **One service** = “x402 Agent Suite Pro” (your brand)
 - **22 endpoints** = each `/api/...` path as a separate payable resource
 
-Your `services.json` lists **22 routes** under one `baseUrl` — that matches how agents route to individual paths.
+Your `services.json` lists **24 routes** under one `baseUrl` — that matches how agents route to individual paths. Do **not** register `/health` as a paid resource on x402scan.
 
 ---
 

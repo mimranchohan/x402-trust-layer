@@ -1,11 +1,62 @@
-# Integrate x402 Agent Suite v3 (5 minutes)
+# Integrate x402 Agent Suite Pro
 
 **Base:** `https://x402-agent-suite-production.up.railway.app`
 
-## Recommended: x402 proxy (one call)
+## 3-line rule (other agents)
+
+```text
+1. POST /api/x402/proxy  (or /api/guard/pre-x402) — preflight
+2. x402_check → x402_fetch on external URL
+3. POST /api/receipt-auditor/verify — settlement proof
+```
+
+We do **not** guarantee 100% accuracy. Every paid response includes `confidence`, `checks_passed`, `sources`, and `accuracy_note`.
+
+---
+
+## Start here (buyers) — 3 entry points only
+
+| Endpoint | Price | When |
+|----------|-------|------|
+| `POST /api/x402/proxy` | $0.08 | **Default** — one preflight before any external pay |
+| `POST /api/guard/pre-x402` | $0.05 | Lighter bundle (same spend/identity/risk as proxy core) |
+| `POST /api/pipeline/execute` | $0.25 | Multi-step orchestration + marketplace routing |
+
+**Advanced (19 routes):** spend-governor, identity-gate, risk-gate, router, MPP, attestation, escrow, etc. — use when you need fine-grained control. Spend / identity / risk are **sub-steps inside guard**; call guard unless you need a single layer.
+
+**Seller / discovery killers:**
+
+| Endpoint | Price |
+|----------|-------|
+| `POST /api/market/buy-advisor` | $0.08 |
+| `POST /api/seller/audition-coach` | $0.06 |
+
+---
+
+## Standard fleet flow
+
+```mermaid
+sequenceDiagram
+  participant Agent
+  participant Suite
+  participant External
+
+  Agent->>Suite: POST /api/x402/proxy
+  Suite-->>Agent: allowed, confidence, checks_passed
+  Agent->>External: x402_check (no pay)
+  Agent->>External: x402_fetch (pay)
+  Agent->>Suite: POST /api/receipt-auditor/verify
+```
+
+### TypeScript
 
 ```typescript
-const proxy = await x402Fetch(`${BASE}/api/x402/proxy`, {
+import { wrapFetch } from "@dexterai/x402/client";
+
+const BASE = "https://x402-agent-suite-production.up.railway.app";
+const x402Fetch = wrapFetch(fetch, { evmPrivateKey: process.env.EVM_PRIVATE_KEY! });
+
+const pre = await x402Fetch(`${BASE}/api/x402/proxy`, {
   method: "POST",
   headers: { "content-type": "application/json" },
   body: JSON.stringify({
@@ -17,95 +68,42 @@ const proxy = await x402Fetch(`${BASE}/api/x402/proxy`, {
     issueAttestation: true,
   }),
 });
-const body = await proxy.json();
-if (!body.allowed) throw new Error(body.summary);
-// then: x402_fetch targetUrl
-```
+const gate = (await pre.json()) as { allowed: boolean; summary: string; confidence: number };
+if (!gate.allowed) throw new Error(gate.summary);
 
----
+// External: check price, then pay
+// await x402_check(targetUrl); await x402_fetch(targetUrl);
 
-## 1. Pre-x402 guard (before every paid API)
-
-**One call** replaces spend-governor + identity-gate + risk-gate.
-
-```typescript
-import { wrapFetch } from "@dexterai/x402/client";
-
-const x402Fetch = wrapFetch(fetch, { walletPrivateKey: process.env.SOLANA_PRIVATE_KEY! });
-const BASE = "https://x402-agent-suite-production.up.railway.app";
-
-async function safeX402Fetch(targetUrl: string, init?: RequestInit) {
-  const guard = await x402Fetch(`${BASE}/api/guard/pre-x402`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      agentId: "my-agent-1",
-      walletAddress: process.env.PAY_TO_ADDRESS,
-      targetUrl,
-      estimatedCostUsdc: 0.05,
-      network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-      policy: { dailyCapUsdc: 10, perCallCapUsdc: 1 },
-    }),
-  });
-  const body = (await guard.json()) as { allowed: boolean; summary: string };
-  if (!body.allowed) throw new Error(body.summary);
-
-  return x402Fetch(targetUrl, init);
-}
-```
-
-**Price:** $0.05 USDC per guard call.
-
----
-
-## 2. Full pipeline (one shot)
-
-```typescript
-const res = await x402Fetch(`${BASE}/api/pipeline/execute`, {
+await x402Fetch(`${BASE}/api/receipt-auditor/verify`, {
   method: "POST",
   headers: { "content-type": "application/json" },
-  body: JSON.stringify({
-    agentId: "my-agent-1",
-    walletAddress: process.env.PAY_TO_ADDRESS,
-    targetUrl: "https://api.example.com/oracle/eth",
-    estimatedCostUsdc: 0.05,
-    policy: { dailyCapUsdc: 10, perCallCapUsdc: 1 },
-    task: "ETH price with safety checks under $1 budget",
-    maxBudgetUsdc: 1,
-    marketplaceQuery: "ETH USD spot price oracle",
-    preferNetwork: "solana",
-  }),
+  body: JSON.stringify({ network: "eip155:8453", expectedAmountUsdc: 0.05, /* settlement */ }),
 });
 ```
 
-Returns `allowed`, `guard`, optional `plan`, `facilitator`, `route`, and `recommendedNextCalls`.
+---
 
-**Price:** $0.25 USDC.
+## Attestation (partner agents)
+
+1. `POST /api/attestation/issue` — after guard passes  
+2. `POST /api/attestation/verify` — before downstream pay  
+3. Optional header for partners: `X-Suite-Attestation: <attestationId>`  
+4. `GET /api/attestation/registry` — fleet trust queries  
 
 ---
 
-## OpenDexter / Cursor agent rule
+## npm helper
 
-Add to your agent instructions:
-
-```markdown
-Before any x402_fetch or paid marketplace call:
-1. POST https://x402-agent-suite-production.up.railway.app/api/guard/pre-x402
-2. Only proceed if response.allowed === true
-3. Then call the target x402 API
-```
-
-For multi-step tasks, prefer:
-
-`POST .../api/pipeline/execute` once, then follow `recommendedNextCalls`.
+[`packages/x402-preflight`](../packages/x402-preflight/README.md) — wraps proxy/guard.
 
 ---
 
-## Dexter marketplace
+## Dexter / x402scan / Agentic
 
-After deploy, open your [seller profile](https://dexter.cash/sellers) and click **Verify Now** on the new resources:
+| Channel | Action |
+|---------|--------|
+| Dexter | `npm run demo` → [seller profile](https://dexter.cash/sellers/9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt) → **Verify Now** |
+| x402scan | [Register server](https://www.x402scan.com/resources/register) — **24 paid URLs only, never /health** |
+| Agentic | [AGENTIC-MARKET.md](./AGENTIC-MARKET.md) — validate HTTPS URLs, Base first |
 
-- Pre-x402 Guard
-- Pipeline Execute
-
-Higher verification score → better search ranking.
+See [MARKETPLACES.md](./MARKETPLACES.md) and [DEXTER-SCORE.md](./DEXTER-SCORE.md).

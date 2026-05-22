@@ -47,7 +47,27 @@ async function post(path: string, body: unknown) {
   }
 }
 
-console.log("=== v3 killer apps ===\n");
+console.log("=== marketplace killers ===\n");
+
+await post("/api/market/buy-advisor", {
+  intent: "ETH USD spot price oracle",
+  agentId: "demo-fleet-1",
+  walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
+  policy: { dailyCapUsdc: 10, perCallCapUsdc: 1 },
+  maxPriceUsdc: 0.15,
+  expectedCalls: 10,
+});
+
+await sleep(2000);
+
+await post("/api/seller/audition-coach", {
+  origin: base,
+  maxRoutes: 24,
+});
+
+await sleep(2000);
+
+console.log("=== v3 primary entrypoints ===\n");
 
 await post("/api/x402/proxy", {
   agentId: "demo-fleet-1",
@@ -77,6 +97,17 @@ await post("/api/attestation/issue", {
   estimatedCostUsdc: 0.03,
   policy: { dailyCapUsdc: 10, perCallCapUsdc: 1 },
 });
+
+await sleep(2000);
+
+await post("/api/attestation/verify", {
+  attestationId: "att_verifier_probe_example",
+});
+
+await sleep(2000);
+
+const regRes = await x402Fetch(`${base}/api/attestation/registry`, { method: "GET" });
+console.log("--- /api/attestation/registry GET ---", regRes.status, (await regRes.text()).slice(0, 800), "\n");
 
 await sleep(2000);
 

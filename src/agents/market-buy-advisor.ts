@@ -1,3 +1,4 @@
+import { agentTrustMeta, withAgentTrust } from "../lib/agent-response.js";
 import { config } from "../config.js";
 import { hostOf, pickCheapestRail, probeEndpoint, type PaymentOption } from "../lib/probe.js";
 import { searchMarketplace } from "../lib/marketplace.js";
@@ -255,29 +256,41 @@ export async function runMarketBuyAdvisor(input: MarketBuyAdvisorInput): Promise
     why: s.why,
   }));
 
-  return {
-    intent: query,
-    checkedAt: new Date().toISOString(),
-    recommendation: {
-      action,
-      url: recUrl,
-      network: recNetwork,
-      allInCostUsdc: action === "use_suite_proxy" ? proxyCost : bestCost,
+  const checks = ["marketplace_search", "402_dry_run"];
+  if (policyBlock.evaluated) checks.push(policyBlock.allowed ? "policy_pass" : "policy_block");
+  if (quotes.length) checks.push("ranked_quotes");
+
+  return withAgentTrust(
+    {
+      intent: query,
+      checkedAt: new Date().toISOString(),
+      recommendation: {
+        action,
+        url: recUrl,
+        network: recNetwork,
+        allInCostUsdc: action === "use_suite_proxy" ? proxyCost : bestCost,
+        confidence: Number(confidence.toFixed(2)),
+        rationale,
+      },
+      quotes,
+      policy: policyBlock,
+      suiteShortcuts,
+      mppAdvice,
+      chainAdvisor: {
+        cheapestNetwork: cheapest?.network ?? best?.recommendedNetwork ?? null,
+        cheapestPriceUsdc: cheapest?.priceUsdc ?? bestCost,
+        note: cheapest
+          ? `Cheapest rail: ${cheapest.network} at $${cheapest.priceUsdc}`
+          : "Probe target or catalog URLs for multi-chain 402 options.",
+      },
+      integrationHint:
+        "Call POST /api/market/buy-advisor before x402_fetch; then POST /api/guard/pre-x402 or /api/x402/proxy, then pay the recommended URL.",
+    },
+    agentTrustMeta(checks, {
       confidence: Number(confidence.toFixed(2)),
-      rationale,
-    },
-    quotes,
-    policy: policyBlock,
-    suiteShortcuts,
-    mppAdvice,
-    chainAdvisor: {
-      cheapestNetwork: cheapest?.network ?? best?.recommendedNetwork ?? null,
-      cheapestPriceUsdc: cheapest?.priceUsdc ?? bestCost,
-      note: cheapest
-        ? `Cheapest rail: ${cheapest.network} at $${cheapest.priceUsdc}`
-        : "Probe target or catalog URLs for multi-chain 402 options.",
-    },
-    integrationHint:
-      "Call POST /api/market/buy-advisor before x402_fetch; then POST /api/guard/pre-x402 or /api/x402/proxy, then pay the recommended URL.",
-  };
+      sources: ["dexter-marketplace-catalog", "probe-endpoint"],
+      accuracy_note:
+        "Rankings use catalog metadata and unpaid 402 probes — confirm with x402_check before paying.",
+    }),
+  );
 }

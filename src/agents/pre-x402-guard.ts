@@ -1,3 +1,4 @@
+import { agentTrustMeta, withAgentTrust } from "../lib/agent-response.js";
 import { assessUrlSecurity } from "../lib/security.js";
 import { runIdentityGate } from "./identity-gate.js";
 import { runRiskGate } from "./risk-gate.js";
@@ -60,17 +61,33 @@ export async function runPreX402Guard(input: PreX402GuardInput): Promise<PreX402
   const urlSec = assessUrlSecurity(input.targetUrl);
   const allowed = blockers.length === 0 && urlSec.grade !== "F";
 
-  return {
-    allowed,
-    securityGrade: urlSec.grade,
-    summary: allowed
-      ? "Safe to proceed with x402 payment on targetUrl"
-      : `Blocked — ${blockers.join(" | ")}`,
-    savingsVsSeparateUsdc: 0.11,
-    spend,
-    identity,
-    risk,
-    integrationHint:
-      "Call POST /api/guard/pre-x402 once before every x402_fetch / OpenDexter paid call.",
-  };
+  const checks = [
+    "spend_governor",
+    "identity_gate",
+    "risk_gate",
+    "url_security_grade",
+  ];
+  if (allowed) checks.push("policy_pass");
+
+  return withAgentTrust(
+    {
+      allowed,
+      securityGrade: urlSec.grade,
+      summary: allowed
+        ? "Safe to proceed with x402 payment on targetUrl"
+        : `Blocked — ${blockers.join(" | ")}`,
+      savingsVsSeparateUsdc: 0.11,
+      spend,
+      identity,
+      risk,
+      overlapNote:
+        "Spend, identity, and risk are also available as separate endpoints; this bundle runs them in one call.",
+      integrationHint:
+        "Call POST /api/guard/pre-x402 once before every x402_fetch / OpenDexter paid call.",
+    },
+    agentTrustMeta(checks, {
+      confidence: allowed ? 0.86 : 0.72,
+      sources: ["spend-governor", "identity-gate", "risk-gate", "url-security"],
+    }),
+  );
 }

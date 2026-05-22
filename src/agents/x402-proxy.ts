@@ -1,3 +1,4 @@
+import { agentTrustMeta, withAgentTrust } from "../lib/agent-response.js";
 import { config } from "../config.js";
 import { issueAttestation } from "../lib/attestation.js";
 import { type ChainKey, CHAIN_IDS } from "../lib/chains.js";
@@ -68,24 +69,34 @@ export async function runX402Proxy(input: X402ProxyInput): Promise<X402ProxyResu
   const snippet = `// After proxy returns allowed:true, pay target with x402_fetch
 const paid = await x402Fetch("${input.targetUrl}", { method: "${input.downstreamMethod ?? "POST"}", headers: { "content-type": "application/json" }, body: JSON.stringify(${JSON.stringify(input.downstreamBody ?? {})}) });${attHeader}`;
 
-  return {
-    allowed,
-    summary: allowed
-      ? "Proxy preflight passed — safe to pay downstream x402 endpoint"
-      : `Blocked — guard/identity/security failed (grade ${merged.securityGrade})`,
-    securityGrade: merged.securityGrade,
-    riskScore: merged.riskScore,
-    guard,
-    targetProbe: probe,
-    attestation,
-    clientFlow: {
-      step1: `POST ${config.publicBaseUrl}/api/x402/proxy`,
-      step2: `x402_fetch ${input.targetUrl}`,
-      step3: attestation
-        ? `POST ${config.publicBaseUrl}/api/attestation/verify`
-        : `POST ${config.publicBaseUrl}/api/receipt-auditor/verify`,
+  const checks = ["pre_x402_guard", "identity_gate", "target_402_probe", "security_grade"];
+  if (attestation) checks.push("attestation_issued");
+  if (allowed) checks.push("preflight_pass");
+
+  return withAgentTrust(
+    {
+      allowed,
+      summary: allowed
+        ? "Proxy preflight passed — safe to pay downstream x402 endpoint"
+        : `Blocked — guard/identity/security failed (grade ${merged.securityGrade})`,
+      securityGrade: merged.securityGrade,
+      riskScore: merged.riskScore,
+      guard,
+      targetProbe: probe,
+      attestation,
+      clientFlow: {
+        step1: `POST ${config.publicBaseUrl}/api/x402/proxy`,
+        step2: `x402_check then x402_fetch ${input.targetUrl}`,
+        step3: attestation
+          ? `POST ${config.publicBaseUrl}/api/attestation/verify`
+          : `POST ${config.publicBaseUrl}/api/receipt-auditor/verify`,
+      },
+      supportedChains: ["solana", "base", "polygon"],
+      integrationSnippet: snippet,
     },
-    supportedChains: ["solana", "base", "polygon"],
-    integrationSnippet: snippet,
-  };
+    agentTrustMeta(checks, {
+      confidence: allowed ? 0.84 : 0.7,
+      sources: ["pre-x402-guard", "probe-endpoint", "attestation-registry"],
+    }),
+  );
 }

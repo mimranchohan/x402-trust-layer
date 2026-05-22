@@ -1,86 +1,76 @@
-# Listing Beyond Dexter
+# Listing on Dexter, x402scan, and Agentic
 
-Dexter auto-lists resources after **paid settlements** through `https://x402.dexter.cash`.  
-Other marketplaces require **separate steps** — there is no single API to list everywhere at once.
+**Production:** https://x402-agent-suite-production.up.railway.app  
+**Paid routes:** 24 (never register `/health` on x402scan)
 
-## 1. Dexter (primary)
+There is no single API to list everywhere. Use this checklist per channel.
 
-1. Deploy with `FACILITATOR_URL=https://x402.dexter.cash`
-2. Run `npm run demo` against production (real USDC)
-3. Wait 15–30 minutes
-4. Public profile: `https://dexter.cash/sellers/<PAY_TO_ADDRESS>`
-5. **Verify Now** on each resource
+---
 
-## 2. OpenDexter / x402_search
+## Master checklist
 
-Agents discover you via semantic search after Dexter indexes your URLs.
+### Dexter (primary)
 
-**Optimize titles in middleware descriptions** (already set in code).
+- [ ] `FACILITATOR_URL=https://x402.dexter.cash` on Railway  
+- [ ] `NETWORKS=base,solana`, `PAY_TO_EVM` + `PAY_TO_ADDRESS` set  
+- [ ] `npm run probe:production` — 24 resources in `/.well-known/x402`  
+- [ ] `npm run demo` — real USDC settlements (run **×3** per route over a week for volume)  
+- [ ] Seller profile: https://dexter.cash/sellers/9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt  
+- [ ] **Verify Now** on each resource (target score **≥75**)  
+- [ ] `POST /api/seller/audition-coach` — fix all `fail` routes before re-verify  
 
-## 3. Agentic Market (https://agentic.market/)
+### x402scan
 
-Coinbase-operated agent directory. **Full guide:** [AGENTIC-MARKET.md](./AGENTIC-MARKET.md)
+- [ ] Open https://www.x402scan.com/resources/register  
+- [ ] Add **server URL** = production base (no trailing slash)  
+- [ ] Confirm only **paid** URLs from `GET /.well-known/x402` (24) — **not** `/health`  
+- [ ] `npm run discovery:check -- https://x402-agent-suite-production.up.railway.app/api/x402/proxy`  
 
-Quick steps:
+### Agentic Market
 
-1. Deploy latest code — exposes:
-   - `/.well-known/x402.json`
-   - `/x402/api/services.json` (22 routes, `bazaar.discoverable: true`)
-   - `/x402/api/discover`
-2. **Validate Endpoint** on agentic.market for each resource URL (or use CDP facilitator for auto-index).
-3. Optional: GitHub issue on [x402-foundation/x402](https://github.com/x402-foundation/x402) with manifest URLs.
+- [ ] Deploy latest; `GET /health` → `agenticReady: true`  
+- [ ] Guide: [AGENTIC-MARKET.md](./AGENTIC-MARKET.md)  
+- [ ] Validate Endpoint for primary URLs (proxy, guard, pipeline)  
+- [ ] HTTPS resource URLs; Base USDC first in `accepts`  
 
-**Note:** Dexter settlements index **Dexter**, not Agentic automatically. Use Agentic steps above in addition to Dexter demo.
+### Code sync (P3)
 
-## 4. Coinbase x402 Bazaar / CDP discovery
+- [ ] `routes.ts` ↔ `openapi.json` ↔ `/.well-known/x402` ↔ `/x402/api/services.json` — same 24 paths  
+- [ ] `ownershipProofs` in OpenAPI `x-discovery` (Solana + EVM wallets)  
+- [ ] Empty POST → `verify-examples` merge → **200** (not 400)  
 
-- Publish your `openapi.json` publicly
-- CDP facilitator: `https://api.cdp.coinbase.com/platform/v2/x402` + `declareDiscoveryExtension()` per route
-- Manifest: https://x402-agent-suite-production.up.railway.app/x402/api/services.json
+---
 
-## 5. PayAI / x402.echo network
+## Growth (honest)
 
-Many agents use `x402.payai.network` patterns. To appear nearby:
+We do **not** claim all agents must use this suite. Growth comes from:
 
-- Ensure endpoints return standard **402** with USDC accepts
-- Document integration in GitHub README
-- Post your seller profile + OpenAPI link in community channels
+- Default preflight in README / `x402-preflight` npm docs  
+- Real settlement volume (`demo` ×3 per route)  
+- Dexter scores **≥75** on all 24 resources  
+- Buy advisor + audition coach for marketplace sellers  
 
-## 6. Self-hosted discovery (recommended)
+---
 
-Ship an npm helper:
-
-```bash
-npm install @dexterai/x402
-```
-
-Point default preflight to:
-
-`https://x402-agent-suite-production.up.railway.app/api/x402/proxy`
-
-## 7. GitHub + README badges
-
-Add to README:
-
-```markdown
-[![x402](https://img.shields.io/badge/x402-Agent%20Suite-v3-blue)](https://x402-agent-suite-production.up.railway.app)
-```
-
-## Checklist per new endpoint
+## Per new endpoint
 
 | Step | Action |
 |------|--------|
-| 1 | Deploy to Railway |
-| 2 | Paid call ×3 via demo |
-| 3 | Dexter seller profile shows resource |
-| 4 | Verify Now |
-| 5 | Add to INTEGRATE.md / WHY-SERVICES.md |
+| 1 | Add route + `VERIFY_EXAMPLES` + OpenAPI meta |
+| 2 | Deploy Railway |
+| 3 | `probe:production` + audition-coach |
+| 4 | Paid call ×3 |
+| 5 | Dexter Verify Now |
+| 6 | Update INTEGRATE / AUDIT-TABLE |
 
-## Honest note on “forced adoption”
+---
 
-No marketplace can force all agents to call your APIs. Growth comes from:
+## Commands
 
-- **Default SDK preflight** (proxy/guard)
-- **MPP savings** (real money)
-- **Attestation trust** between partner agents
-- **Dexter verification score 75+**
+```bash
+npm run probe:production
+npm run discovery:check -- https://x402-agent-suite-production.up.railway.app/api/x402/proxy
+npm run discovery:discover -- https://x402-agent-suite-production.up.railway.app
+npm run demo
+npm run audition:x402gle
+```

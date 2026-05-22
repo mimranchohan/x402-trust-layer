@@ -9,6 +9,7 @@ import {
 import { buildAgentCashOpenApi, buildWellKnownX402Resources } from "./lib/openapi-agentcash.js";
 import { applyVerifierExampleBody } from "./lib/apply-verifier-body.js";
 import { registerAgenticProbes, stripTrailingSlash } from "./lib/agentic-probes.js";
+import { KILLER_SELLER_ENDPOINTS, PRIMARY_ENTRYPOINTS } from "./lib/suite-catalog.js";
 import { listEndpoints, registerRoutes } from "./routes.js";
 import { registerX402gleHostVerification } from "./lib/x402gle-host-verify.js";
 
@@ -89,17 +90,25 @@ app.get("/x402/discover", (_req, res) => res.redirect(301, "/x402/api/discover")
 app.get("/discover", (_req, res) => res.redirect(301, "/x402/api/discover"));
 
 app.get("/", (_req, res) => {
+  const all = listEndpoints();
   res.json({
     name: "x402 Agent Suite Pro",
-    description: "24 paid x402 infrastructure agents — buy advisor, audition coach, guard, proxy, MPP v2",
+    description:
+      "24 paid x402 infrastructure APIs — start with 3 entry points; 19 advanced fine-grained routes",
     docs: `${config.publicBaseUrl}/openapi.json`,
     discovery: `${config.publicBaseUrl}/x402/api/discover`,
     bazaar: `${config.publicBaseUrl}/x402/api/services.json`,
     agenticMarket: "https://agentic.market/",
     agentCash: "https://agentcash.dev/",
     x402scanRegister: "https://www.x402scan.com/resources/register",
+    dexterSeller: `https://dexter.cash/sellers/${config.payTo}`,
     pipeline: `${config.publicBaseUrl}/api/pipeline/full`,
-    endpoints: listEndpoints(),
+    onboarding: {
+      primary: PRIMARY_ENTRYPOINTS,
+      killerSeller: KILLER_SELLER_ENDPOINTS,
+      advancedCount: all.length - PRIMARY_ENTRYPOINTS.length - KILLER_SELLER_ENDPOINTS.length,
+    },
+    endpoints: all,
   });
 });
 

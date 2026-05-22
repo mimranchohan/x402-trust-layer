@@ -26,6 +26,10 @@ export function registerAgenticProbes(app: Express, paid: PaidFn): void {
         endpoint: path,
         method: "POST",
         version: "3.0.0",
+        confidence: 0.75,
+        checks_passed: ["agentic_get_probe", "payment_settled"],
+        sources: ["x402-agent-suite-pro"],
+        accuracy_note: "GET probe stub — send POST with JSON for full agent logic.",
         hint: "Paid probe passed. Send POST with JSON body for full agent response.",
       });
     };
