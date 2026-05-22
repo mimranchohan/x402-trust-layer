@@ -39,7 +39,7 @@ function declaredHttpMethod(path: string): string {
   return entry?.path.split(" ")[0] ?? "POST";
 }
 
-function defaultOutputExample(path: string): Record<string, unknown> {
+export function defaultOutputExample(path: string): Record<string, unknown> {
   if (path === "/api/attestation/registry") {
     return { count: 0, records: [], policy: "Attestation registry entries" };
   }
