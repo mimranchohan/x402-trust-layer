@@ -6,6 +6,8 @@ export type AgentTrustMeta = {
   accuracy_note: string;
 };
 
+export type WithAgentTrust<T> = T & AgentTrustMeta;
+
 const DEFAULT_NOTE =
   "Heuristic preflight only — not a guarantee of downstream API quality or settlement success.";
 

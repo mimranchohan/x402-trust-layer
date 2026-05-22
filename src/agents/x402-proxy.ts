@@ -1,4 +1,4 @@
-import { agentTrustMeta, withAgentTrust } from "../lib/agent-response.js";
+import { agentTrustMeta, withAgentTrust, type WithAgentTrust } from "../lib/agent-response.js";
 import { config } from "../config.js";
 import { issueAttestation } from "../lib/attestation.js";
 import { type ChainKey, CHAIN_IDS } from "../lib/chains.js";
@@ -32,7 +32,9 @@ export type X402ProxyResult = {
 };
 
 /** One paid call: guard + security grade + optional attestation + downstream 402 probe */
-export async function runX402Proxy(input: X402ProxyInput): Promise<X402ProxyResult> {
+export async function runX402Proxy(
+  input: X402ProxyInput,
+): Promise<WithAgentTrust<X402ProxyResult>> {
   const urlSec = assessUrlSecurity(input.targetUrl);
   const guard = await runPreX402Guard(input);
   const identity = runIdentityGate({
@@ -73,27 +75,30 @@ const paid = await x402Fetch("${input.targetUrl}", { method: "${input.downstream
   if (attestation) checks.push("attestation_issued");
   if (allowed) checks.push("preflight_pass");
 
-  return withAgentTrust(
-    {
-      allowed,
-      summary: allowed
-        ? "Proxy preflight passed — safe to pay downstream x402 endpoint"
-        : `Blocked — guard/identity/security failed (grade ${merged.securityGrade})`,
-      securityGrade: merged.securityGrade,
-      riskScore: merged.riskScore,
-      guard,
-      targetProbe: probe,
-      attestation,
-      clientFlow: {
-        step1: `POST ${config.publicBaseUrl}/api/x402/proxy`,
-        step2: `x402_check then x402_fetch ${input.targetUrl}`,
-        step3: attestation
-          ? `POST ${config.publicBaseUrl}/api/attestation/verify`
-          : `POST ${config.publicBaseUrl}/api/receipt-auditor/verify`,
-      },
-      supportedChains: ["solana", "base", "polygon"],
-      integrationSnippet: snippet,
+  const supportedChains: ChainKey[] = ["solana", "base", "polygon"];
+  const payload: X402ProxyResult = {
+    allowed,
+    summary: allowed
+      ? "Proxy preflight passed — safe to pay downstream x402 endpoint"
+      : `Blocked — guard/identity/security failed (grade ${merged.securityGrade})`,
+    securityGrade: merged.securityGrade,
+    riskScore: merged.riskScore,
+    guard,
+    targetProbe: probe,
+    attestation,
+    clientFlow: {
+      step1: `POST ${config.publicBaseUrl}/api/x402/proxy`,
+      step2: `x402_check then x402_fetch ${input.targetUrl}`,
+      step3: attestation
+        ? `POST ${config.publicBaseUrl}/api/attestation/verify`
+        : `POST ${config.publicBaseUrl}/api/receipt-auditor/verify`,
     },
+    supportedChains,
+    integrationSnippet: snippet,
+  };
+
+  return withAgentTrust(
+    payload,
     agentTrustMeta(checks, {
       confidence: allowed ? 0.84 : 0.7,
       sources: ["pre-x402-guard", "probe-endpoint", "attestation-registry"],

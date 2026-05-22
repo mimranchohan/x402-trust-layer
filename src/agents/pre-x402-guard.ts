@@ -1,4 +1,4 @@
-import { agentTrustMeta, withAgentTrust } from "../lib/agent-response.js";
+import { agentTrustMeta, withAgentTrust, type WithAgentTrust } from "../lib/agent-response.js";
 import { assessUrlSecurity } from "../lib/security.js";
 import { runIdentityGate } from "./identity-gate.js";
 import { runRiskGate } from "./risk-gate.js";
@@ -24,10 +24,13 @@ export type PreX402GuardResult = {
   identity: ReturnType<typeof runIdentityGate>;
   risk: Awaited<ReturnType<typeof runRiskGate>>;
   integrationHint: string;
+  overlapNote: string;
 };
 
 /** One paid call before x402_fetch — spend + identity + risk (replaces 3 separate calls). */
-export async function runPreX402Guard(input: PreX402GuardInput): Promise<PreX402GuardResult> {
+export async function runPreX402Guard(
+  input: PreX402GuardInput,
+): Promise<WithAgentTrust<PreX402GuardResult>> {
   const spendInput: SpendGovernorInput = {
     agentId: input.agentId,
     estimatedCostUsdc: input.estimatedCostUsdc,
@@ -69,22 +72,24 @@ export async function runPreX402Guard(input: PreX402GuardInput): Promise<PreX402
   ];
   if (allowed) checks.push("policy_pass");
 
+  const payload: PreX402GuardResult = {
+    allowed,
+    securityGrade: urlSec.grade,
+    summary: allowed
+      ? "Safe to proceed with x402 payment on targetUrl"
+      : `Blocked — ${blockers.join(" | ")}`,
+    savingsVsSeparateUsdc: 0.11,
+    spend,
+    identity,
+    risk,
+    overlapNote:
+      "Spend, identity, and risk are also available as separate endpoints; this bundle runs them in one call.",
+    integrationHint:
+      "Call POST /api/guard/pre-x402 once before every x402_fetch / OpenDexter paid call.",
+  };
+
   return withAgentTrust(
-    {
-      allowed,
-      securityGrade: urlSec.grade,
-      summary: allowed
-        ? "Safe to proceed with x402 payment on targetUrl"
-        : `Blocked — ${blockers.join(" | ")}`,
-      savingsVsSeparateUsdc: 0.11,
-      spend,
-      identity,
-      risk,
-      overlapNote:
-        "Spend, identity, and risk are also available as separate endpoints; this bundle runs them in one call.",
-      integrationHint:
-        "Call POST /api/guard/pre-x402 once before every x402_fetch / OpenDexter paid call.",
-    },
+    payload,
     agentTrustMeta(checks, {
       confidence: allowed ? 0.86 : 0.72,
       sources: ["spend-governor", "identity-gate", "risk-gate", "url-security"],
