@@ -17,6 +17,8 @@ export type ProbeResult = {
   warnings: string[];
 };
 
+import { assertSafeOutboundUrl, UnsafeUrlError } from "./ssrf.js";
+
 export type ProbeOptions = {
   method?: "GET" | "POST" | "HEAD";
   body?: string;
@@ -73,17 +75,50 @@ export async function probeEndpoint(targetUrl: string, options: ProbeOptions = {
   let body: unknown = null;
 
   try {
+    assertSafeOutboundUrl(targetUrl);
+  } catch (err) {
+    const msg = err instanceof UnsafeUrlError ? err.message : "URL blocked by policy";
+    warnings.push(msg);
+    return {
+      url: targetUrl,
+      status: 0,
+      requiresPayment: false,
+      authMode: "unknown",
+      priceUsdc: null,
+      network: null,
+      payTo: null,
+      paymentOptions: [],
+      warnings,
+    };
+  }
+
+  try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 12_000);
     const method = options.method ?? "GET";
     const headers: Record<string, string> = { accept: "application/json" };
-    const init: RequestInit = { method, redirect: "follow", signal: controller.signal, headers };
+    const init: RequestInit = { method, redirect: "manual", signal: controller.signal, headers };
     if (method === "POST") {
       headers["content-type"] = options.contentType ?? "application/json";
       init.body = options.body ?? "{}";
     }
     const res = await fetch(targetUrl, init);
     clearTimeout(timer);
+    if (res.status >= 300 && res.status < 400) {
+      warnings.push(`Redirects not followed (HTTP ${res.status}) — supply final URL directly`);
+      status = res.status;
+      return {
+        url: targetUrl,
+        status,
+        requiresPayment: false,
+        authMode: "unknown",
+        priceUsdc: null,
+        network: null,
+        payTo: null,
+        paymentOptions: [],
+        warnings,
+      };
+    }
     status = res.status;
     const text = await res.text();
     try {

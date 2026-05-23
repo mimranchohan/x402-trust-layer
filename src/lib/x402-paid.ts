@@ -3,6 +3,7 @@ import { USDC_BASE, x402Middleware } from "@dexterai/x402/server";
 import { config } from "../config.js";
 import { CHAIN_IDS, usdcAssetForCaip2, type ChainKey } from "./chains.js";
 import { bazaarExtensionForRequest } from "./bazaar-extension.js";
+import { resolvePaidResourceUrl } from "./paid-resource-url.js";
 
 function resolvePayTo(): string | Record<string, string> {
   if (!config.payToEvm) return config.payTo;
@@ -16,10 +17,11 @@ function resolvePayTo(): string | Record<string, string> {
   return map;
 }
 
-function resourceUrl(path: string): string {
-  const base = config.publicBaseUrl.replace(/\/$/, "");
-  const p = path.startsWith("/") ? path : `/${path}`;
-  return `${base}${p}`;
+function syncResourceUrl(parsed: Record<string, unknown>, req: Request): void {
+  const resource = parsed.resource as { url?: string } | undefined;
+  if (resource) {
+    resource.url = resolvePaidResourceUrl(req);
+  }
 }
 
 const baseMiddleware = {
@@ -80,10 +82,7 @@ function injectBazaarExtension(encoded: string, req: Request): string {
     >;
     normalizeAccepts(parsed);
     attachBazaarToPayload(parsed, req);
-    const resource = parsed.resource as { url?: string } | undefined;
-    if (resource) {
-      resource.url = resourceUrl(req.path);
-    }
+    syncResourceUrl(parsed, req);
     return Buffer.from(JSON.stringify(parsed)).toString("base64");
   } catch (err) {
     console.error("[x402-paid] injectBazaarExtension failed:", err);
@@ -109,9 +108,9 @@ export function createPaidMiddleware(): (
       ...baseMiddleware,
       amount,
       description,
-      verbose: false,
+      verbose: process.env.X402_VERBOSE === "1",
       timeoutSeconds: 120,
-      getResourceUrl: (req) => resourceUrl(req.path),
+      getResourceUrl: (req) => resolvePaidResourceUrl(req),
     });
 
     return (req: Request, res: Response, next: NextFunction) => {
@@ -121,6 +120,7 @@ export function createPaidMiddleware(): (
           const payload = body as Record<string, unknown>;
           normalizeAccepts(payload);
           attachBazaarToPayload(payload, req);
+          syncResourceUrl(payload, req);
         }
         return origJson(body);
       }) as typeof res.json;

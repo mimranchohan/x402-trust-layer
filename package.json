@@ -1,8 +1,28 @@
 {
   "name": "x402-agent-suite",
-  "version": "3.0.0",
-  "description": "x402 Agent Suite Pro v3 — 20 paid APIs, multi-chain, proxy, MPP v2, attestation registry",
+  "version": "3.1.0",
+  "description": "24 paid x402 infrastructure APIs for AI agent fleets — guard, proxy, MPP, attestations, multi-chain USDC",
   "type": "module",
+  "author": "Mimran Chohan",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mimranchohan/x402-agent-suite.git"
+  },
+  "homepage": "https://x402-agent-suite-production.up.railway.app",
+  "bugs": {
+    "url": "https://github.com/mimranchohan/x402-agent-suite/issues"
+  },
+  "keywords": [
+    "x402",
+    "ai-agents",
+    "usdc",
+    "dexter",
+    "micropayments",
+    "solana",
+    "base",
+    "agentic-market"
+  ],
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
@@ -10,6 +30,7 @@
     "demo": "tsx src/client/demo.ts",
     "doctor": "tsx scripts/doctor.ts",
     "typecheck": "tsc --noEmit",
+    "ci": "npm run typecheck && npm run verify:bazaar",
     "openapi:generate": "tsx scripts/generate-openapi.ts",
     "discovery:discover": "npx -y @agentcash/discovery@latest discover",
     "discovery:check": "npx -y @agentcash/discovery@latest check",

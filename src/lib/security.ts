@@ -1,4 +1,5 @@
 import { hostOf } from "./probe.js";
+import { isSafeOutboundUrl } from "./ssrf.js";
 
 const BLOCKED_HOST_PATTERNS = [
   "localhost",
@@ -29,6 +30,15 @@ export function assessUrlSecurity(url: string): SecurityAssessment {
   const host = hostOf(url);
   if (!host) {
     return { grade: "F", score: 0, threats: ["Invalid URL"], recommendations: ["Use HTTPS public endpoints only"] };
+  }
+
+  if (!isSafeOutboundUrl(url)) {
+    return {
+      grade: "F",
+      score: 0,
+      threats: ["URL blocked by SSRF policy (private/metadata/reserved hosts)"],
+      recommendations: ["Use public HTTPS endpoints only"],
+    };
   }
 
   if (!url.startsWith("https://")) {

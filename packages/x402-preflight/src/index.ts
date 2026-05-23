@@ -1,5 +1,20 @@
 import { wrapFetch } from "@dexterai/x402/client";
 
+const SOLANA_MAINNET = "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp";
+const DEFAULT_SOLANA_RPC = "https://api.mainnet-beta.solana.com";
+
+function wrapOptions(wallet: PreflightWallet) {
+  const rpcUrls = { [SOLANA_MAINNET]: DEFAULT_SOLANA_RPC };
+  if ("solanaPrivateKey" in wallet && wallet.solanaPrivateKey) {
+    return { walletPrivateKey: wallet.solanaPrivateKey, rpcUrls };
+  }
+  return {
+    evmPrivateKey: wallet.evmPrivateKey!,
+    preferredNetwork: "eip155:8453" as const,
+    rpcUrls,
+  };
+}
+
 export const DEFAULT_SUITE_BASE =
   "https://x402-agent-suite-production.up.railway.app";
 
@@ -37,12 +52,7 @@ export async function proxyPreflight(options: {
   fetchImpl?: typeof fetch;
 }): Promise<ProxyPreflightResult> {
   const base = (options.baseUrl ?? DEFAULT_SUITE_BASE).replace(/\/$/, "");
-  const x402Fetch = wrapFetch(
-    options.fetchImpl ?? fetch,
-    "solanaPrivateKey" in options.wallet && options.wallet.solanaPrivateKey
-      ? { walletPrivateKey: options.wallet.solanaPrivateKey }
-      : { evmPrivateKey: options.wallet.evmPrivateKey! },
-  );
+  const x402Fetch = wrapFetch(options.fetchImpl ?? fetch, wrapOptions(options.wallet));
 
   const res = await x402Fetch(`${base}/api/x402/proxy`, {
     method: "POST",
@@ -89,12 +99,7 @@ export async function guardPreflight(options: {
   fetchImpl?: typeof fetch;
 }): Promise<ProxyPreflightResult> {
   const base = (options.baseUrl ?? DEFAULT_SUITE_BASE).replace(/\/$/, "");
-  const x402Fetch = wrapFetch(
-    options.fetchImpl ?? fetch,
-    "solanaPrivateKey" in options.wallet && options.wallet.solanaPrivateKey
-      ? { walletPrivateKey: options.wallet.solanaPrivateKey }
-      : { evmPrivateKey: options.wallet.evmPrivateKey! },
-  );
+  const x402Fetch = wrapFetch(options.fetchImpl ?? fetch, wrapOptions(options.wallet));
 
   const res = await x402Fetch(`${base}/api/guard/pre-x402`, {
     method: "POST",

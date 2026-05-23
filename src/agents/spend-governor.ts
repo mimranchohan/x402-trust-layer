@@ -1,4 +1,5 @@
 import { getSpentToday, recordSpend } from "../lib/ledger.js";
+import { hostAllowed, hostBlocked } from "../lib/host-policy.js";
 import { hostOf } from "../lib/probe.js";
 import type { SpendGovernorInput, SpendGovernorResult } from "../types.js";
 
@@ -29,7 +30,7 @@ export async function runSpendGovernor(input: SpendGovernorInput): Promise<Spend
 
   if (targetUrl) {
     const host = hostOf(targetUrl);
-    if (host && policy.blockedHosts?.some((h) => host.includes(h.toLowerCase()))) {
+    if (host && hostBlocked(host, policy.blockedHosts)) {
       return {
         allowed: false,
         reason: `Host ${host} is blocked by policy`,
@@ -42,7 +43,7 @@ export async function runSpendGovernor(input: SpendGovernorInput): Promise<Spend
       host &&
       policy.allowedHosts &&
       policy.allowedHosts.length > 0 &&
-      !policy.allowedHosts.some((h) => host.includes(h.toLowerCase()))
+      !hostAllowed(host, policy.allowedHosts)
     ) {
       return {
         allowed: false,

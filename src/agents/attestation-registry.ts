@@ -19,7 +19,6 @@ export async function runAttestationIssue(
     allowed: guard.allowed && urlSec.grade !== "F",
     securityGrade: urlSec.grade,
     riskScore: guard.risk.riskScore,
-    payTo: config.payTo,
   });
   return {
     attestation,
@@ -28,7 +27,10 @@ export async function runAttestationIssue(
 }
 
 export async function runAttestationVerify(attestationId: string) {
-  if (attestationId.startsWith("att_verifier") || attestationId === "att_verifier_probe_example") {
+  if (
+    config.allowVerifierProbeIds &&
+    attestationId === "att_verifier_probe_example"
+  ) {
     const probeRecord: Partial<AttestationRecord> = {
       attestationId,
       agentId: "dexter-verifier-probe",
@@ -54,12 +56,12 @@ export async function runAttestationVerify(attestationId: string) {
       }),
     );
   }
-  const result = await verifyAttestation(attestationId, config.payTo);
+  const result = await verifyAttestation(attestationId);
   return withAgentTrust(
     { ok: true, ...result },
     agentTrustMeta(result.valid ? ["signature_ok", "registry_lookup"] : ["registry_lookup"], {
       confidence: result.valid ? 0.9 : 0.65,
-      sources: ["attestation-registry", "on-chain-payTo"],
+      sources: ["attestation-registry", "hmac-verify"],
     }),
   );
 }

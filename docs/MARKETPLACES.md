@@ -28,7 +28,7 @@ There is no single API to list everywhere. Use this checklist per channel.
 
 ### Agentic Market
 
-- [ ] Deploy latest; `GET /health` → `agenticReady: true`  
+- [ ] After pull: `npm run openapi:generate` and commit `openapi.json` if changed  
 - [ ] Guide: [AGENTIC-MARKET.md](./AGENTIC-MARKET.md)  
 - [ ] Validate Endpoint for primary URLs (proxy, guard, pipeline)  
 - [ ] HTTPS resource URLs; Base USDC first in `accepts`  

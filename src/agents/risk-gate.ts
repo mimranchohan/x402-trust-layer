@@ -1,4 +1,5 @@
 import { hostOf, probeEndpoint } from "../lib/probe.js";
+import { assertSafeOutboundUrl, UnsafeUrlError } from "../lib/ssrf.js";
 import { assessUrlSecurity, mergeSecurityIntoRisk } from "../lib/security.js";
 import type { RiskGateInput } from "../types.js";
 
@@ -24,6 +25,20 @@ export async function runRiskGate(input: RiskGateInput): Promise<RiskGateResult>
       reasons: ["Invalid URL"],
       probe: await probeEndpoint(input.targetUrl),
       securityRecommendations: ["Use HTTPS public endpoints only"],
+    };
+  }
+
+  try {
+    assertSafeOutboundUrl(input.targetUrl);
+  } catch (err) {
+    const msg = err instanceof UnsafeUrlError ? err.message : "URL blocked";
+    return {
+      safe: false,
+      riskScore: 100,
+      securityGrade: "F",
+      reasons: [msg],
+      probe: await probeEndpoint(input.targetUrl),
+      securityRecommendations: ["Use public HTTPS endpoints only"],
     };
   }
 

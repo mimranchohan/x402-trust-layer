@@ -60,7 +60,6 @@ export async function runX402Proxy(
       allowed,
       securityGrade: merged.securityGrade,
       riskScore: merged.riskScore,
-      payTo: config.payTo,
     });
   }
 

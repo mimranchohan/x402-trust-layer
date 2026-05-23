@@ -12,14 +12,18 @@ import { registerAgenticProbes, stripTrailingSlash } from "./lib/agentic-probes.
 import { KILLER_SELLER_ENDPOINTS, PRIMARY_ENTRYPOINTS } from "./lib/suite-catalog.js";
 import { listEndpoints, registerRoutes } from "./routes.js";
 import { registerX402gleHostVerification } from "./lib/x402gle-host-verify.js";
+import { SUITE_VERSION } from "./lib/version.js";
+import { rateLimitPerMinute } from "./lib/rate-limit.js";
 
 assertConfig();
 
 const app = express();
 app.set("trust proxy", true);
+app.disable("x-powered-by");
 registerX402gleHostVerification(app);
 app.use(stripTrailingSlash);
 app.use(express.json({ limit: "512kb" }));
+app.use("/api", rateLimitPerMinute(Number(process.env.RATE_LIMIT_PER_MIN ?? 120)));
 
 /** Canonical example bodies for x402gle / Dexter AI verifier (empty or partial POST) */
 app.use("/api", (req, _res, next) => {
@@ -41,7 +45,7 @@ app.get("/health", (_req, res) => {
   res.json({
     ok: true,
     service: "x402-agent-suite-pro",
-    version: "3.0.0",
+    version: SUITE_VERSION,
     chains: config.chains,
     networks: config.networks,
     endpointCount: listEndpoints().length,
@@ -131,14 +135,17 @@ app.get("/api/agentic/validate-urls", (_req, res) => {
 
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   console.error("[api error]", err);
+  const expose =
+    process.env.NODE_ENV !== "production" && !process.env.RAILWAY_ENVIRONMENT;
   res.status(500).json({
-    error: err instanceof Error ? err.message : "Internal server error",
+    error: "Internal server error",
+    ...(expose && err instanceof Error ? { detail: err.message } : {}),
   });
 });
 
 const host = "0.0.0.0";
 app.listen(config.port, host, () => {
-  console.log(`[boot] version=3.0.0 endpoints=${listEndpoints().length} chains=${config.chains.join(",")}`);
+  console.log(`[boot] version=${SUITE_VERSION} endpoints=${listEndpoints().length} chains=${config.chains.join(",")}`);
   console.log(`[boot] payToConfigured=${config.payTo.length > 0} git=${process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`);
   console.log(`x402 Agent Suite Pro listening on http://127.0.0.1:${config.port}`);
   console.log(`public=${config.publicBaseUrl}`);

@@ -8,6 +8,8 @@
 
 **Live:** https://x402-agent-suite-production.up.railway.app
 
+**Docs:** [Architecture](docs/ARCHITECTURE.md) · [Security](docs/SECURITY.md) · [Deploy checklist](docs/DEPLOY-CHECKLIST.md) · [Roadmap](docs/ROADMAP.md) · [Changelog](CHANGELOG.md)
+
 ---
 
 ## Start here (3 entry points)
@@ -67,7 +69,7 @@ Register: [x402scan.com/resources/register](https://www.x402scan.com/resources/r
 
 ```bash
 npm run probe:production    # unpaid 402 + discovery sync
-npm run demo                # paid calls (needs .env payer keys)
+npm run demo                # paid calls — payer keys in .env; restart `npm run dev` after pull (resource URL = request Host)
 # POST /api/seller/audition-coach on production origin
 npm run audition:x402gle    # Dexter full ingest (cooldown may apply)
 ```

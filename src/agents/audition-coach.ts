@@ -1,5 +1,6 @@
 import { buildBazaarExtension } from "../lib/bazaar-extension.js";
 import { hostOf, probeEndpoint } from "../lib/probe.js";
+import { assertSafeOutboundUrl } from "../lib/ssrf.js";
 import { VERIFY_EXAMPLES } from "../lib/verify-examples.js";
 
 export type AuditionCoachInput = {
@@ -37,12 +38,14 @@ export type AuditionCoachResult = {
 };
 
 async function fetchJson(url: string, timeoutMs = 15_000): Promise<{ ok: boolean; status: number; data: unknown }> {
+  assertSafeOutboundUrl(url);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const res = await fetch(url, {
       headers: { accept: "application/json" },
       signal: controller.signal,
+      redirect: "manual",
     });
     clearTimeout(timer);
     const text = await res.text();
@@ -186,6 +189,7 @@ function auditRoute(url: string, method: string, isOwnSuite: boolean): Promise<R
 
 export async function runAuditionCoach(input: AuditionCoachInput): Promise<AuditionCoachResult> {
   const origin = input.origin.replace(/\/$/, "");
+  assertSafeOutboundUrl(origin);
   const maxRoutes = Math.min(Math.max(input.maxRoutes ?? 24, 1), 30);
   const globalFixes: string[] = [];
   const routes: RouteAudit[] = [];

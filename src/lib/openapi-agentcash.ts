@@ -1,4 +1,5 @@
 import { config } from "../config.js";
+import { SUITE_VERSION } from "./version.js";
 import { listEndpoints } from "../routes.js";
 import { defaultOutputExample } from "./bazaar-extension.js";
 import { ENDPOINT_META } from "./openapi-meta.js";
@@ -116,76 +117,6 @@ function paymentRequiredResponse(): Record<string, unknown> {
   };
 }
 
-/** Free discovery endpoints — x402scan must not require 402 on these */
-function buildFreeOpenApiPaths(): Record<string, unknown> {
-  const base = config.publicBaseUrl.replace(/\/$/, "");
-  const catalogExample = {
-    version: 1,
-    resources: [`${base}/api/x402/proxy`],
-    ownershipProofs: [config.payToEvm, config.payTo].filter(Boolean),
-    instructions: "Free catalog — register paid URLs from resources[], not this path.",
-  };
-
-  return {
-    "/.well-known/x402": {
-      get: {
-        operationId: "get_well_known_x402_catalog",
-        summary: "x402 resource catalog (free, not payable)",
-        description:
-          "Lists absolute URLs of paid x402 resources on this host. Returns HTTP 200 without payment. x402scan: security is empty — do not probe for 402.",
-        tags: ["discovery", "free"],
-        security: [],
-        responses: {
-          "200": {
-            description: "Resource URL list for fan-out registration",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "object",
-                  properties: {
-                    version: { type: "integer" },
-                    resources: { type: "array", items: { type: "string", format: "uri" } },
-                    ownershipProofs: { type: "array", items: { type: "string" } },
-                    instructions: { type: "string" },
-                  },
-                  required: ["version", "resources"],
-                },
-                example: catalogExample,
-              },
-            },
-          },
-        },
-      },
-    },
-    "/health": {
-      get: {
-        operationId: "get_health",
-        summary: "Health check (free)",
-        description: "Railway/monitoring only — not an x402-paid route.",
-        tags: ["discovery", "free"],
-        security: [],
-        responses: {
-          "200": {
-            description: "Service health",
-            content: {
-              "application/json": {
-                schema: {
-                  type: "object",
-                  properties: {
-                    ok: { type: "boolean" },
-                    endpointCount: { type: "integer" },
-                    agenticReady: { type: "boolean" },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  };
-}
-
 function buildOperation(
   path: string,
   method: string,
@@ -258,9 +189,8 @@ function buildOperation(
 }
 
 export function buildAgentCashOpenApi(): Record<string, unknown> {
-  const paths: Record<string, unknown> = {
-    ...buildFreeOpenApiPaths(),
-  };
+  const base = config.publicBaseUrl.replace(/\/$/, "");
+  const paths: Record<string, unknown> = {};
 
   for (const entry of listEndpoints()) {
     const [method, route] = entry.path.split(" ");
@@ -292,22 +222,27 @@ export function buildAgentCashOpenApi(): Record<string, unknown> {
     },
     info: {
       title: "x402 Agent Suite Pro",
-      version: "3.0.0",
+      version: SUITE_VERSION,
       description:
         "24 paid x402 infrastructure APIs for AI agent fleets: buy advisor, audition coach, guard, proxy, MPP, attestations, and pipeline orchestration.",
       "x-guidance": AGENT_GUIDANCE,
     },
     "x-discovery": {
       ownershipProofs,
-      publicEndpoints: [
-        `${config.publicBaseUrl.replace(/\/$/, "")}/health`,
-        `${config.publicBaseUrl.replace(/\/$/, "")}/.well-known/x402`,
+      publicEndpoints: [`${base}/health`, `${base}/.well-known/x402`],
+      freeEndpoints: [
+        { path: "/health", method: "GET", purpose: "Monitoring — not in OpenAPI paths" },
+        {
+          path: "/.well-known/x402",
+          method: "GET",
+          purpose: "Paid URL catalog — register /api/* from resources[]",
+        },
       ],
     },
     "x-x402scan": {
       discoveryMode: "openapi-first",
       paidRouteCount: listEndpoints().length,
-      note: "GET /.well-known/x402 and GET /health are free (security: []). Register paid /api/* URLs from resources[].",
+      note: "OpenAPI lists 24 paid /api/* operations only. Free routes documented under x-discovery.freeEndpoints.",
     },
     servers: [{ url: config.publicBaseUrl }],
     paths,

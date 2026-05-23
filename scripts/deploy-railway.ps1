@@ -4,27 +4,42 @@
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot\..
 
-Write-Host "=== x402-agent-suite Railway deploy ===" -ForegroundColor Cyan
+Write-Host "=== x402-agent-suite Railway deploy (v3.1) ===" -ForegroundColor Cyan
 
 if (-not (Get-Command railway -ErrorAction SilentlyContinue)) {
   Write-Host "Installing Railway CLI..."
   npm install -g @railway/cli
 }
 
-if (-not (Test-Path .env)) {
-  Write-Host "WARNING: .env missing. Set variables in the Railway dashboard after deploy." -ForegroundColor Yellow
+function Read-EnvVar($name) {
+  $line = Get-Content .env -ErrorAction SilentlyContinue | Where-Object { $_ -match "^${name}=" }
+  if ($line) { return ($line -replace "^${name}=", "").Trim() }
+  return ""
 }
 
-$payTo = (Get-Content .env -ErrorAction SilentlyContinue | Where-Object { $_ -match '^PAY_TO_ADDRESS=' }) -replace '^PAY_TO_ADDRESS=', ''
-if (-not $payTo) {
-  $payTo = Read-Host "Enter PAY_TO_ADDRESS (Solana or EVM wallet)"
+$payTo = Read-EnvVar "PAY_TO_ADDRESS"
+$payToEvm = Read-EnvVar "PAY_TO_EVM"
+$attSecret = Read-EnvVar "ATTESTATION_HMAC_SECRET"
+
+if (-not $payTo) { $payTo = Read-Host "PAY_TO_ADDRESS (Solana receive)" }
+if (-not $payToEvm) { $payToEvm = Read-Host "PAY_TO_EVM (Base receive)" }
+if (-not $attSecret) {
+  Write-Host "Generate: openssl rand -hex 32" -ForegroundColor Yellow
+  $attSecret = Read-Host "ATTESTATION_HMAC_SECRET"
 }
 
 Write-Host "Linking project (first time only)..."
 railway link 2>$null
 
 Write-Host "Setting variables..."
-railway variables set "PAY_TO_ADDRESS=$payTo" "NETWORK=solana" "FACILITATOR_URL=https://x402.dexter.cash"
+railway variables set `
+  "PAY_TO_ADDRESS=$payTo" `
+  "PAY_TO_EVM=$payToEvm" `
+  "NETWORKS=base,solana" `
+  "FACILITATOR_URL=https://x402.dexter.cash" `
+  "ATTESTATION_HMAC_SECRET=$attSecret" `
+  "ALLOW_VERIFIER_PROBE_IDS=1" `
+  "RATE_LIMIT_PER_MIN=120"
 
 Write-Host "Deploying..."
 railway up --detach
@@ -33,5 +48,5 @@ Write-Host "Generating public URL..."
 railway domain
 
 Write-Host ""
-Write-Host "Done. Test: curl https://YOUR-DOMAIN/health" -ForegroundColor Green
-Write-Host "Then set PUBLIC_BASE_URL in local .env and run: npm run demo" -ForegroundColor Green
+Write-Host "Done. See docs/DEPLOY-CHECKLIST.md" -ForegroundColor Green
+Write-Host "  npm run probe:production" -ForegroundColor Green

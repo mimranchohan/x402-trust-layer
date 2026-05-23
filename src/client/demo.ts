@@ -3,15 +3,22 @@
  */
 import dotenv from "dotenv";
 import { wrapFetch } from "@dexterai/x402/client";
+import { CHAIN_IDS } from "../lib/chains.js";
+import {
+  assertDemoPayerNotReceiveWallet,
+  assertPayerKeys,
+  buildWrapFetchOptions,
+} from "../lib/x402-client-options.js";
 
 dotenv.config();
 
 const base = process.env.PUBLIC_BASE_URL ?? "http://127.0.0.1:3402";
-const evmKey = process.env.EVM_PRIVATE_KEY?.trim();
-const solKey = process.env.SOLANA_PRIVATE_KEY?.trim();
 
-if (!evmKey && !solKey) {
-  console.error("Set EVM_PRIVATE_KEY or SOLANA_PRIVATE_KEY in .env");
+try {
+  assertPayerKeys();
+  await assertDemoPayerNotReceiveWallet();
+} catch (err) {
+  console.error(err instanceof Error ? err.message : err);
   process.exit(1);
 }
 
@@ -21,15 +28,21 @@ async function assertServerUp(): Promise<void> {
   const res = await fetch(`${base}/health`);
   if (!res.ok) throw new Error(`health ${res.status}`);
   const body = (await res.json()) as { endpointCount?: number };
-  console.log(`Health OK — ${body.endpointCount ?? "?"} endpoints\n`);
+  console.log(`Health OK — ${body.endpointCount ?? "?"} endpoints`);
+  console.log(`Demo target: ${base}\n`);
 }
 
 await assertServerUp();
 
-const x402Fetch = wrapFetch(
-  fetch,
-  evmKey ? { evmPrivateKey: evmKey } : { walletPrivateKey: solKey! },
-);
+const wrapOpts = buildWrapFetchOptions({ verbose: process.env.X402_VERBOSE === "1" });
+const x402Fetch = wrapFetch(fetch, wrapOpts);
+const solRpc = wrapOpts.rpcUrls?.[CHAIN_IDS.solana];
+if (solRpc) {
+  console.log(`Solana RPC: ${solRpc} (avoids Dexter proxy StructError on USDC mint)\n`);
+}
+if (wrapOpts.preferredNetwork) {
+  console.log(`Preferred payment network: ${wrapOpts.preferredNetwork}\n`);
+}
 
 async function post(path: string, body: unknown) {
   try {
@@ -43,7 +56,16 @@ async function post(path: string, body: unknown) {
     console.log(text.slice(0, 1200) + (text.length > 1200 ? "..." : ""));
     console.log();
   } catch (err) {
-    console.error(`--- ${path} FAILED ---`, err, "\n");
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`--- ${path} FAILED ---`, msg);
+    if (msg.includes("verification failed")) {
+      console.error(
+        "  Hint: restart `npm run dev` after updating; resource URL must match demo target above.",
+      );
+      console.error("  Server: X402_VERBOSE=1 logs invalidReason. Client: X402_VERBOSE=1 for payment trace.\n");
+    } else {
+      console.error();
+    }
   }
 }
 

@@ -17,6 +17,8 @@ export function applyVerifierExampleBody(req: Request): void {
   }
 
   if (body && typeof body === "object" && !Array.isArray(body)) {
-    req.body = { ...ex, ...body };
+    const dangerous = ["targetUrl", "urls", "origin", "policy", "walletAddress", "externalCallEstimateUsdc"];
+    const hasDangerous = dangerous.some((k) => k in body && body[k] !== undefined);
+    req.body = hasDangerous ? { ...ex } : { ...ex, ...body };
   }
 }

@@ -1,57 +1,58 @@
-# Security Features (v3)
+# Security
 
-## Built-in controls
+Threat model: **paid public HTTP API** — every `/api/*` route requires x402 settlement via Dexter facilitator. Free routes: `/health`, discovery (`/.well-known/*`, `/openapi.json`).
 
-### URL security (`lib/security.ts`)
+## Controls (implemented)
 
-Every risk and proxy call assesses:
+| Area | Mechanism |
+|------|-----------|
+| Payment | `@dexterai/x402` middleware on all agent routes + Agentic GET/HEAD probes |
+| SSRF | `lib/ssrf.ts` — block private/reserved/metadata hosts before outbound `fetch`; probes use `redirect: manual` |
+| Host policy | `lib/host-policy.ts` — exact/subdomain allow/block (no substring bypass) |
+| Attestations | HMAC-SHA256 with `ATTESTATION_HMAC_SECRET` (server-only, 32+ chars in production) |
+| Rate limit | In-memory per-IP on `/api/*` (`RATE_LIMIT_PER_MIN`, default 120) |
+| Resource URL | `resolvePaidResourceUrl` — canonical public host; ignores forged `Host` off localhost |
+| Errors | Production 500 responses omit stack/message details |
+| x402gle claim | Challenge only on `/.well-known/*` paths — not global response headers |
+| Verifier bodies | Partial POST cannot override `targetUrl` / `policy` / `origin` |
+| Receipt auditor | Solana receipts **fail closed** until on-chain RPC verification exists |
 
-- HTTPS required (penalty for HTTP)
-- Blocked patterns: localhost, private IPs, metadata endpoints
-- High-risk TLD detection
-- Security grades **A–F** returned in API responses
+## Required production env (Railway)
 
-### Pre-x402 guard
-
-Combines in one payment:
-
-- Spend governor (daily + per-call caps, host allow/block lists)
-- Identity gate (wallet tier + risk score)
-- Risk gate (x402 probe + price cap + security grade)
-
-### Attestation registry
-
-- Signed attestations bound to `payTo` wallet
-- TTL (default 15 minutes)
-- Verify before partner agents accept downstream work
-- Optional header: `X-Suite-Attestation: att_...`
-
-### Evidence locker
-
-Tamper-evident export bundles for compliance audits.
-
-## Recommended policy (example)
-
-```json
-{
-  "dailyCapUsdc": 25,
-  "perCallCapUsdc": 0.5,
-  "allowedHosts": ["api.myceliasignal.com", "x402-agent-suite-production.up.railway.app"],
-  "blockedHosts": ["localhost", "127.0.0.1"],
-  "allowedNetworks": ["solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp", "eip155:8453"]
-}
+```env
+PAY_TO_ADDRESS=...
+PAY_TO_EVM=...
+PUBLIC_BASE_URL=https://your-app.up.railway.app
+NETWORKS=base,solana
+FACILITATOR_URL=https://x402.dexter.cash
+ATTESTATION_HMAC_SECRET=<openssl rand -hex 32>
 ```
 
-## Operational security
+**Never** set on server: `SOLANA_PRIVATE_KEY`, `EVM_PRIVATE_KEY` (receive-only server).
 
-- **Never** put `SOLANA_PRIVATE_KEY` on Railway — server only receives USDC
-- Use **HTTPS** `PUBLIC_BASE_URL` in production
-- Rotate wallet keys if exposed in chat or logs
-- Rate-limit abusive agents via `agentId` in spend ledger
+Optional:
 
-## Improving scores on Dexter
+```env
+ALLOW_VERIFIER_PROBE_IDS=1   # Dexter/x402gle empty-body attestation probe only
+RATE_LIMIT_PER_MIN=120
+X402GLE_CHALLENGE_TOKEN=...  # domain claim; rotate after verify
+```
 
-1. Return structured JSON (not 400 on empty body — suite injects examples)
-2. Keep responses under 30KB
-3. Run paid verification after deploy
-4. Maintain uptime on Railway
+## Known limitations (document for integrators)
+
+1. **MPP sessions / agent escrow** — in-memory ledger; session IDs are not bound to payer wallet yet. Use for planning, not custody.
+2. **Spend governor** — `agentId` is client-supplied; bind to wallet in your fleet orchestrator.
+3. **Attestation registry GET** — paid but returns metadata; cap `limit` ≤ 100.
+4. **Identity gate** — heuristic only; not on-chain KYC.
+5. **Edge rate limits** — add Cloudflare/Railway WAF for high-traffic abuse.
+
+## Incident response
+
+1. Rotate `ATTESTATION_HMAC_SECRET` (invalidates old attestations).
+2. Rotate receive wallets if payer keys leaked.
+3. Revoke `X402GLE_CHALLENGE_TOKEN` after domain claim.
+4. Review Railway logs for `[x402] settled` anomalies.
+
+## Reporting
+
+Open a private security issue on the repository or contact the maintainer listed in `package.json`.

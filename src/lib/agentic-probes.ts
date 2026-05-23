@@ -1,5 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { listEndpoints } from "../routes.js";
+import { SUITE_VERSION } from "./version.js";
 
 type PaidFn = (amount: string, description: string) => import("express").RequestHandler;
 
@@ -25,7 +26,7 @@ export function registerAgenticProbes(app: Express, paid: PaidFn): void {
         ok: true,
         endpoint: path,
         method: "POST",
-        version: "3.0.0",
+        version: SUITE_VERSION,
         confidence: 0.75,
         checks_passed: ["agentic_get_probe", "payment_settled"],
         sources: ["x402-agent-suite-pro"],

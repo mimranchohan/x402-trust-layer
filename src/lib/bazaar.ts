@@ -1,5 +1,6 @@
 import { config } from "../config.js";
 import { listEndpoints } from "../routes.js";
+import { SUITE_VERSION } from "./version.js";
 
 const SERVICE_NAME = "x402 Agent Suite Pro";
 const SERVICE_DESCRIPTION =
@@ -180,7 +181,7 @@ export function buildServicesManifest() {
 export function buildWellKnownX402() {
   return {
     name: SERVICE_NAME,
-    version: "3.0.0",
+    version: SUITE_VERSION,
     description: SERVICE_DESCRIPTION,
     baseUrl: config.publicBaseUrl,
     facilitator: config.facilitatorUrl,
@@ -202,7 +203,7 @@ export function buildDiscoverCatalog() {
   const routes = buildBazaarRoutes();
   return {
     service: SERVICE_NAME,
-    version: "3.0.0",
+    version: SUITE_VERSION,
     endpointCount: routes.length,
     resources: routes.map((r) => ({
       url: r.resource,

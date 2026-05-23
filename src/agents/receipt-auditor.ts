@@ -95,8 +95,9 @@ export async function runReceiptAuditor(input: ReceiptAuditorInput): Promise<Rec
     explorerUrl = `https://solscan.io/tx/${tx}`;
     checks.push({
       name: "on_chain_status",
-      passed: true,
-      detail: "Solana verification: open explorer URL to confirm (add RPC for auto-check in v2)",
+      passed: false,
+      detail:
+        "Solana on-chain verification not enabled — use explorer URL manually; do not treat as settled",
     });
   }
 

@@ -198,7 +198,7 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         .object({
           minGrade: z.string().optional(),
           agentId: z.string().optional(),
-          limit: z.coerce.number().optional(),
+          limit: z.coerce.number().int().min(1).max(100).optional(),
         })
         .safeParse(req.query);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });

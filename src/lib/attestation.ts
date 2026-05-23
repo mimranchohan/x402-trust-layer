@@ -1,7 +1,9 @@
-import { createHash, randomBytes } from "node:crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { config } from "../config.js";
+import { SUITE_VERSION } from "./version.js";
 
 export type AttestationRecord = {
   attestationId: string;
@@ -36,8 +38,19 @@ async function saveStore(rows: AttestationRecord[]): Promise<void> {
   await writeFile(storePath, JSON.stringify(rows.slice(-500), null, 2), "utf8");
 }
 
-function signPayload(payload: string, secret: string): string {
-  return createHash("sha256").update(`${secret}:${payload}`).digest("hex").slice(0, 32);
+function signPayload(payload: string): string {
+  return createHmac("sha256", config.attestationHmacSecret).update(payload).digest("hex");
+}
+
+function signaturesEqual(a: string, b: string): boolean {
+  try {
+    const ba = Buffer.from(a, "hex");
+    const bb = Buffer.from(b, "hex");
+    if (ba.length !== bb.length) return false;
+    return timingSafeEqual(ba, bb);
+  } catch {
+    return false;
+  }
 }
 
 export async function issueAttestation(input: {
@@ -49,7 +62,6 @@ export async function issueAttestation(input: {
   securityGrade: string;
   riskScore: number;
   ttlMinutes?: number;
-  payTo: string;
 }): Promise<AttestationRecord> {
   const ttl = input.ttlMinutes ?? 15;
   const now = new Date();
@@ -62,7 +74,7 @@ export async function issueAttestation(input: {
     allowed: input.allowed,
     expiresAt: expires.toISOString(),
   });
-  const signature = signPayload(payload, input.payTo);
+  const signature = signPayload(payload);
 
   const record: AttestationRecord = {
     attestationId,
@@ -75,7 +87,7 @@ export async function issueAttestation(input: {
     allowed: input.allowed,
     securityGrade: input.securityGrade,
     riskScore: input.riskScore,
-    suiteVersion: "3.0.0",
+    suiteVersion: SUITE_VERSION,
     signature,
   };
 
@@ -87,7 +99,6 @@ export async function issueAttestation(input: {
 
 export async function verifyAttestation(
   attestationId: string,
-  payTo: string,
 ): Promise<{ valid: boolean; record: AttestationRecord | null; reason: string }> {
   const rows = await loadStore();
   const record = rows.find((r) => r.attestationId === attestationId) ?? null;
@@ -102,8 +113,8 @@ export async function verifyAttestation(
     allowed: record.allowed,
     expiresAt: record.expiresAt,
   });
-  const expected = signPayload(payload, payTo);
-  if (expected !== record.signature) {
+  const expected = signPayload(payload);
+  if (!signaturesEqual(expected, record.signature)) {
     return { valid: false, record, reason: "Signature mismatch" };
   }
   if (!record.allowed) return { valid: false, record, reason: "Preflight was denied" };

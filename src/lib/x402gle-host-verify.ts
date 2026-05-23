@@ -8,13 +8,6 @@ export function x402gleChallengeToken(): string {
 export function registerX402gleHostVerification(app: import("express").Express): void {
   const token = x402gleChallengeToken();
 
-  if (token) {
-    app.use((_req, res, next) => {
-      res.setHeader("X-X402GLE-VERIFY", token);
-      next();
-    });
-  }
-
   const serveToken = (_req: Request, res: Response) => {
     if (!token) {
       res.status(404).type("text/plain").send("X402GLE_CHALLENGE_TOKEN not configured");
