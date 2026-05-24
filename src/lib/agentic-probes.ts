@@ -1,6 +1,7 @@
-import type { Express, Request, Response } from "express";
+import type { Express, NextFunction, Request, Response } from "express";
 import { listEndpoints } from "../routes.js";
-import { SUITE_VERSION } from "./version.js";
+import { applyVerifierExampleBody } from "./apply-verifier-body.js";
+import { markX402PaidForInternalPost } from "./x402-paid.js";
 
 type PaidFn = (amount: string, description: string) => import("express").RequestHandler;
 
@@ -13,31 +14,55 @@ export function stripTrailingSlash(req: Request, _res: Response, next: () => voi
   next();
 }
 
+/**
+ * x402gle/Dexter often pay for GET after 402. Re-dispatch as POST with canonical example body
+ * so verifiers get full agent JSON — not the old "Send POST with JSON" stub.
+ * Payment is verified on GET; POST stack skips a second settle via markX402PaidForInternalPost.
+ */
+function invokePaidProbeAsPost(app: Express, saveMethod: "GET" | "HEAD") {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    applyVerifierExampleBody(req);
+
+    const origJson = res.json.bind(res);
+    if (saveMethod === "HEAD") {
+      res.json = (() => {
+        res.status(200);
+        res.end();
+        return res;
+      }) as typeof res.json;
+    }
+
+    const prevMethod = req.method;
+    markX402PaidForInternalPost(req);
+    req.method = "POST";
+
+    app.handle(req, res, (err: unknown) => {
+      req.method = prevMethod;
+      if (saveMethod === "HEAD") {
+        res.json = origJson;
+      }
+      if (err) {
+        next(err);
+        return;
+      }
+      if (!res.headersSent) {
+        next();
+      }
+    });
+  };
+}
+
 export function registerAgenticProbes(app: Express, paid: PaidFn): void {
   for (const ep of listEndpoints()) {
-    const [method, path] = ep.path.split(" ");
-    if (method !== "POST") continue;
+    const [listedMethod, path] = ep.path.split(" ");
+    // Native GET routes (e.g. attestation registry) are registered in routes.ts — do not duplicate
+    if (listedMethod === "GET") continue;
+
     const amount = ep.price.replace(/^\$/, "");
-    const description = `x402 discovery probe for ${path} — POST for full response`;
+    const description = `x402 paid probe for ${path} — GET/HEAD returns same JSON as POST`;
     const paidMw = paid(amount, description);
 
-    const okHandler = (_req: Request, res: Response) => {
-      res.json({
-        ok: true,
-        endpoint: path,
-        method: "POST",
-        version: SUITE_VERSION,
-        confidence: 0.75,
-        checks_passed: ["agentic_get_probe", "payment_settled"],
-        sources: ["x402-agent-suite-pro"],
-        accuracy_note: "GET probe stub — send POST with JSON for full agent logic.",
-        hint: "Paid probe passed. Send POST with JSON body for full agent response.",
-      });
-    };
-
-    app.get(path, paidMw, okHandler);
-    app.head(path, paidMw, (_req, res) => {
-      if (!res.headersSent) res.status(200).end();
-    });
+    app.get(path, paidMw, invokePaidProbeAsPost(app, "GET"));
+    app.head(path, paidMw, invokePaidProbeAsPost(app, "HEAD"));
   }
 }
