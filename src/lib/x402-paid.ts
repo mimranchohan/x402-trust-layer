@@ -1,18 +1,4 @@
 import type { Request, Response, NextFunction } from "express";
-
-const INTERNAL_POST_FLAG = Symbol.for("x402.internalPostFromPaidGet");
-
-/** Skip second x402 settle when GET/HEAD probe re-dispatches to the POST handler stack. */
-export function markX402PaidForInternalPost(req: Request): void {
-  (req as Request & { [INTERNAL_POST_FLAG]?: boolean })[INTERNAL_POST_FLAG] = true;
-}
-
-function consumeInternalPostSkip(req: Request): boolean {
-  const r = req as Request & { [INTERNAL_POST_FLAG]?: boolean };
-  if (!r[INTERNAL_POST_FLAG]) return false;
-  delete r[INTERNAL_POST_FLAG];
-  return true;
-}
 import { USDC_BASE, x402Middleware } from "@dexterai/x402/server";
 import { config } from "../config.js";
 import { CHAIN_IDS, usdcAssetForCaip2, type ChainKey } from "./chains.js";
@@ -128,11 +114,6 @@ export function createPaidMiddleware(): (
     });
 
     return (req: Request, res: Response, next: NextFunction) => {
-      if (consumeInternalPostSkip(req)) {
-        next();
-        return;
-      }
-
       const origJson = res.json.bind(res);
       res.json = ((body?: unknown) => {
         if (bodyHasAccepts(body)) {

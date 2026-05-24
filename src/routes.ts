@@ -1,4 +1,4 @@
-import type { Express, Request, Response, NextFunction } from "express";
+import type { Express, Request, Response, NextFunction, RequestHandler } from "express";
 import { z } from "zod";
 import { runAgentEscrow } from "./agents/agent-escrow.js";
 import { runApiRouter } from "./agents/api-router.js";
@@ -79,27 +79,39 @@ const guardBodySchema = z.object({
   maxTierSpendUsdc: z.number().optional(),
 });
 
-export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRoute) {
-  app.post(
+export function registerRoutes(
+  app: Express,
+  paid: PaidFn,
+  asyncRoute: AsyncRoute,
+): Map<string, RequestHandler> {
+  const postHandlers = new Map<string, RequestHandler>();
+  const post = (
+    path: string,
+    amount: string | number,
+    description: string,
+    handler: (req: Request, res: Response) => Promise<void>,
+  ) => {
+    const core = asyncRoute(handler);
+    app.post(path, paid(String(amount), description), core);
+    postHandlers.set(path, core);
+  };
+
+  post(
     "/api/guard/pre-x402",
-    paid(
-      pricing.preX402Guard,
-      "Pre-x402 safety bundle: spend policy + wallet identity + URL risk probe in one call",
-    ),
-    asyncRoute(async (req, res) => {
+    pricing.preX402Guard,
+    "Pre-x402 safety bundle: spend policy + wallet identity + URL risk probe in one call",
+    async (req, res) => {
       const parsed = guardBodySchema.safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runPreX402Guard(parsed.data));
-    }),
+    },
   );
 
-  app.post(
+  post(
     "/api/pipeline/execute",
-    paid(
-      pricing.pipelineExecute,
-      "One-shot agent pipeline: guard, optional NL plan, facilitator routing, marketplace pick",
-    ),
-    asyncRoute(async (req, res) => {
+    pricing.pipelineExecute,
+    "One-shot agent pipeline: guard, optional NL plan, facilitator routing, marketplace pick",
+    async (req, res) => {
       const parsed = guardBodySchema
         .extend({
           task: z.string().min(3).optional(),
@@ -124,16 +136,14 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runPipelineExecute(parsed.data));
-    }),
+    },
   );
 
-  app.post(
+  post(
     "/api/x402/proxy",
-    paid(
-      pricing.x402Proxy,
-      "All-in-one x402 proxy: guard + security grade + attestation + downstream probe in one payment",
-    ),
-    asyncRoute(async (req, res) => {
+    pricing.x402Proxy,
+    "All-in-one x402 proxy: guard + security grade + attestation + downstream probe in one payment",
+    async (req, res) => {
       const parsed = guardBodySchema
         .extend({
           downstreamMethod: z.enum(["GET", "POST"]).optional(),
@@ -144,16 +154,14 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runX402Proxy(parsed.data));
-    }),
+    },
   );
 
-  app.post(
+  post(
     "/api/mpp/session",
-    paid(
-      pricing.mppSessionV2,
-      "MPP session lifecycle: open, voucher, close — batch settlement savings on Solana/Base",
-    ),
-    asyncRoute(async (req, res) => {
+    pricing.mppSessionV2,
+    "MPP session lifecycle: open, voucher, close — batch settlement savings on Solana/Base",
+    async (req, res) => {
       const parsed = z
         .object({
           action: z.enum(["open", "voucher", "close", "status"]),
@@ -167,27 +175,29 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runMppSessionV2(parsed.data));
-    }),
+    },
   );
 
-  app.post(
+  post(
     "/api/attestation/issue",
-    paid(pricing.attestationIssue, "Issue signed preflight attestation for partner agent trust networks"),
-    asyncRoute(async (req, res) => {
+    pricing.attestationIssue,
+    "Issue signed preflight attestation for partner agent trust networks",
+    async (req, res) => {
       const parsed = guardBodySchema.safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runAttestationIssue(parsed.data));
-    }),
+    },
   );
 
-  app.post(
+  post(
     "/api/attestation/verify",
-    paid(pricing.attestationVerify, "Verify attestation signature and expiry before downstream payment"),
-    asyncRoute(async (req, res) => {
+    pricing.attestationVerify,
+    "Verify attestation signature and expiry before downstream payment",
+    async (req, res) => {
       const parsed = z.object({ attestationId: z.string().min(8) }).safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runAttestationVerify(parsed.data.attestationId));
-    }),
+    },
   );
 
   app.get(
@@ -206,10 +216,11 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
     }),
   );
 
-  app.post(
+  post(
     "/api/payment-intent/compile",
-    paid(pricing.paymentCompiler, "Compile multi-step x402 agent execution plans from natural language tasks"),
-    asyncRoute(async (req, res) => {
+    pricing.paymentCompiler,
+    "Compile multi-step x402 agent execution plans from natural language tasks",
+    async (req, res) => {
       const parsed = z
         .object({
           task: z.string().min(3),
@@ -221,13 +232,14 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(runPaymentIntentCompiler(parsed.data));
-    }),
+    },
   );
 
-  app.post(
+  post(
     "/api/facilitator/failover",
-    paid(pricing.facilitatorFailover, "Rank x402 facilitators and recommend healthy failover routing"),
-    asyncRoute(async (req, res) => {
+    pricing.facilitatorFailover,
+    "Rank x402 facilitators and recommend healthy failover routing",
+    async (req, res) => {
       const parsed = z
         .object({
           targetUrl: z.string().url(),
@@ -236,13 +248,14 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runFacilitatorFailover(parsed.data));
-    }),
+    },
   );
 
-  app.post(
+  post(
     "/api/mpp/session-plan",
-    paid(pricing.mppBroker, "Estimate Solana MPP session savings versus per-call settlement"),
-    asyncRoute(async (req, res) => {
+    pricing.mppBroker,
+    "Estimate Solana MPP session savings versus per-call settlement",
+    async (req, res) => {
       const parsed = z
         .object({
           action: z.enum(["estimate", "plan"]).default("estimate"),
@@ -253,13 +266,14 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(runMppSessionBroker(parsed.data));
-    }),
+    },
   );
 
-  app.post(
+  post(
     "/api/spend-governor/check",
-    paid(pricing.spendGovernor, "Enforce per-call and daily USDC spend policies for AI agents"),
-    asyncRoute(async (req, res) => {
+    pricing.spendGovernor,
+    "Enforce per-call and daily USDC spend policies for AI agents",
+    async (req, res) => {
       const parsed = z
         .object({
           agentId: z.string().min(1),
@@ -271,13 +285,14 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runSpendGovernor(parsed.data));
-    }),
+    },
   );
 
-  app.post(
+  post(
     "/api/identity-gate/check",
-    paid(pricing.identityGate, "Wallet identity tier and risk scoring before paid API calls"),
-    asyncRoute(async (req, res) => {
+    pricing.identityGate,
+    "Wallet identity tier and risk scoring before paid API calls",
+    async (req, res) => {
       const parsed = z
         .object({
           walletAddress: z.string().min(16),
@@ -287,13 +302,14 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(runIdentityGate(parsed.data));
-    }),
+    },
   );
 
-  app.post(
+  post(
     "/api/risk-gate/scan",
-    paid(pricing.riskGate, "Probe x402 endpoint safety and return risk score before payment"),
-    asyncRoute(async (req, res) => {
+    pricing.riskGate,
+    "Probe x402 endpoint safety and return risk score before payment",
+    async (req, res) => {
       const parsed = z
         .object({
           targetUrl: z.string().url(),
@@ -308,16 +324,14 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runRiskGate(parsed.data));
-    }),
+    },
   );
 
-  app.post(
+  post(
     "/api/market/buy-advisor",
-    paid(
-      pricing.marketBuyAdvisor,
-      "x402 buy intelligence: rank marketplace APIs, policy preflight, chain and MPP advice before payment",
-    ),
-    asyncRoute(async (req, res) => {
+    pricing.marketBuyAdvisor,
+    "x402 buy intelligence: rank marketplace APIs, policy preflight, chain and MPP advice before payment",
+    async (req, res) => {
       const parsed = z
         .object({
           intent: z.string().min(2),
@@ -334,16 +348,14 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runMarketBuyAdvisor(parsed.data));
-    }),
+    },
   );
 
-  app.post(
+  post(
     "/api/seller/audition-coach",
-    paid(
-      pricing.auditionCoach,
-      "Seller audition coach: audit OpenAPI, well-known x402, and unpaid 402 probes with fix instructions",
-    ),
-    asyncRoute(async (req, res) => {
+    pricing.auditionCoach,
+    "Seller audition coach: audit OpenAPI, well-known x402, and unpaid 402 probes with fix instructions",
+    async (req, res) => {
       const parsed = z
         .object({
           origin: z.string().url(),
@@ -352,13 +364,14 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runAuditionCoach(parsed.data));
-    }),
+    },
   );
 
-  app.post(
+  post(
     "/api/router/route",
-    paid(pricing.apiRouter, "Select the best verified x402 marketplace API for a capability query"),
-    asyncRoute(async (req, res) => {
+    pricing.apiRouter,
+    "Select the best verified x402 marketplace API for a capability query",
+    async (req, res) => {
       const parsed = z
         .object({
           query: z.string().min(2),
@@ -369,13 +382,14 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runApiRouter(parsed.data));
-    }),
+    },
   );
 
-  app.post(
+  post(
     "/api/research/brief",
-    paid(pricing.researchBrief, "Build a paid-API research pipeline and cost estimate for any topic"),
-    asyncRoute(async (req, res) => {
+    pricing.researchBrief,
+    "Build a paid-API research pipeline and cost estimate for any topic",
+    async (req, res) => {
       const parsed = z
         .object({
           topic: z.string().min(2),
@@ -385,13 +399,14 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runResearchBrief(parsed.data));
-    }),
+    },
   );
 
-  app.post(
+  post(
     "/api/receipt-auditor/verify",
-    paid(pricing.receiptAuditor, "Verify x402 settlement receipts and on-chain transaction alignment"),
-    asyncRoute(async (req, res) => {
+    pricing.receiptAuditor,
+    "Verify x402 settlement receipts and on-chain transaction alignment",
+    async (req, res) => {
       const parsed = z
         .object({
           transactionHash: z.string().optional(),
@@ -410,13 +425,14 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runReceiptAuditor(parsed.data));
-    }),
+    },
   );
 
-  app.post(
+  post(
     "/api/refund-arbiter/evaluate",
-    paid(pricing.refundArbiter, "Evaluate buyer refund eligibility from verification signals"),
-    asyncRoute(async (req, res) => {
+    pricing.refundArbiter,
+    "Evaluate buyer refund eligibility from verification signals",
+    async (req, res) => {
       const parsed = z
         .object({
           verificationScore: z.number().min(0).max(100).optional(),
@@ -429,13 +445,14 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(runRefundArbiter(parsed.data));
-    }),
+    },
   );
 
-  app.post(
+  post(
     "/api/budget-allocator/run",
-    paid(pricing.budgetAllocator, "Allocate shared USDC budget across a fleet of agents by priority"),
-    asyncRoute(async (req, res) => {
+    pricing.budgetAllocator,
+    "Allocate shared USDC budget across a fleet of agents by priority",
+    async (req, res) => {
       const parsed = z
         .object({
           fleetId: z.string().min(1),
@@ -452,13 +469,14 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(runBudgetAllocator(parsed.data));
-    }),
+    },
   );
 
-  app.post(
+  post(
     "/api/settlement-graph/next",
-    paid(pricing.settlementGraph, "Recommend next paid APIs after a settlement receipt"),
-    asyncRoute(async (req, res) => {
+    pricing.settlementGraph,
+    "Recommend next paid APIs after a settlement receipt",
+    async (req, res) => {
       const parsed = z
         .object({
           lastEndpointPath: z.string().optional(),
@@ -468,23 +486,25 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runSettlementGraph(parsed.data));
-    }),
+    },
   );
 
-  app.post(
+  post(
     "/api/quality-monitor/probe",
-    paid(pricing.qualityMonitor, "Regression probe x402 endpoints and return quality scores"),
-    asyncRoute(async (req, res) => {
+    pricing.qualityMonitor,
+    "Regression probe x402 endpoints and return quality scores",
+    async (req, res) => {
       const parsed = z.object({ urls: z.array(z.string().url()).min(1).max(10) }).safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runQualityMonitor(parsed.data));
-    }),
+    },
   );
 
-  app.post(
+  post(
     "/api/evidence-locker/export",
-    paid(pricing.evidenceLocker, "Export tamper-evident compliance bundles for x402 settlements"),
-    asyncRoute(async (req, res) => {
+    pricing.evidenceLocker,
+    "Export tamper-evident compliance bundles for x402 settlements",
+    async (req, res) => {
       const parsed = z
         .object({
           organizationId: z.string().min(1),
@@ -502,13 +522,14 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(runEvidenceLocker(parsed.data));
-    }),
+    },
   );
 
-  app.post(
+  post(
     "/api/agent-escrow",
-    paid(pricing.agentEscrow, "Create and manage agent-to-agent USDC escrow records"),
-    asyncRoute(async (req, res) => {
+    pricing.agentEscrow,
+    "Create and manage agent-to-agent USDC escrow records",
+    async (req, res) => {
       const parsed = z
         .object({
           action: z.enum(["create", "status", "release"]),
@@ -544,7 +565,7 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
         return;
       }
       res.json(await runAgentEscrow({ action: b.action, escrowId: b.escrowId }));
-    }),
+    },
   );
 
   app.get("/api/pipeline/full", (_req, res) => {
@@ -572,4 +593,6 @@ export function registerRoutes(app: Express, paid: PaidFn, asyncRoute: AsyncRout
       bundleSavingsNote: "pre-x402 guard replaces 3 calls ($0.16 → $0.05); pipeline/execute replaces guard+plan+failover+router ($0.27+ → $0.25)",
     });
   });
+
+  return postHandlers;
 }

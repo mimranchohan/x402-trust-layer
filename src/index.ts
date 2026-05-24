@@ -118,8 +118,8 @@ app.get("/", (_req, res) => {
   });
 });
 
-registerRoutes(app, paid, asyncRoute);
-registerAgenticProbes(app, paid);
+const postHandlers = registerRoutes(app, paid, asyncRoute);
+registerAgenticProbes(app, paid, postHandlers);
 
 /** Copy-paste URLs for Agentic Validate Endpoint (free) */
 app.get("/api/agentic/validate-urls", (_req, res) => {
