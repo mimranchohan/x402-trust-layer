@@ -4,11 +4,28 @@ type Bucket = { count: number; resetAt: number };
 
 const buckets = new Map<string, Bucket>();
 
-/** Simple in-memory rate limit (per IP). Use edge/WAF limits in production at scale. */
+function clientKey(req: Request): string {
+  return req.ip ?? req.socket.remoteAddress ?? "unknown";
+}
+
+function hasPaymentSignature(req: Request): boolean {
+  const h = req.headers["payment-signature"];
+  return typeof h === "string" && h.length > 0;
+}
+
+/**
+ * Rate limit paid retries only. Unpaid discovery probes (x402scan, AgentCash) must reach
+ * x402 middleware and return 402 — never 429.
+ */
 export function rateLimitPerMinute(maxRequests: number) {
   const windowMs = 60_000;
   return (req: Request, res: Response, next: NextFunction): void => {
-    const key = req.ip ?? req.socket.remoteAddress ?? "unknown";
+    if (!hasPaymentSignature(req)) {
+      next();
+      return;
+    }
+
+    const key = clientKey(req);
     const now = Date.now();
     let bucket = buckets.get(key);
     if (!bucket || now >= bucket.resetAt) {
@@ -17,7 +34,38 @@ export function rateLimitPerMinute(maxRequests: number) {
     }
     bucket.count += 1;
     if (bucket.count > maxRequests) {
-      res.status(429).json({ error: "Too many requests", retryAfterSeconds: Math.ceil((bucket.resetAt - now) / 1000) });
+      res.status(429).json({
+        error: "Too many paid requests",
+        retryAfterSeconds: Math.ceil((bucket.resetAt - now) / 1000),
+      });
+      return;
+    }
+    next();
+  };
+}
+
+/** Optional cap on unpaid probes per IP (very high — blocks only extreme abuse) */
+export function rateLimitUnpaidProbes(maxPerMinute: number) {
+  const windowMs = 60_000;
+  const bucketsUnpaid = new Map<string, Bucket>();
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (hasPaymentSignature(req)) {
+      next();
+      return;
+    }
+    const key = clientKey(req);
+    const now = Date.now();
+    let bucket = bucketsUnpaid.get(key);
+    if (!bucket || now >= bucket.resetAt) {
+      bucket = { count: 0, resetAt: now + windowMs };
+      bucketsUnpaid.set(key, bucket);
+    }
+    bucket.count += 1;
+    if (bucket.count > maxPerMinute) {
+      res.status(429).json({
+        error: "Too many discovery probes",
+        retryAfterSeconds: Math.ceil((bucket.resetAt - now) / 1000),
+      });
       return;
     }
     next();

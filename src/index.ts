@@ -13,7 +13,7 @@ import { KILLER_SELLER_ENDPOINTS, PRIMARY_ENTRYPOINTS } from "./lib/suite-catalo
 import { listEndpoints, registerRoutes } from "./routes.js";
 import { registerX402gleHostVerification } from "./lib/x402gle-host-verify.js";
 import { SUITE_VERSION } from "./lib/version.js";
-import { rateLimitPerMinute } from "./lib/rate-limit.js";
+import { rateLimitPerMinute, rateLimitUnpaidProbes } from "./lib/rate-limit.js";
 
 assertConfig();
 
@@ -23,6 +23,8 @@ app.disable("x-powered-by");
 registerX402gleHostVerification(app);
 app.use(stripTrailingSlash);
 app.use(express.json({ limit: "512kb" }));
+/** Unpaid probes → 402 (x402scan). Paid retries capped separately. */
+app.use("/api", rateLimitUnpaidProbes(Number(process.env.RATE_LIMIT_UNPAID_PER_MIN ?? 600)));
 app.use("/api", rateLimitPerMinute(Number(process.env.RATE_LIMIT_PER_MIN ?? 120)));
 
 /** Canonical example bodies for x402gle / Dexter AI verifier (empty or partial POST) */

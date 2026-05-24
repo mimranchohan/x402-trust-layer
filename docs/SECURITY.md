@@ -10,7 +10,7 @@ Threat model: **paid public HTTP API** — every `/api/*` route requires x402 se
 | SSRF | `lib/ssrf.ts` — block private/reserved/metadata hosts before outbound `fetch`; probes use `redirect: manual` |
 | Host policy | `lib/host-policy.ts` — exact/subdomain allow/block (no substring bypass) |
 | Attestations | HMAC-SHA256 with `ATTESTATION_HMAC_SECRET` (server-only, 32+ chars in production) |
-| Rate limit | In-memory per-IP on `/api/*` (`RATE_LIMIT_PER_MIN`, default 120) |
+| Rate limit | Unpaid probes → 402 (no 429 for x402scan); paid retries capped (`RATE_LIMIT_PER_MIN`) |
 | Resource URL | `resolvePaidResourceUrl` — canonical public host; ignores forged `Host` off localhost |
 | Errors | Production 500 responses omit stack/message details |
 | x402gle claim | Challenge only on `/.well-known/*` paths — not global response headers |
