@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>x402 Agent Suite Pro — X Thread Pack (25)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #070b12;
+      --panel: #0f1623;
+      --panel2: #141c2b;
+      --cyan: #22d3ee;
+      --cyan-dim: rgba(34, 211, 238, 0.12);
+      --text: #e8eef7;
+      --muted: #8b9cb3;
+      --border: rgba(34, 211, 238, 0.22);
+      --good: #34d399;
+      --warn: #fbbf24;
+      --bad: #f87171;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "DM Sans", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 32px 24px 80px;
+    }
+    .wrap { max-width: 920px; margin: 0 auto; }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 40px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand img { width: 72px; height: 72px; }
+    .brand h1 { margin: 0; font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+    .brand p { margin: 6px 0 0; color: var(--muted); font-size: 0.95rem; }
+    .instr {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 40px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .instr strong { color: var(--cyan); }
+    .post {
+      margin-bottom: 56px;
+      scroll-margin-top: 24px;
+    }
+    .post-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .post-head span {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--cyan);
+    }
+    .tweet-box {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .tweet-box label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 10px;
+    }
+    .tweet-text {
+      white-space: pre-wrap;
+      font-size: 0.98rem;
+      margin: 0;
+      font-family: inherit;
+      color: var(--text);
+    }
+    .copy-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: var(--cyan-dim);
+      border: 1px solid var(--border);
+      color: var(--cyan);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .copy-btn:hover { background: rgba(34, 211, 238, 0.22); }
+    .graphic-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    /* Export card 1200x675 aspect */
+    .graphic {
+      width: 100%;
+      max-width: 900px;
+      aspect-ratio: 1200 / 675;
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      font-size: clamp(0.65rem, 1.4vw, 0.85rem);
+    }
+    .g-head {
+      background: var(--cyan);
+      color: #061018;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .g-head h3 {
+      margin: 0;
+      font-size: clamp(0.9rem, 2vw, 1.15rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .g-badge {
+      background: rgba(6, 16, 24, 0.25);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.8em;
+      white-space: nowrap;
+    }
+    .g-body {
+      flex: 1;
+      padding: 16px 20px 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 20px;
+    }
+    .g-full { grid-column: 1 / -1; }
+    .g-block h4 {
+      margin: 0 0 6px;
+      font-size: 0.65em;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--cyan);
+    }
+    .g-block p, .g-block ul {
+      margin: 0;
+      color: var(--text);
+      font-size: 0.95em;
+      line-height: 1.45;
+    }
+    .g-block ul { padding-left: 1.1em; }
+    .chains {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: var(--cyan-dim);
+      border: 1px solid var(--border);
+      font-size: 0.85em;
+      font-weight: 600;
+      color: var(--cyan);
+    }
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      grid-column: 1 / -1;
+    }
+    .col {
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+    }
+    .col h5 { margin: 0 0 6px; font-size: 0.9em; color: var(--cyan); }
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      grid-column: 1 / -1;
+    }
+    .flow span {
+      background: var(--cyan-dim);
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.85em;
+    }
+    .flow .arr { color: var(--muted); background: none; border: none; padding: 0; }
+    .g-foot {
+      padding: 10px 20px 14px;
+      border-top: 1px solid var(--border);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.75em;
+      color: var(--muted);
+    }
+    .score-row {
+      display: flex;
+      gap: 10px;
+      grid-column: 1 / -1;
+    }
+    .score {
+      flex: 1;
+      background: rgba(0,0,0,0.25);
+      border-radius: 8px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+    }
+    .score b { color: var(--good); font-size: 1.2em; }
+    @media print {
+      body { background: #fff; color: #111; }
+      .copy-btn, .instr { display: none; }
+      .post { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">
+      <img src="assets/logo.svg" alt="x402 Agent Suite Pro logo" />
+      <div>
+        <h1>x402 Agent Suite Pro — X Thread Pack</h1>
+        <p>25 posts · tweet upar · graphic neeche · Solana + Base USDC</p>
+      </div>
+    </div>
+    <div class="instr">
+      <strong>Order:</strong> Copy tweet → post on X → screenshot ya save the <strong>graphic box below</strong> → attach under same tweet.
+      Open <code>X-THREAD-POSTING-GUIDE.md</code> for full steps.
+    </div>
+    <div id="posts"></div>
+  </div>
+  <script>
+    const BASE = "https://x402-agent-suite-production.up.railway.app";
+    const posts = [
+      { n: 1, title: "Thread hook — 5 APIs", tweet: `AI agents now pay for APIs with HTTP 402 + USDC.\n\nThe hard part isn't sending money—it's knowing whether you should pay.\n\nx402 Agent Suite Pro = guards before pay, trust + refund signals after.\n\nThis thread: 5 hero APIs, Solana + Base chains, comparisons.\n\n🧵`, graphic: { head: "x402 AGENT SUITE PRO", blocks: [
+        { full: true, h: "How it works", p: "Pay-per-call infrastructure: unpaid 402 → Dexter USDC settle → agent JSON. Not a wallet. Not a marketplace." },
+        { h: "Benefit", p: "Decide before you pay. Trust after you pay. Refund signals when delivery fails." },
+        { h: "Chains", pills: ["Solana USDC", "Base USDC", "Dexter facilitator"] },
+        { full: true, h: "5 APIs in this thread", p: "Proxy · Pipeline · Attestation Verify · Registry GET · Refund Arbiter" },
+        { full: true, flow: ["402 probe", "USDC pay", "Trust JSON"] }
+      ]}},
+      { n: 2, title: "The problem", tweet: `Most agents still run this loop:\n\n1) Unknown x402 URL\n2) Pay USDC immediately\n3) Hope the JSON isn't empty—no proof\n\nMissing: spend preflight, fleet trust registry, refund eligibility signal.\n\nWe're not a wallet or marketplace. We're the control plane around x402 payments.`, graphic: { head: "THE PROBLEM TODAY", compare: [
+        { h: "Before (risky)", items: ["Hit unknown x402", "Pay USDC", "Hope JSON is valid"] },
+        { h: "With suite", items: ["Proxy preflight", "Attestation + registry", "Refund arbiter signal"] }
+      ], blocks: [
+        { h: "Benefit", p: "Safer agent spend without holding user keys." },
+        { h: "Chains", pills: ["Solana USDC", "Base USDC"] }
+      ]}},
+      { n: 3, title: "Product overview", tweet: `x402 Agent Suite Pro\n\n• 24 paid infrastructure APIs (live)\n• Go-to-market focus: 5 best-verified routes\n• Chains: Solana USDC + Base USDC\n• Settlement: Dexter facilitator (x402.dexter.cash)\n\nProduction:\n${BASE}\n\nOpenAPI: /openapi.json`, graphic: { head: "PRODUCT OVERVIEW", blocks: [
+        { h: "How it works", p: "24 paid routes on Railway. Buyers discover via OpenAPI + .well-known/x402." },
+        { h: "Benefit", p: "5 focus APIs for marketing; full suite for fleets." },
+        { h: "Chains", pills: ["Solana USDC", "Base USDC"] },
+        { full: true, h: "URLs", p: BASE + " · /openapi.json · /x402/api/discover" }
+      ]}},
+      { n: 4, title: "x402 payment flow", tweet: `Every paid API uses the same x402 flow:\n\n1) Unpaid call → 402 + PAYMENT-REQUIRED (USDC amount)\n2) Client signs + settles via Dexter (Solana or Base)\n3) Retry with payment header → 200 + agent JSON + receipt\n\nUnpaid calls never run business logic—only 402. Built for x402scan + Agentic Market.`, graphic: { head: "X402 PAYMENT FLOW", blocks: [
+        { full: true, flow: ["Unpaid request", "402 + requirements", "Dexter settle", "200 + JSON"] },
+        { h: "Benefit", p: "Standard machine-readable paywall for scanners and agents." },
+        { h: "Chains", pills: ["Solana USDC", "Base USDC"] }
+      ]}},
+      { n: 5, title: "API 1 — x402 Proxy", tweet: `API 1/5 — x402 Proxy · $0.08 · POST /api/x402/proxy\n\nHow it works:\nOne payment runs spend check + wallet tier + URL risk probe (+ optional attestation issue).\n\nBenefit:\n~$0.16 across 3 separate calls → $0.08 preflight before every downstream x402 pay.\n\nChains: Solana USDC + Base USDC`, graphic: { head: "X402 PROXY · $0.08", blocks: [
+        { h: "How it works", p: "POST /api/x402/proxy — guard + identity + risk in one USDC payment." },
+        { h: "Benefit", p: "Default preflight before ANY downstream x402 API." },
+        { h: "Chains", pills: ["Solana USDC", "Base USDC"] },
+        { full: true, h: "Replaces", p: "3 calls (~$0.16) → 1 call ($0.08)" }
+      ]}},
+      { n: 6, title: "Proxy I/O", tweet: `x402 Proxy — what you send / what you get\n\nSend: agentId, walletAddress, targetUrl, estimatedCostUsdc, policy (daily + per-call cap)\n\nGet: allowed or deny, security grade, risk score, optional attestationId\n\nUse case: Oracles, data APIs, any x402 endpoint—8¢ preflight before you pay downstream.`, graphic: { head: "PROXY — INPUTS & OUTPUTS", blocks: [
+        { h: "Send", p: "agentId · walletAddress · targetUrl · estimatedCostUsdc · policy caps" },
+        { h: "Get", p: "allow/deny · security grade · risk score · attestationId (optional)" },
+        { h: "Benefit", p: "8¢ preflight saves bad $0.50+ downstream pays." },
+        { h: "Chains", pills: ["Solana USDC", "Base USDC"] }
+      ]}},
+      { n: 7, title: "API 2 — Pipeline", tweet: `API 2/5 — Pipeline Execute · $0.25 · POST /api/pipeline/execute\n\nHow it works:\nGuard → optional NL payment plan → facilitator failover rank → marketplace API pick—one response.\n\nBenefit:\n4–5 suite calls for multi-hop agent tasks → one orchestration receipt.\n\nChains: Solana USDC + Base USDC`, graphic: { head: "PIPELINE EXECUTE · $0.25", blocks: [
+        { full: true, flow: ["Guard", "NL plan", "Failover", "Router pick"] },
+        { h: "Benefit", p: "Fleet jobs: one receipt, one orchestration call." },
+        { h: "Chains", pills: ["Solana USDC", "Base USDC"] }
+      ]}},
+      { n: 8, title: "Proxy vs Pipeline", tweet: `When to use Proxy vs Pipeline?\n\nProxy ($0.08): every downstream x402 hop—daily preflight\nPipeline ($0.25): budget + marketplace + full execution graph in one call\n\nRule: Proxy on every pay · Pipeline when the agent plans fleet spend.`, graphic: { head: "COMPARISON", compare: [
+        { h: "Proxy $0.08", items: ["Every x402 hop", "Daily preflight", "Lightweight"] },
+        { h: "Pipeline $0.25", items: ["Multi-step tasks", "Budget + marketplace", "Full graph"] }
+      ], blocks: [{ full: true, h: "Rule", p: "Proxy daily · Pipeline when planning spend." }] }},
+      { n: 9, title: "Trust Pack", tweet: `Trust Pack (3 APIs) — strongest x402gle scores in our suite:\n\n• Attestation Verify — $0.02 (score 82)\n• Registry GET — $0.02 (score 78)\n• Refund Arbiter — $0.08 (score 86)\n\nTrust trio ~$0.12. Attestation issue optional via Proxy ($0.08) or /attestation/issue ($0.04).`, graphic: { head: "TRUST PACK", scores: [
+        { name: "Verify", price: "$0.02", s: 82 },
+        { name: "Registry", price: "$0.02 GET", s: 78 },
+        { name: "Refund", price: "$0.08", s: 86 }
+      ], blocks: [{ full: true, h: "Benefit", p: "Pay-before-trust · fleet lookup · buyer protection ~$0.12" }] }},
+      { n: 10, title: "API 3 — Verify", tweet: `API 3/5 — Attestation Verify · $0.02 · POST /api/attestation/verify\n\nHow it works:\nSend attestationId → validate HMAC signature, expiry, grade metadata.\n\nBenefit:\nPartner agents can reject paid calls without valid preflight proof—trust network layer.\n\nChains: Solana + Base (links to Proxy/issue for attestation creation)`, graphic: { head: "ATTESTATION VERIFY · $0.02", blocks: [
+        { h: "How it works", p: "POST attestationId → valid, reason, expiry, grade." },
+        { h: "Benefit", p: "Verify BEFORE partner payment. x402gle score 82." },
+        { h: "Chains", pills: ["Solana USDC", "Base USDC"] }
+      ]}},
+      { n: 11, title: "What is attestation", tweet: `What is an attestation?\n\nHMAC-signed record: agent + target URL + risk/grade snapshot + expiry.\n\nNot custody. Not KYC. Cryptographic proof: "this agent may spend on this URL."\n\nIssue via POST /api/attestation/issue ($0.04) or optional inside x402 Proxy.`, graphic: { head: "ATTESTATION EXPLAINED", blocks: [
+        { h: "How it works", p: "HMAC-signed preflight record with expiry." },
+        { h: "Benefit", p: "Cryptographic spend intent—not custody." },
+        { full: true, h: "Issue paths", p: "POST /api/attestation/issue $0.04 · or via Proxy $0.08" }
+      ]}},
+      { n: 12, title: "API 4 — Registry", tweet: `API 4/5 — Attestation Registry · $0.02 · GET /api/attestation/registry\n\nHow it works:\nQuery minGrade, agentId, limit → JSON list of active attestations.\n\nBenefit:\nFleet dashboards + x402gle crawlers: which agents are cleared for which targets.\n\nReal GET payload—not a stub. Score 78 on x402gle.`, graphic: { head: "REGISTRY GET · $0.02", blocks: [
+        { h: "How it works", p: "GET ?minGrade &agentId &limit → fleet JSON list." },
+        { h: "Benefit", p: "Fleet audit + verifier-friendly real GET. Score 78." },
+        { h: "Chains", pills: ["Solana USDC", "Base USDC"] }
+      ]}},
+      { n: 13, title: "API 5 — Refund", tweet: `API 5/5 — Refund Arbiter · $0.08 · POST /api/refund-arbiter/evaluate\n\nHow it works:\nFeed verificationScore, empty/generic response, amount mismatch → structured refund eligibility + reason.\n\nBenefit:\nMarketplace buyers get a policy signal—highest suite score (86). Does not execute on-chain refunds.\n\nChains: Solana + Base settlement audit context`, graphic: { head: "REFUND ARBITER · $0.08", blocks: [
+        { h: "How it works", p: "Signals in → refund eligibility + rationale out." },
+        { h: "Benefit", p: "Buyer protection layer. Highest score 86. Policy only." },
+        { h: "Chains", pills: ["Solana USDC", "Base USDC"] }
+      ]}},
+      { n: 14, title: "Trust flow", tweet: `Recommended Trust Pack sequence:\n\n1) POST /api/x402/proxy — preflight ($0.08)\n2) Pay downstream x402 API (their price)\n3) POST /api/receipt-auditor/verify — optional ($0.05)\n4) POST /api/refund-arbiter/evaluate — if response bad ($0.08)\n5) GET /api/attestation/registry — fleet audit ($0.02)\n\nSuite-only trust path: ~$0.23 + downstream`, graphic: { head: "TRUST PACK FLOW", blocks: [
+        { full: true, flow: ["Proxy $0.08", "Downstream pay", "Receipt $0.05", "Refund $0.08", "Registry $0.02"] },
+        { full: true, h: "Benefit", p: "End-to-end safe x402 spend path ~$0.23 suite-only" }
+      ]}},
+      { n: 15, title: "Data honesty", tweet: `Where does data go? (honest)\n\nWE STORE: last 500 attestations, spend ledger by agentId/day, MPP/escrow metadata (JSON files)\n\nWE DO NOT STORE: downstream API bodies, payment keys, evidence locker archives\n\nPayments: on-chain USDC → published receive wallets via Dexter facilitator.\n\nPrivacy-forward infrastructure—not a data broker.`, graphic: { head: "DATA & PRIVACY", compare: [
+        { h: "We store", items: ["500 attestations", "Spend by agent/day", "MPP/escrow meta"] },
+        { h: "We do not store", items: ["Downstream bodies", "Private keys", "Evidence archives"] }
+      ], blocks: [{ h: "Payments", p: "On-chain USDC via Dexter to receive wallets." }] }},
+      { n: 16, title: "For sellers", tweet: `Selling an x402 API?\n\nBuyers can Proxy-probe your endpoint before pay.\nYour issued attestations can be Verify-checked.\nEmpty JSON triggers Refund Arbiter signals on their side.\n\nYour win: more buyer trust → more paid 402 conversions.\n\nList on Dexter Bazaar + x402scan + Agentic Market alongside your resource.`, graphic: { head: "FOR X402 SELLERS", blocks: [
+        { h: "How it works", p: "Buyers preflight YOUR endpoint via Proxy." },
+        { h: "Benefit", p: "Higher trust → more paid 402 conversions." },
+        { full: true, h: "List on", p: "Dexter · x402scan · Agentic Market" }
+      ]}},
+      { n: 17, title: "For builders", tweet: `Agent builder integration pattern:\n\nbefore x402_fetch(target):\n  r = POST /api/x402/proxy { targetUrl, policy, wallet }\n  if !r.allowed: stop\n  optional: POST /api/attestation/verify\n\nDemo: npm run demo\nWarning: payer wallet ≠ receive wallet (or verify fails)\n\nGitHub: github.com/mimranchohan/x402-agent-suite`, graphic: { head: "INTEGRATION PATTERN", blocks: [
+        { full: true, h: "How it works", p: "proxy → allow check → optional verify → then x402_fetch" },
+        { h: "Benefit", p: "Drop-in guard before every paid hop." },
+        { full: true, h: "Warning", p: "Payer wallet must NOT equal receive wallet." }
+      ]}},
+      { n: 18, title: "Discovery", tweet: `Machine-readable discovery:\n\nGET /.well-known/x402\nGET /openapi.json — paid ops for scanners\nGET /x402/api/discover — full catalog\n\nReady for Agentic Market + x402scan resource ingest.\n\nHumans: GET /health → lists all 24 endpoints`, graphic: { head: "DISCOVERY URLS", blocks: [
+        { full: true, p: "/.well-known/x402 · /openapi.json · /x402/api/discover · /health" },
+        { h: "Benefit", p: "Scanner + marketplace ingest ready." }
+      ]}},
+      { n: 19, title: "Pricing", tweet: `5 focus APIs — USDC per call:\n\nx402 Proxy POST — $0.08\nPipeline Execute POST — $0.25\nAttestation Verify POST — $0.02\nAttestation Registry GET — $0.02\nRefund Arbiter POST — $0.08\n\nFull suite: 24 routes on /health\n\nChains: Solana + Base · Facilitator: x402.dexter.cash`, graphic: { head: "PRICING — 5 FOCUS APIs", blocks: [
+        { full: true, p: "Proxy $0.08 · Pipeline $0.25 · Verify $0.02 · Registry $0.02 · Refund $0.08" },
+        { h: "Chains", pills: ["Solana USDC", "Base USDC", "Dexter"] }
+      ]}},
+      { n: 20, title: "Chains + security", tweet: `Chains & security\n\n• Solana USDC (CAIP-2 mainnet)\n• Base USDC\n• Facilitator: https://x402.dexter.cash\n• SSRF-safe outbound probes\n• Rate limit: unpaid → 402; paid capped\n\nPaid GET/HEAD return full JSON—x402gle-friendly, not stubs.`, graphic: { head: "CHAINS & SECURITY", blocks: [
+        { h: "Chains", pills: ["Solana USDC mainnet", "Base USDC"] },
+        { h: "Security", p: "SSRF-safe probes · rate limits · paid GET full JSON" },
+        { h: "Facilitator", p: "x402.dexter.cash" }
+      ]}},
+      { n: 21, title: "Brand", tweet: `x402 Agent Suite Pro\n\nInfrastructure layer for agent payments—not a token, not a wallet.\n\nMIT license · Railway production · v3.1.0\n\nSolana + Base · 24 paid APIs · 5 go-to-market heroes\n\n${BASE}`, graphic: { head: "x402 AGENT SUITE PRO", blocks: [
+        { h: "What we are", p: "Infrastructure for agent x402 payments." },
+        { h: "Chains", pills: ["Solana USDC", "Base USDC"] },
+        { full: true, h: "License", p: "MIT · v3.1.0 · Railway production" }
+      ]}},
+      { n: 22, title: "x402gle scores", tweet: `x402gle verifier scores (trust lane):\n\nRefund Arbiter — 86\nAttestation Verify — 82\nAttestation Registry GET — 78\n\nMeaning: POST/GET + body → real agent JSON, not empty stubs.\n\nProxy + Pipeline re-test after paid-GET fix—scores should climb.`, graphic: { head: "X402GLE SCORES", scores: [
+        { name: "Refund Arbiter", s: 86 },
+        { name: "Verify", s: 82 },
+        { name: "Registry GET", s: 78 }
+      ], blocks: [{ h: "Meaning", p: "Real JSON responses for verifier probes—not stubs." }] }},
+      { n: 23, title: "Positioning", tweet: `What we are NOT:\n\nNot a wallet (you hold keys)\nNot a marketplace (we route TO marketplaces)\nNot on-chain escrow custody\n\nWhat we ARE:\n\nControl plane for safe x402 spend, trust, and refund signals`, graphic: { head: "POSITIONING", compare: [
+        { h: "NOT", items: ["Wallet", "Marketplace", "Escrow custody"] },
+        { h: "ARE", items: ["Control plane", "Trust + refund signals", "Preflight infra"] }
+      ]}},
+      { n: 24, title: "Try it", tweet: `Try free (402 probe):\n\ncurl ${BASE}/api/x402/proxy\n\nDiscovery:\n\ncurl ${BASE}/x402/api/discover\n\nPaid test: separate payer wallet + Dexter sign\n\nDocs: /openapi.json`, graphic: { head: "TRY IT FREE", blocks: [
+        { full: true, h: "402 probe", p: "curl …/api/x402/proxy" },
+        { full: true, h: "Discovery", p: "curl …/x402/api/discover" },
+        { h: "Paid test", p: "Separate payer wallet + Dexter" }
+      ]}},
+      { n: 25, title: "CTA", tweet: `Building agents that pay for APIs?\n\n1) Bookmark the 5 focus endpoints\n2) Run Trust Pack on your worst downstream provider\n3) Tell us which route saved a bad settlement\n\nRT · Follow · DM for fleet pricing / Postgres registry\n\nProduction:\n${BASE}`, graphic: { head: "GET STARTED", blocks: [
+        { full: true, h: "5 endpoints", p: "Proxy · Pipeline · Verify · Registry · Refund" },
+        { h: "Benefit", p: "Trust Pack on your riskiest downstream first." },
+        { full: true, h: "Production", p: BASE }
+      ]}}
+    ];
+
+    function renderGraphic(g, n) {
+      let html = `<div class="graphic" id="graphic-${String(n).padStart(2,"0")}">`;
+      html += `<div class="g-head"><h3>${g.head}</h3><span class="g-badge">${n}/25</span></div><div class="g-body">`;
+      if (g.flow) {
+        html += `<div class="g-block g-full"><h4>How it works</h4><div class="flow">`;
+        g.flow.forEach((s,i) => { html += `<span>${s}</span>`; if (i < g.flow.length-1) html += `<span class="arr">→</span>`; });
+        html += `</div></div>`;
+      }
+      if (g.compare) {
+        html += `<div class="compare">`;
+        g.compare.forEach(c => {
+          html += `<div class="col"><h5>${c.h}</h5><ul>`;
+          c.items.forEach(i => html += `<li>${i}</li>`);
+          html += `</ul></div>`;
+        });
+        html += `</div>`;
+      }
+      if (g.scores) {
+        html += `<div class="score-row">`;
+        g.scores.forEach(s => {
+          html += `<div class="score"><div>${s.name}${s.price ? " · "+s.price : ""}</div><b>${s.s}</b></div>`;
+        });
+        html += `</div>`;
+      }
+      (g.blocks || []).forEach(b => {
+        html += `<div class="g-block${b.full ? " g-full" : ""}">`;
+        if (b.h) html += `<h4>${b.h}</h4>`;
+        if (b.p) html += `<p>${b.p}</p>`;
+        if (b.pills) html += `<div class="chains">${b.pills.map(p => `<span class="pill">${p}</span>`).join("")}</div>`;
+        html += `</div>`;
+      });
+      html += `</div><div class="g-foot">${BASE}</div></div>`;
+      return html;
+    }
+
+    const root = document.getElementById("posts");
+    posts.forEach(p => {
+      const el = document.createElement("article");
+      el.className = "post";
+      el.id = `post-${p.n}`;
+      el.innerHTML = `
+        <div class="post-head"><span>Post ${p.n}/25</span><span>${p.title}</span></div>
+        <div class="tweet-box">
+          <label>Tweet — copy & post first</label>
+          <button type="button" class="copy-btn" data-tweet="${p.n}">Copy tweet</button>
+          <pre class="tweet-text" id="tweet-${p.n}"></pre>
+        </div>
+        <div class="graphic-label">Image — attach below tweet on X</div>
+        ${renderGraphic(p.graphic, p.n)}
+      `;
+      root.appendChild(el);
+      document.getElementById(`tweet-${p.n}`).textContent = p.tweet;
+    });
+
+    document.querySelectorAll(".copy-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const n = btn.dataset.tweet;
+        const t = document.getElementById(`tweet-${n}`).textContent;
+        navigator.clipboard.writeText(t).then(() => { btn.textContent = "Copied!"; setTimeout(() => btn.textContent = "Copy tweet", 1500); });
+      });
+    });
+  </script>
+</body>
+</html>

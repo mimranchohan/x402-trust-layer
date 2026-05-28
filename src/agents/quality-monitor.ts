@@ -1,12 +1,20 @@
 import { probeEndpoint } from "../lib/probe.js";
 
+export type QualityTarget = {
+  url: string;
+  expectedStatus?: number;
+};
+
 export type QualityMonitorInput = {
-  urls: string[];
+  targets: QualityTarget[];
 };
 
 export type QualityEntry = {
   url: string;
   status: number;
+  expectedStatus: number | null;
+  matchesExpectation: boolean;
+  classification: "ok" | "expected_failure" | "unexpected_failure";
   requiresPayment: boolean;
   priceUsdc: number | null;
   healthy: boolean;
@@ -16,6 +24,8 @@ export type QualityEntry = {
 
 export type QualityMonitorResult = {
   status: "ok";
+  success: boolean;
+  healthy: boolean;
   checkedAt: string;
   results: QualityEntry[];
   averageScore: number;
@@ -26,10 +36,12 @@ export type QualityMonitorResult = {
 export async function runQualityMonitor(input: QualityMonitorInput): Promise<QualityMonitorResult> {
   const results: QualityEntry[] = [];
 
-  for (const url of input.urls.slice(0, 10)) {
-    const probe = await probeEndpoint(url);
+  for (const t of input.targets.slice(0, 10)) {
+    const probe = await probeEndpoint(t.url);
     const notes: string[] = [];
     let score = 50;
+    const expected = typeof t.expectedStatus === "number" ? t.expectedStatus : null;
+    const matchesExpectation = expected == null ? probe.status === 200 || probe.status === 402 : probe.status === expected;
 
     if (probe.status === 402) {
       score += 25;
@@ -40,17 +52,30 @@ export async function runQualityMonitor(input: QualityMonitorInput): Promise<Qua
     } else if (probe.status === 0) {
       score -= 40;
       notes.push("Unreachable");
+    } else if (probe.status >= 400) {
+      score -= 10;
+      notes.push(`HTTP ${probe.status} from target`);
     }
 
+    if (matchesExpectation) score += 10;
+    if (!matchesExpectation && expected != null) notes.push(`Expected HTTP ${expected}, got ${probe.status}`);
     if (probe.priceUsdc != null && probe.priceUsdc <= 0.25) score += 10;
     if (probe.warnings.length) notes.push(...probe.warnings);
 
+    const classification: QualityEntry["classification"] = matchesExpectation
+      ? expected != null && expected >= 400
+        ? "expected_failure"
+        : "ok"
+      : "unexpected_failure";
     results.push({
-      url,
+      url: t.url,
       status: probe.status,
+      expectedStatus: expected,
+      matchesExpectation,
+      classification,
       requiresPayment: probe.requiresPayment,
       priceUsdc: probe.priceUsdc,
-      healthy: probe.status === 402 || probe.status === 200,
+      healthy: matchesExpectation,
       score: Math.max(0, Math.min(100, score)),
       notes,
     });
@@ -59,8 +84,9 @@ export async function runQualityMonitor(input: QualityMonitorInput): Promise<Qua
   const averageScore =
     results.length > 0 ? results.reduce((s, r) => s + r.score, 0) / results.length : 0;
   const healthyCount = results.filter((r) => r.healthy).length;
+  const unexpectedFailures = results.filter((r) => r.classification === "unexpected_failure").length;
   const overall: QualityMonitorResult["overall"] =
-    healthyCount === results.length && results.length > 0
+    unexpectedFailures === 0 && results.length > 0
       ? "pass"
       : healthyCount > 0
         ? "inconclusive"
@@ -68,10 +94,15 @@ export async function runQualityMonitor(input: QualityMonitorInput): Promise<Qua
 
   return {
     status: "ok",
+    success: unexpectedFailures === 0,
+    healthy: unexpectedFailures === 0,
     checkedAt: new Date().toISOString(),
     results,
     averageScore: Number(averageScore.toFixed(1)),
     overall,
-    summary: `${healthyCount}/${results.length} endpoints reachable (status 200/402)`,
+    summary:
+      unexpectedFailures === 0
+        ? `${healthyCount}/${results.length} targets met expected status`
+        : `${unexpectedFailures} targets deviated from expected status; ${healthyCount}/${results.length} met expectation`,
   };
 }

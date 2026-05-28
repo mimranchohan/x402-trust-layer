@@ -49,9 +49,82 @@ export type RouterResult = {
   probedPriceUsdc: number | null;
 };
 
+function normalizeNetwork(prefer?: string): "solana" | "base" | "polygon" {
+  const v = (prefer ?? "").toLowerCase();
+  if (v.includes("base") || v.includes("8453")) return "base";
+  if (v.includes("polygon") || v.includes("137")) return "polygon";
+  return "solana";
+}
+
 export async function runApiRouter(input: RouterInput): Promise<RouterResult> {
+  const normalizedNetwork = normalizeNetwork(input.preferNetwork);
+
+  // Route-capability intent (bridge/erc20/usdc route lookup) should return
+  // suite route options filtered by network/price, not unrelated oracle picks.
+  const routeIntent = /route|routing|erc-?20|evm|usdc.*(source|destination)|bridge|path/i.test(input.query);
+  if (routeIntent) {
+    const suiteOptions = [
+      { name: "x402 Proxy", path: "/api/x402/proxy", priceUsdc: 0.08 },
+      { name: "Pipeline Execute", path: "/api/pipeline/execute", priceUsdc: 0.25 },
+      { name: "Pre-x402 Guard", path: "/api/guard/pre-x402", priceUsdc: 0.05 },
+    ].filter((r) => input.maxPriceUsdc == null || r.priceUsdc <= input.maxPriceUsdc);
+
+    if (suiteOptions.length === 0) {
+      return {
+        status: "not_found",
+        summary: "No route-capability options satisfy maxPriceUsdc",
+        query: input.query,
+        selected: null,
+        alternatives: [],
+        executed: false,
+        executionNote: "No valid route under price/network constraints",
+        probedPriceUsdc: null,
+      };
+    }
+
+    const best = suiteOptions[0];
+    const url = `${config.publicBaseUrl}${best.path}`;
+    const probe = await probeEndpoint(url);
+    return {
+      status: "ok",
+      summary: `Matched route-capability intent on ${normalizedNetwork}`,
+      query: input.query,
+      selected: {
+        name: best.name,
+        url,
+        description: `x402 route-capability option on ${normalizedNetwork}`,
+        priceUsdc: best.priceUsdc,
+        network: normalizedNetwork,
+        qualityScore: 90,
+      },
+      alternatives: suiteOptions.slice(1).map((r) => ({
+        name: r.name,
+        url: `${config.publicBaseUrl}${r.path}`,
+        description: `Alternative on ${normalizedNetwork}`,
+        priceUsdc: r.priceUsdc,
+        network: normalizedNetwork,
+        qualityScore: 84,
+      })),
+      executed: false,
+      executionNote: "Route options filtered by network/price constraints",
+      probedPriceUsdc: probe.priceUsdc ?? best.priceUsdc,
+    };
+  }
+
   const curatedHit = CURATED_ROUTES.find((r) => r.match.test(input.query));
   if (curatedHit) {
+    if (input.maxPriceUsdc != null && curatedHit.priceUsdc > input.maxPriceUsdc) {
+      return {
+        status: "not_found",
+        summary: "No curated route within maxPriceUsdc",
+        query: input.query,
+        selected: null,
+        alternatives: [],
+        executed: false,
+        executionNote: "Price filter excluded curated match",
+        probedPriceUsdc: null,
+      };
+    }
     const probe = await probeEndpoint(curatedHit.url);
     return {
       status: "ok",
@@ -62,7 +135,7 @@ export async function runApiRouter(input: RouterInput): Promise<RouterResult> {
         url: curatedHit.url,
         description: curatedHit.description,
         priceUsdc: probe.priceUsdc ?? curatedHit.priceUsdc,
-        network: input.preferNetwork ?? "solana",
+        network: normalizedNetwork,
         qualityScore: 88,
       },
       alternatives: [],

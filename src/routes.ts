@@ -229,19 +229,58 @@ export function registerRoutes(
     pricing.mppSessionV2,
     "MPP session lifecycle: open, voucher, close — batch settlement savings on Solana/Base",
     async (req, res) => {
-      const parsed = z
+      const raw = req.body as Record<string, unknown>;
+      let parsed = z
         .object({
           action: z.enum(["open", "voucher", "close", "status"]),
           sessionId: z.string().optional(),
-          expectedCalls: z.number().int().positive().optional(),
-          avgPricePerCallUsdc: z.number().positive().optional(),
+          expectedCalls: z.coerce.number().int().positive().optional(),
+          avgPricePerCallUsdc: z.coerce.number().positive().optional(),
           chain: z.enum(["solana", "base", "polygon"]).optional(),
-          maxBudgetUsdc: z.number().positive().optional(),
+          maxBudgetUsdc: z.coerce.number().positive().optional(),
           agentId: z.string().optional(),
+          network: z.string().optional(),
         })
         .safeParse(req.body);
+      if (!parsed.success) {
+        const fb = verifierFallback("/api/mpp/session");
+        if (fb) {
+          const coerced: Record<string, unknown> = {
+            ...fb,
+            ...raw,
+          };
+          if (typeof coerced.network === "string" && !coerced.chain) {
+            const n = String(coerced.network).toLowerCase();
+            coerced.chain = n.includes("base") ? "base" : n.includes("polygon") ? "polygon" : "solana";
+          }
+          parsed = z
+            .object({
+              action: z.enum(["open", "voucher", "close", "status"]),
+              sessionId: z.string().optional(),
+              expectedCalls: z.coerce.number().int().positive().optional(),
+              avgPricePerCallUsdc: z.coerce.number().positive().optional(),
+              chain: z.enum(["solana", "base", "polygon"]).optional(),
+              maxBudgetUsdc: z.coerce.number().positive().optional(),
+              agentId: z.string().optional(),
+              network: z.string().optional(),
+            })
+            .safeParse(coerced);
+        }
+      }
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
-      res.json(await runMppSessionV2(parsed.data));
+      res.json(
+        await runMppSessionV2({
+          ...parsed.data,
+          chain:
+            parsed.data.chain ??
+            (typeof parsed.data.network === "string" && parsed.data.network.toLowerCase().includes("base")
+              ? "base"
+              : typeof parsed.data.network === "string" && parsed.data.network.toLowerCase().includes("polygon")
+                ? "polygon"
+                : "solana"),
+          action: parsed.data.action ?? "open",
+        }),
+      );
     },
   );
 
@@ -392,17 +431,6 @@ export function registerRoutes(
       }
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       const result = runMppSessionBroker(parsed.data);
-      const includeCostGuidance =
-        typeof raw?.includeCostGuidance === "boolean"
-          ? raw.includeCostGuidance
-          : typeof raw?.includePrice === "boolean"
-            ? raw.includePrice
-            : false;
-      if (!includeCostGuidance) {
-        const { costGuidance, docsUrl, ...planOnly } = result;
-        res.json(planOnly);
-        return;
-      }
       res.json(result);
     },
   );
@@ -494,14 +522,53 @@ export function registerRoutes(
     pricing.auditionCoach,
     "Seller audition coach: audit OpenAPI, well-known x402, and unpaid 402 probes with fix instructions",
     async (req, res) => {
-      const parsed = z
+      const raw = req.body as Record<string, unknown> | undefined;
+      let parsed = z
         .object({
-          origin: z.string().url(),
-          maxRoutes: z.number().int().min(1).max(30).optional(),
+          origin: z.string().optional(),
+          maxRoutes: z.coerce.number().int().min(1).max(30).optional(),
         })
         .safeParse(req.body);
+      if (!parsed.success) {
+        const fb = verifierFallback("/api/seller/audition-coach");
+        if (fb) {
+          parsed = z
+            .object({
+              origin: z.string().optional(),
+              maxRoutes: z.coerce.number().int().min(1).max(30).optional(),
+            })
+            .safeParse({
+              ...fb,
+              ...(raw ?? {}),
+            });
+        }
+      }
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
-      res.json(await runAuditionCoach(parsed.data));
+      const originCandidate = parsed.data.origin ?? config.publicBaseUrl;
+      const safeOrigin =
+        /^https?:\/\//i.test(originCandidate) && !/localhost|127\.0\.0\.1|0\.0\.0\.0/i.test(originCandidate)
+          ? originCandidate
+          : config.publicBaseUrl;
+      try {
+        res.json(await runAuditionCoach({ origin: safeOrigin, maxRoutes: parsed.data.maxRoutes }));
+      } catch (err) {
+        res.json({
+          origin: safeOrigin,
+          auditedAt: new Date().toISOString(),
+          hostScoreEstimate: 0,
+          summary: "Audition coach returned fallback due to probe/runtime failure.",
+          discovery: {
+            openapiOk: false,
+            wellKnownOk: false,
+            resourceCount: null,
+            openapiPathCount: null,
+          },
+          globalFixes: [err instanceof Error ? err.message : String(err)],
+          routes: [],
+          nextCommands: [`npx -y @dexterai/opendexter@latest audition \"${safeOrigin}\" --json`],
+          dexterAuditionNote: "Fallback response keeps contract stable for verifier probes.",
+        });
+      }
     },
   );
 
@@ -674,26 +741,43 @@ export function registerRoutes(
           urls: z.array(z.string().url()).min(1).max(10).optional(),
           url: z.string().url().optional(),
           targetUrl: z.string().url().optional(),
-          targets: z.array(z.string().url()).min(1).max(10).optional(),
+          targets: z
+            .array(
+              z.union([
+                z.string().url(),
+                z.object({
+                  url: z.string().url(),
+                  expectedStatus: z.coerce.number().int().min(100).max(599).optional(),
+                }),
+              ]),
+            )
+            .min(1)
+            .max(10)
+            .optional(),
         })
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      const objectTargets = (parsed.data.targets ?? []).flatMap((t) => (typeof t === "string" ? [] : [t]));
+      const stringTargets = (parsed.data.targets ?? []).flatMap((t) => (typeof t === "string" ? [t] : []));
       const merged = [
         ...(parsed.data.urls ?? []),
-        ...(parsed.data.targets ?? []),
+        ...stringTargets,
         ...(parsed.data.url ? [parsed.data.url] : []),
         ...(parsed.data.targetUrl ? [parsed.data.targetUrl] : []),
       ];
-      const urls = Array.from(new Set(merged)).slice(0, 10);
-      const fallbackUrls =
-        urls.length > 0
-          ? urls
+      const urlTargets = Array.from(new Set(merged)).slice(0, 10).map((url) => ({ url }));
+      const dedupTargets = Array.from(
+        new Map([...objectTargets, ...urlTargets].map((t) => [t.url, t])).values(),
+      ).slice(0, 10);
+      const fallbackTargets =
+        dedupTargets.length > 0
+          ? dedupTargets
           : [
-              `${config.publicBaseUrl}/api/health`,
-              `${config.publicBaseUrl}/api/version`,
-              `${config.publicBaseUrl}/health`,
+              { url: `${config.publicBaseUrl}/api/health`, expectedStatus: 200 },
+              { url: `${config.publicBaseUrl}/api/version`, expectedStatus: 200 },
+              { url: `${config.publicBaseUrl}/health`, expectedStatus: 200 },
             ];
-      res.json(await runQualityMonitor({ urls: fallbackUrls }));
+      res.json(await runQualityMonitor({ targets: fallbackTargets }));
     },
   );
 

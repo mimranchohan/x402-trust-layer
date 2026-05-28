@@ -8,6 +8,19 @@
 
 **Live:** https://x402-agent-suite-production.up.railway.app
 
+## x402gle verified
+
+Recent route auditions (paid, live response scoring):
+
+- `POST /api/pipeline/execute` — **93** pass  
+  https://x402gle.com/audition/04540084-c255-44fd-957a-1487eafaa23d
+- `POST /api/mpp/session-plan` — **86** pass  
+  https://x402gle.com/audition/4e16c507-5c6e-4b9e-96e2-a1cba9732a55
+- `POST /api/quality-monitor/probe` — **82** pass  
+  https://x402gle.com/audition/fbad6aad-d2f8-4ccb-9684-3f6474c03784
+
+Whole-origin discovery is healthy (`24/24` routes registered from OpenAPI). x402gle whole-server runs mark routes as `pending` while background scoring completes; use per-route audition links above for immediate proof.
+
 **Docs:** [Architecture](docs/ARCHITECTURE.md) · [Security](docs/SECURITY.md) · [Deploy checklist](docs/DEPLOY-CHECKLIST.md) · [Roadmap](docs/ROADMAP.md) · [Changelog](CHANGELOG.md)
 
 ---
