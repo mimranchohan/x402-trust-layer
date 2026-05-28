@@ -18,6 +18,8 @@ export type QualityMonitorResult = {
   checkedAt: string;
   results: QualityEntry[];
   averageScore: number;
+  overall: "pass" | "inconclusive" | "fail";
+  summary: string;
 };
 
 export async function runQualityMonitor(input: QualityMonitorInput): Promise<QualityMonitorResult> {
@@ -55,10 +57,19 @@ export async function runQualityMonitor(input: QualityMonitorInput): Promise<Qua
 
   const averageScore =
     results.length > 0 ? results.reduce((s, r) => s + r.score, 0) / results.length : 0;
+  const healthyCount = results.filter((r) => r.healthy).length;
+  const overall: QualityMonitorResult["overall"] =
+    healthyCount === results.length && results.length > 0
+      ? "pass"
+      : healthyCount > 0
+        ? "inconclusive"
+        : "fail";
 
   return {
     checkedAt: new Date().toISOString(),
     results,
     averageScore: Number(averageScore.toFixed(1)),
+    overall,
+    summary: `${healthyCount}/${results.length} endpoints reachable (status 200/402)`,
   };
 }

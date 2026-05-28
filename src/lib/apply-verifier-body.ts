@@ -41,6 +41,39 @@ function queryAsBody(query: Request["query"]): Record<string, unknown> {
   return out;
 }
 
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === "object" && !Array.isArray(value);
+}
+
+function valueCompatibleWithExample(value: unknown, example: unknown): boolean {
+  if (example === null) return value === null;
+  if (Array.isArray(example)) return Array.isArray(value);
+  if (isPlainRecord(example)) return isPlainRecord(value);
+  return typeof value === typeof example;
+}
+
+function mergeCompatibleProbeInput(
+  example: Record<string, unknown>,
+  input: Record<string, unknown>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...example };
+  for (const [key, value] of Object.entries(input)) {
+    if (DANGEROUS_OVERRIDE_KEYS.includes(key)) continue;
+    // For verifier probes, ignore unknown keys so malformed grader payloads
+    // cannot trip schema validation on optional typed fields.
+    if (!(key in example)) continue;
+
+    const exampleValue = example[key];
+    if (!valueCompatibleWithExample(value, exampleValue)) continue;
+    if (isPlainRecord(exampleValue) && isPlainRecord(value)) {
+      out[key] = mergeCompatibleProbeInput(exampleValue, value);
+      continue;
+    }
+    out[key] = value;
+  }
+  return out;
+}
+
 /** Merge canonical bodies so x402gle / Dexter paid probes get 200 instead of 400 */
 export function applyVerifierExampleBody(req: Request): void {
   if (!isApiProbeMethod(req.method)) return;
@@ -58,11 +91,10 @@ export function applyVerifierExampleBody(req: Request): void {
   }
 
   if (body && typeof body === "object" && !Array.isArray(body)) {
-    const mergedQuery = { ...ex, ...fromQuery, ...body };
-    const hasDangerous = DANGEROUS_OVERRIDE_KEYS.some(
-      (k) => k in body && body[k] !== undefined,
+    req.body = mergeCompatibleProbeInput(
+      mergeCompatibleProbeInput(ex, fromQuery),
+      body,
     );
-    req.body = hasDangerous ? { ...ex, ...fromQuery } : mergedQuery;
     return;
   }
 

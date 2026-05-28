@@ -43,8 +43,8 @@ function asyncRoute(
   };
 }
 
-app.get("/health", (_req, res) => {
-  res.json({
+function healthPayload() {
+  return {
     ok: true,
     service: "x402-agent-suite-pro",
     version: SUITE_VERSION,
@@ -66,6 +66,26 @@ app.get("/health", (_req, res) => {
       ready:
         config.publicBaseUrl.startsWith("https://") && config.payToEvm.length > 0,
     },
+  };
+}
+
+app.get("/health", (_req, res) => {
+  res.json(healthPayload());
+});
+
+// Compatibility aliases used by some external quality probes.
+app.get("/api/health", (_req, res) => {
+  res.json(healthPayload());
+});
+
+app.get("/api/version", (_req, res) => {
+  res.json({ service: "x402-agent-suite-pro", version: SUITE_VERSION });
+});
+
+app.get("/api/agents", (_req, res) => {
+  res.json({
+    count: listEndpoints().length,
+    endpoints: listEndpoints(),
   });
 });
 

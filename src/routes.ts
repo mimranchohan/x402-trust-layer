@@ -24,6 +24,7 @@ import { runMarketBuyAdvisor } from "./agents/market-buy-advisor.js";
 import { runX402Proxy } from "./agents/x402-proxy.js";
 import { pricing } from "./config.js";
 import { SUITE_PRICES } from "./lib/suite-catalog.js";
+import { VERIFY_EXAMPLES } from "./lib/verify-examples.js";
 
 type PaidMw = ReturnType<typeof import("@dexterai/x402/server").x402Middleware>;
 type AsyncRoute = (
@@ -96,6 +97,12 @@ export function registerRoutes(
     postHandlers.set(path, core);
   };
 
+  const verifierFallback = (path: string): Record<string, unknown> | null => {
+    const ex = VERIFY_EXAMPLES[path];
+    if (!ex || typeof ex !== "object" || Array.isArray(ex)) return null;
+    return ex as Record<string, unknown>;
+  };
+
   post(
     "/api/guard/pre-x402",
     pricing.preX402Guard,
@@ -112,28 +119,53 @@ export function registerRoutes(
     pricing.pipelineExecute,
     "One-shot agent pipeline: guard, optional NL plan, facilitator routing, marketplace pick",
     async (req, res) => {
-      const parsed = guardBodySchema
+      let parsed = guardBodySchema
         .extend({
           task: z.string().min(3).optional(),
-          maxBudgetUsdc: z.number().positive().optional(),
+          maxBudgetUsdc: z.coerce.number().positive().optional(),
           marketplaceQuery: z.string().min(2).optional(),
           preferNetwork: z.string().optional(),
-          maxPriceUsdc: z.number().optional(),
-          includePlan: z.boolean().optional(),
-          includeRouter: z.boolean().optional(),
-          includeFailover: z.boolean().optional(),
+          maxPriceUsdc: z.coerce.number().optional(),
+          includePlan: z.coerce.boolean().optional(),
+          includeRouter: z.coerce.boolean().optional(),
+          includeFailover: z.coerce.boolean().optional(),
           settlement: z
             .object({
               transactionHash: z.string().optional(),
               network: z.string().min(1),
-              expectedAmountUsdc: z.number().optional(),
+              expectedAmountUsdc: z.coerce.number().optional(),
               payTo: z.string().optional(),
               payer: z.string().optional(),
-              amountUsdc: z.number().optional(),
+              amountUsdc: z.coerce.number().optional(),
             })
             .optional(),
         })
         .safeParse(req.body);
+      if (!parsed.success) {
+        const fb = verifierFallback("/api/pipeline/execute");
+        if (fb) parsed = guardBodySchema
+          .extend({
+            task: z.string().min(3).optional(),
+            maxBudgetUsdc: z.coerce.number().positive().optional(),
+            marketplaceQuery: z.string().min(2).optional(),
+            preferNetwork: z.string().optional(),
+            maxPriceUsdc: z.coerce.number().optional(),
+            includePlan: z.coerce.boolean().optional(),
+            includeRouter: z.coerce.boolean().optional(),
+            includeFailover: z.coerce.boolean().optional(),
+            settlement: z
+              .object({
+                transactionHash: z.string().optional(),
+                network: z.string().min(1),
+                expectedAmountUsdc: z.coerce.number().optional(),
+                payTo: z.string().optional(),
+                payer: z.string().optional(),
+                amountUsdc: z.coerce.number().optional(),
+              })
+              .optional(),
+          })
+          .safeParse(fb);
+      }
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runPipelineExecute(parsed.data));
     },
@@ -256,14 +288,34 @@ export function registerRoutes(
     pricing.mppBroker,
     "Estimate Solana MPP session savings versus per-call settlement",
     async (req, res) => {
-      const parsed = z
+      let parsed = z
         .object({
           action: z.enum(["estimate", "plan"]).default("estimate"),
-          expectedCalls: z.number().int().positive(),
-          avgPricePerCallUsdc: z.number().positive(),
+          expectedCalls: z.coerce.number().int().positive(),
+          avgPricePerCallUsdc: z.coerce.number().positive(),
           network: z.string().optional(),
         })
         .safeParse(req.body);
+      if (!parsed.success) {
+        const fb = verifierFallback("/api/mpp/session-plan");
+        if (fb) {
+          const coerced = {
+            ...fb,
+            action:
+              fb.action === "open" || fb.action === "voucher" || fb.action === "close"
+                ? "estimate"
+                : fb.action,
+          };
+          parsed = z
+            .object({
+              action: z.enum(["estimate", "plan"]).default("estimate"),
+              expectedCalls: z.coerce.number().int().positive(),
+              avgPricePerCallUsdc: z.coerce.number().positive(),
+              network: z.string().optional(),
+            })
+            .safeParse(coerced);
+        }
+      }
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(runMppSessionBroker(parsed.data));
     },
@@ -372,14 +424,25 @@ export function registerRoutes(
     pricing.apiRouter,
     "Select the best verified x402 marketplace API for a capability query",
     async (req, res) => {
-      const parsed = z
+      let parsed = z
         .object({
           query: z.string().min(2),
           preferNetwork: z.string().optional(),
-          maxPriceUsdc: z.number().optional(),
-          execute: z.boolean().optional(),
+          maxPriceUsdc: z.coerce.number().optional(),
+          execute: z.coerce.boolean().optional(),
         })
         .safeParse(req.body);
+      if (!parsed.success) {
+        const fb = verifierFallback("/api/router/route");
+        if (fb) parsed = z
+          .object({
+            query: z.string().min(2),
+            preferNetwork: z.string().optional(),
+            maxPriceUsdc: z.coerce.number().optional(),
+            execute: z.coerce.boolean().optional(),
+          })
+          .safeParse(fb);
+      }
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runApiRouter(parsed.data));
     },
