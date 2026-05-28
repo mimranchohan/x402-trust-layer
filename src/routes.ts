@@ -323,6 +323,14 @@ export function registerRoutes(
     pricing.mppBroker,
     "Estimate Solana MPP session savings versus per-call settlement",
     async (req, res) => {
+      const raw = req.body as Record<string, unknown> | undefined;
+      const promptText =
+        raw && typeof raw === "object"
+          ? [raw.prompt, raw.task, raw.objective, raw.brief, raw.context]
+              .filter((v) => typeof v === "string" && v.trim().length > 0)
+              .join(" | ")
+          : "";
+
       let parsed = z
         .object({
           action: z
@@ -337,7 +345,16 @@ export function registerRoutes(
           durationMinutes: z.coerce.number().int().min(30).max(240).optional(),
           constraints: z.array(z.string()).optional(),
         })
-        .safeParse(req.body);
+        .safeParse(
+          promptText
+            ? {
+                ...(raw ?? {}),
+                action: "plan",
+                objective: promptText,
+                durationMinutes: 90,
+              }
+            : req.body,
+        );
       if (!parsed.success) {
         const fb = verifierFallback("/api/mpp/session-plan");
         if (fb) {

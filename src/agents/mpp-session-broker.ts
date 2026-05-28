@@ -54,6 +54,12 @@ export function runMppSessionBroker(input: MppBrokerInput): MppBrokerResult {
   const durationMinutes = input.durationMinutes ?? 90;
   const objective =
     input.objective ?? "Map dependencies, rank risks, and decide next payment-session actions";
+  const objectiveLower = objective.toLowerCase();
+  const perfMode =
+    objectiveLower.includes("performance") ||
+    objectiveLower.includes("observability") ||
+    objectiveLower.includes("latency") ||
+    objectiveLower.includes("incident");
 
   const perCallTotal = expectedCalls * avgPricePerCallUsdc;
   const sessionOverhead = 0.01;
@@ -68,40 +74,58 @@ export function runMppSessionBroker(input: MppBrokerInput): MppBrokerResult {
       durationMinutes,
       agendaBlocks: [
         {
-          title: "Context and objective alignment",
-          minutes: 20,
-          facilitatorPrompt: `Confirm objective: ${objective}. Identify success criteria and constraints.`,
-          artifact: "Session brief",
+          title: "Scenario pre-assessment",
+          minutes: 10,
+          facilitatorPrompt: `Run a scenario-based pre-assessment for objective: ${objective}. Capture baseline assumptions in <=10 minutes.`,
+          artifact: "Pre-assessment snapshot",
         },
         {
-          title: "Dependency and risk mapping",
-          minutes: 35,
-          facilitatorPrompt: "Map external dependencies, blocker probabilities, and mitigation owners.",
-          artifact: "Dependency map + risk register",
+          title: "Hands-on incident and root-cause matrix",
+          minutes: 30,
+          facilitatorPrompt:
+            "Facilitate a hands-on incident walkthrough and finish with a root-cause hypothesis matrix.",
+          artifact: "Incident narrative + root-cause matrix",
         },
         {
-          title: "Decision checkpoints and execution actions",
-          minutes: 35,
-          facilitatorPrompt: "Finalize go/no-go decisions, owners, dates, and fallback plan per action.",
-          artifact: "Decision log + action table",
+          title: "24-hour experiment and measurement plan",
+          minutes: 30,
+          facilitatorPrompt:
+            "Design a 24-hour experiment plan that explicitly covers metrics, logs, and traces.",
+          artifact: "24-hour experiment plan",
+        },
+        {
+          title: "Observability overhead vs runtime cost trade-offs",
+          minutes: 15,
+          facilitatorPrompt:
+            "Evaluate observability depth against runtime/USDC overhead; define guardrails and decision thresholds.",
+          artifact: "Trade-off decision memo",
+        },
+        {
+          title: "Wrap-up and reusable checklist",
+          minutes: 5,
+          facilitatorPrompt:
+            "Confirm decisions, owners, and handoff; finalize reusable execution checklist template.",
+          artifact: "Reusable checklist template",
         },
       ],
       workstreams: [
         {
-          name: "Dependency mapping",
+          name: perfMode ? "Performance triage" : "Dependency mapping",
           steps: [
-            "List external APIs and payment dependencies",
-            "Mark critical path blockers",
-            "Assign fallback owner per dependency",
+            perfMode
+              ? "Capture symptom timeline and baseline latency/error metrics"
+              : "List external APIs and payment dependencies",
+            perfMode ? "Reproduce incident and isolate bottleneck zones" : "Mark critical path blockers",
+            perfMode ? "Map hypotheses into testable root-cause matrix" : "Assign fallback owner per dependency",
           ],
           ownerRole: "Platform Lead",
         },
         {
-          name: "Risk and mitigation",
+          name: perfMode ? "Observability and experiment design" : "Risk and mitigation",
           steps: [
-            "Score each risk by probability/impact",
-            "Define mitigation for top 5 risks",
-            "Set escalation trigger thresholds",
+            perfMode ? "Define metrics, logs, traces required for validation" : "Score each risk by probability/impact",
+            perfMode ? "Plan 24-hour experiments and success thresholds" : "Define mitigation for top 5 risks",
+            perfMode ? "Estimate instrumentation overhead and runtime cost impact" : "Set escalation trigger thresholds",
           ],
           ownerRole: "Security Lead",
         },
@@ -117,17 +141,22 @@ export function runMppSessionBroker(input: MppBrokerInput): MppBrokerResult {
       ],
       artifacts: [
         "Session brief",
-        "Dependency map",
-        "Risk register",
+        perfMode ? "Incident narrative" : "Dependency map",
+        perfMode ? "Root-cause hypothesis matrix" : "Risk register",
+        "24-hour experiment plan",
+        "Observability trade-off memo",
         "Decision log template",
         "Action items table",
+        "Reusable checklist template",
       ],
       deliverablesChecklist: [
-        "Signed session brief",
-        "Dependency map approved",
-        "Risk register prioritized",
+        "Scenario pre-assessment completed (<=10 min)",
+        perfMode ? "Root-cause matrix completed" : "Dependency map approved",
+        "24-hour measurement plan (metrics/logs/traces) approved",
+        "Observability overhead vs runtime cost trade-off captured",
         "Decision log finalized",
         "Action items assigned with dates",
+        "Reusable checklist published",
       ],
       raci: [
         {
