@@ -22,7 +22,7 @@ import { runSpendGovernor } from "./agents/spend-governor.js";
 import { runAuditionCoach } from "./agents/audition-coach.js";
 import { runMarketBuyAdvisor } from "./agents/market-buy-advisor.js";
 import { runX402Proxy } from "./agents/x402-proxy.js";
-import { pricing } from "./config.js";
+import { config, pricing } from "./config.js";
 import { SUITE_PRICES } from "./lib/suite-catalog.js";
 import { VERIFY_EXAMPLES } from "./lib/verify-examples.js";
 
@@ -329,9 +329,13 @@ export function registerRoutes(
             .enum(["estimate", "plan", "open", "voucher", "close", "status"])
             .default("estimate")
             .transform((v) => (v === "estimate" || v === "plan" ? v : "estimate")),
-          expectedCalls: z.coerce.number().int().positive(),
-          avgPricePerCallUsdc: z.coerce.number().positive(),
+          expectedCalls: z.coerce.number().int().positive().optional(),
+          avgPricePerCallUsdc: z.coerce.number().positive().optional(),
           network: z.string().optional(),
+          objective: z.string().min(3).optional(),
+          teamName: z.string().optional(),
+          durationMinutes: z.coerce.number().int().min(30).max(240).optional(),
+          constraints: z.array(z.string()).optional(),
         })
         .safeParse(req.body);
       if (!parsed.success) {
@@ -350,9 +354,13 @@ export function registerRoutes(
                 .enum(["estimate", "plan", "open", "voucher", "close", "status"])
                 .default("estimate")
                 .transform((v) => (v === "estimate" || v === "plan" ? v : "estimate")),
-              expectedCalls: z.coerce.number().int().positive(),
-              avgPricePerCallUsdc: z.coerce.number().positive(),
+              expectedCalls: z.coerce.number().int().positive().optional(),
+              avgPricePerCallUsdc: z.coerce.number().positive().optional(),
               network: z.string().optional(),
+              objective: z.string().min(3).optional(),
+              teamName: z.string().optional(),
+              durationMinutes: z.coerce.number().int().min(30).max(240).optional(),
+              constraints: z.array(z.string()).optional(),
             })
             .safeParse(coerced);
         }
@@ -640,10 +648,15 @@ export function registerRoutes(
         ...(parsed.data.targetUrl ? [parsed.data.targetUrl] : []),
       ];
       const urls = Array.from(new Set(merged)).slice(0, 10);
-      if (urls.length === 0) {
-        return void res.status(400).json({ error: "Provide at least one URL in urls/targets/url/targetUrl" });
-      }
-      res.json(await runQualityMonitor({ urls }));
+      const fallbackUrls =
+        urls.length > 0
+          ? urls
+          : [
+              `${config.publicBaseUrl}/api/health`,
+              `${config.publicBaseUrl}/api/version`,
+              `${config.publicBaseUrl}/health`,
+            ];
+      res.json(await runQualityMonitor({ urls: fallbackUrls }));
     },
   );
 
