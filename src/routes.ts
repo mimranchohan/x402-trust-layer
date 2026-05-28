@@ -344,14 +344,19 @@ export function registerRoutes(
           teamName: z.string().optional(),
           durationMinutes: z.coerce.number().int().min(30).max(240).optional(),
           constraints: z.array(z.string()).optional(),
+          topic: z.string().optional(),
+          sessionContext: z.string().optional(),
+          deliverables: z.array(z.string()).optional(),
         })
         .safeParse(
           promptText
             ? {
                 ...(raw ?? {}),
                 action: "plan",
-                objective: promptText,
-                durationMinutes: 90,
+                objective:
+                  typeof raw?.objective === "string" && raw.objective.trim().length > 0
+                    ? raw.objective
+                    : promptText,
               }
             : req.body,
         );
@@ -378,6 +383,9 @@ export function registerRoutes(
               teamName: z.string().optional(),
               durationMinutes: z.coerce.number().int().min(30).max(240).optional(),
               constraints: z.array(z.string()).optional(),
+              topic: z.string().optional(),
+              sessionContext: z.string().optional(),
+              deliverables: z.array(z.string()).optional(),
             })
             .safeParse(coerced);
         }

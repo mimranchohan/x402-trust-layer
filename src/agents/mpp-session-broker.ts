@@ -4,14 +4,18 @@ export type MppBrokerInput = {
   avgPricePerCallUsdc?: number;
   network?: string;
   objective?: string;
+  topic?: string;
+  sessionContext?: string;
   teamName?: string;
   durationMinutes?: number;
   constraints?: string[];
+  deliverables?: string[];
 };
 
 export type MppBrokerResult = {
   action: string;
   objective: string;
+  topic?: string;
   sessionPlan: {
     durationMinutes: number;
     agendaBlocks: Array<{
@@ -35,6 +39,11 @@ export type MppBrokerResult = {
       informed: string;
     }>;
     actionItemsTemplate: string;
+    sessionAgenda: Array<{ title: string; minutes: number }>;
+    stepByStepPlan: string[];
+    estimatedTimePerStep: Array<{ step: string; minutes: number }>;
+    materialsChecklist: string[];
+    successCriteria: string[];
   };
   costGuidance: {
     expectedCalls: number;
@@ -53,7 +62,10 @@ export function runMppSessionBroker(input: MppBrokerInput): MppBrokerResult {
   const action = input.action ?? "estimate";
   const durationMinutes = input.durationMinutes ?? 90;
   const objective =
-    input.objective ?? "Map dependencies, rank risks, and decide next payment-session actions";
+    input.objective ??
+    input.sessionContext ??
+    input.topic ??
+    "Map dependencies, rank risks, and decide next payment-session actions";
   const objectiveLower = objective.toLowerCase();
   const perfMode =
     objectiveLower.includes("performance") ||
@@ -70,6 +82,7 @@ export function runMppSessionBroker(input: MppBrokerInput): MppBrokerResult {
   return {
     action,
     objective,
+    topic: input.topic,
     sessionPlan: {
       durationMinutes,
       agendaBlocks: [
@@ -182,6 +195,46 @@ export function runMppSessionBroker(input: MppBrokerInput): MppBrokerResult {
         },
       ],
       actionItemsTemplate: "owner | task | due_date | dependency | risk | status",
+      sessionAgenda: [
+        { title: "Scenario pre-assessment", minutes: 10 },
+        { title: "Hands-on incident and root-cause matrix", minutes: 30 },
+        { title: "24-hour experiment and measurement plan", minutes: 30 },
+        { title: "Observability overhead vs runtime cost trade-offs", minutes: 15 },
+        { title: "Wrap-up and reusable checklist", minutes: 5 },
+      ].map((x, i, arr) =>
+        i === arr.length - 1
+          ? { ...x, minutes: Math.max(5, durationMinutes - arr.slice(0, -1).reduce((s, a) => s + a.minutes, 0)) }
+          : x,
+      ),
+      stepByStepPlan: [
+        "Run scenario-based pre-assessment and capture baseline",
+        "Facilitate hands-on incident walkthrough",
+        "Build root-cause hypothesis matrix",
+        "Design 24-hour measurement/experiment plan",
+        "Review observability overhead vs runtime cost trade-offs",
+        "Finalize checklist, owners, and milestones",
+      ],
+      estimatedTimePerStep: [
+        { step: "Pre-assessment", minutes: 10 },
+        { step: "Incident walkthrough", minutes: 20 },
+        { step: "Root-cause matrix", minutes: 10 },
+        { step: "24-hour measurement plan", minutes: 25 },
+        { step: "Trade-off analysis", minutes: 15 },
+        { step: "Checklist and closeout", minutes: 10 },
+      ],
+      materialsChecklist: [
+        "Incident timeline template",
+        "Metrics/logs/traces dashboard links",
+        "Root-cause hypothesis matrix template",
+        "Experiment runbook template",
+        "Action items tracker",
+      ],
+      successCriteria: [
+        "Objective and constraints explicitly captured",
+        "Hands-on tasks completed",
+        "Risk mitigation actions assigned",
+        "Check-in milestones with owners and dates defined",
+      ],
     },
     costGuidance: {
       expectedCalls,
