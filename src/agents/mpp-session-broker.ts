@@ -66,12 +66,6 @@ export function runMppSessionBroker(input: MppBrokerInput): MppBrokerResult {
     input.sessionContext ??
     input.topic ??
     "Map dependencies, rank risks, and decide next payment-session actions";
-  const objectiveLower = objective.toLowerCase();
-  const perfMode =
-    objectiveLower.includes("performance") ||
-    objectiveLower.includes("observability") ||
-    objectiveLower.includes("latency") ||
-    objectiveLower.includes("incident");
 
   const perCallTotal = expectedCalls * avgPricePerCallUsdc;
   const sessionOverhead = 0.01;
@@ -93,25 +87,25 @@ export function runMppSessionBroker(input: MppBrokerInput): MppBrokerResult {
           artifact: "Pre-assessment snapshot",
         },
         {
-          title: "Hands-on incident and root-cause matrix",
+          title: "Hands-on practice and risk assessment",
           minutes: 30,
           facilitatorPrompt:
-            "Facilitate a hands-on incident walkthrough and finish with a root-cause hypothesis matrix.",
-          artifact: "Incident narrative + root-cause matrix",
+            "Facilitate practical exercises tied to the objective and complete a risk assessment matrix.",
+          artifact: "Hands-on notes + risk assessment matrix",
         },
         {
-          title: "24-hour experiment and measurement plan",
+          title: "Assumptions/decisions log and success metrics",
           minutes: 30,
           facilitatorPrompt:
-            "Design a 24-hour experiment plan that explicitly covers metrics, logs, and traces.",
-          artifact: "24-hour experiment plan",
+            "Document assumptions and decisions, then define measurable success criteria and checkpoints.",
+          artifact: "Assumptions/decisions log + success metrics sheet",
         },
         {
-          title: "Observability overhead vs runtime cost trade-offs",
+          title: "Stakeholder alignment checkpoint",
           minutes: 15,
           facilitatorPrompt:
-            "Evaluate observability depth against runtime/USDC overhead; define guardrails and decision thresholds.",
-          artifact: "Trade-off decision memo",
+            "Align stakeholders on decisions, risks, and ownership; resolve open conflicts.",
+          artifact: "Stakeholder alignment summary",
         },
         {
           title: "Wrap-up and reusable checklist",
@@ -123,22 +117,20 @@ export function runMppSessionBroker(input: MppBrokerInput): MppBrokerResult {
       ],
       workstreams: [
         {
-          name: perfMode ? "Performance triage" : "Dependency mapping",
+          name: "Hands-on workflow",
           steps: [
-            perfMode
-              ? "Capture symptom timeline and baseline latency/error metrics"
-              : "List external APIs and payment dependencies",
-            perfMode ? "Reproduce incident and isolate bottleneck zones" : "Mark critical path blockers",
-            perfMode ? "Map hypotheses into testable root-cause matrix" : "Assign fallback owner per dependency",
+            "Run guided practical exercise from the supplied context",
+            "Capture risks and blockers discovered in practice",
+            "Assign owners for each blocker",
           ],
           ownerRole: "Platform Lead",
         },
         {
-          name: perfMode ? "Observability and experiment design" : "Risk and mitigation",
+          name: "Planning and measurement",
           steps: [
-            perfMode ? "Define metrics, logs, traces required for validation" : "Score each risk by probability/impact",
-            perfMode ? "Plan 24-hour experiments and success thresholds" : "Define mitigation for top 5 risks",
-            perfMode ? "Estimate instrumentation overhead and runtime cost impact" : "Set escalation trigger thresholds",
+            "Record assumptions and explicit decisions",
+            "Define success metrics and check-in milestones",
+            "Set mitigation actions per risk",
           ],
           ownerRole: "Security Lead",
         },
@@ -154,19 +146,21 @@ export function runMppSessionBroker(input: MppBrokerInput): MppBrokerResult {
       ],
       artifacts: [
         "Session brief",
-        perfMode ? "Incident narrative" : "Dependency map",
-        perfMode ? "Root-cause hypothesis matrix" : "Risk register",
-        "24-hour experiment plan",
-        "Observability trade-off memo",
+        "Hands-on notes",
+        "Risk assessment matrix",
+        "Assumptions/decisions log",
+        "Success metrics sheet",
+        "Stakeholder alignment summary",
         "Decision log template",
         "Action items table",
         "Reusable checklist template",
       ],
       deliverablesChecklist: [
         "Scenario pre-assessment completed (<=10 min)",
-        perfMode ? "Root-cause matrix completed" : "Dependency map approved",
-        "24-hour measurement plan (metrics/logs/traces) approved",
-        "Observability overhead vs runtime cost trade-off captured",
+        "Risk assessment completed",
+        "Assumptions/decisions log finalized",
+        "Success metrics and milestones approved",
+        "Stakeholder alignment checkpoint completed",
         "Decision log finalized",
         "Action items assigned with dates",
         "Reusable checklist published",
@@ -208,25 +202,28 @@ export function runMppSessionBroker(input: MppBrokerInput): MppBrokerResult {
       ),
       stepByStepPlan: [
         "Run scenario-based pre-assessment and capture baseline",
-        "Facilitate hands-on incident walkthrough",
-        "Build root-cause hypothesis matrix",
-        "Design 24-hour measurement/experiment plan",
-        "Review observability overhead vs runtime cost trade-offs",
+        "Facilitate hands-on practice session",
+        "Complete risk assessment matrix",
+        "Capture assumptions and decisions",
+        "Define success metrics and check-in milestones",
+        "Run stakeholder alignment checkpoint",
         "Finalize checklist, owners, and milestones",
       ],
       estimatedTimePerStep: [
         { step: "Pre-assessment", minutes: 10 },
-        { step: "Incident walkthrough", minutes: 20 },
-        { step: "Root-cause matrix", minutes: 10 },
-        { step: "24-hour measurement plan", minutes: 25 },
-        { step: "Trade-off analysis", minutes: 15 },
+        { step: "Hands-on practice", minutes: 20 },
+        { step: "Risk assessment", minutes: 10 },
+        { step: "Assumptions and decisions", minutes: 15 },
+        { step: "Success metrics and milestones", minutes: 15 },
+        { step: "Stakeholder alignment", minutes: 10 },
         { step: "Checklist and closeout", minutes: 10 },
       ],
       materialsChecklist: [
-        "Incident timeline template",
-        "Metrics/logs/traces dashboard links",
-        "Root-cause hypothesis matrix template",
-        "Experiment runbook template",
+        "Session brief template",
+        "Hands-on exercise worksheet",
+        "Risk matrix template",
+        "Assumptions/decisions log template",
+        "Success metrics tracker",
         "Action items tracker",
       ],
       successCriteria: [

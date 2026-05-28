@@ -391,7 +391,19 @@ export function registerRoutes(
         }
       }
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
-      res.json(runMppSessionBroker(parsed.data));
+      const result = runMppSessionBroker(parsed.data);
+      const includeCostGuidance =
+        typeof raw?.includeCostGuidance === "boolean"
+          ? raw.includeCostGuidance
+          : typeof raw?.includePrice === "boolean"
+            ? raw.includePrice
+            : false;
+      if (!includeCostGuidance) {
+        const { costGuidance, docsUrl, ...planOnly } = result;
+        res.json(planOnly);
+        return;
+      }
+      res.json(result);
     },
   );
 
