@@ -13,8 +13,13 @@ export type MppBrokerInput = {
 };
 
 export type MppBrokerResult = {
+  status: "ok";
   action: string;
   objective: string;
+  summary: string;
+  objectiveUsed: string;
+  durationMinutesUsed: number;
+  constraintsApplied: string[];
   topic?: string;
   sessionPlan: {
     durationMinutes: number;
@@ -74,8 +79,13 @@ export function runMppSessionBroker(input: MppBrokerInput): MppBrokerResult {
   const useMpp = expectedCalls >= 10 && savings > 0.05;
 
   return {
+    status: "ok",
     action,
+    summary: "Session plan generated from provided context and objectives.",
     objective,
+    objectiveUsed: objective,
+    durationMinutesUsed: durationMinutes,
+    constraintsApplied: input.constraints ?? [],
     topic: input.topic,
     sessionPlan: {
       durationMinutes,

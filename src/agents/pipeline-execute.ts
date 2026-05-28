@@ -26,8 +26,10 @@ export type PipelineExecuteInput = PreX402GuardInput & {
 };
 
 export type PipelineExecuteResult = {
+  status: "ok";
   allowed: boolean;
   summary: string;
+  nextActions: string[];
   guard: Awaited<ReturnType<typeof runPreX402Guard>>;
   plan?: ReturnType<typeof runPaymentIntentCompiler>;
   facilitator?: Awaited<ReturnType<typeof runFacilitatorFailover>>;
@@ -48,8 +50,10 @@ export async function runPipelineExecute(
   const guard = await runPreX402Guard(input);
 
   const result: PipelineExecuteResult = {
+    status: "ok",
     allowed: guard.allowed,
     summary: guard.summary,
+    nextActions: [],
     guard,
     recommendedNextCalls: [],
     bundleSavingsVsSeparateUsdc: Number(
@@ -125,6 +129,7 @@ export async function runPipelineExecute(
   if (!result.recommendedNextCalls.includes(`x402_fetch ${input.targetUrl}`)) {
     result.recommendedNextCalls.unshift(`x402_fetch ${input.targetUrl}`);
   }
+  result.nextActions = [...result.recommendedNextCalls];
 
   result.summary = [
     guard.summary,

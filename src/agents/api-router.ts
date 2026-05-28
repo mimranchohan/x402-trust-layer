@@ -39,6 +39,8 @@ const CURATED_ROUTES: Array<{
 ];
 
 export type RouterResult = {
+  status: "ok" | "not_found";
+  summary: string;
   query: string;
   selected: ReturnType<typeof pickBestResource> extends infer T ? T : never;
   alternatives: Awaited<ReturnType<typeof searchMarketplace>>;
@@ -52,6 +54,8 @@ export async function runApiRouter(input: RouterInput): Promise<RouterResult> {
   if (curatedHit) {
     const probe = await probeEndpoint(curatedHit.url);
     return {
+      status: "ok",
+      summary: "Matched curated route from query intent",
       query: input.query,
       selected: {
         name: curatedHit.name,
@@ -73,6 +77,8 @@ export async function runApiRouter(input: RouterInput): Promise<RouterResult> {
     const suiteUrl = `${config.publicBaseUrl}${suiteHit.path}`;
     const probe = await probeEndpoint(suiteUrl);
     return {
+      status: "ok",
+      summary: "Matched suite-native route from query intent",
       query: input.query,
       selected: {
         name: suiteHit.name,
@@ -98,6 +104,8 @@ export async function runApiRouter(input: RouterInput): Promise<RouterResult> {
 
   if (!selected?.url) {
     return {
+      status: "not_found",
+      summary: "No route matched query constraints",
       query: input.query,
       selected: null,
       alternatives: resources,
@@ -111,6 +119,8 @@ export async function runApiRouter(input: RouterInput): Promise<RouterResult> {
 
   if (!input.execute) {
     return {
+      status: "ok",
+      summary: "Route selected; execution disabled by default",
       query: input.query,
       selected,
       alternatives: resources.slice(0, 5),
@@ -121,6 +131,8 @@ export async function runApiRouter(input: RouterInput): Promise<RouterResult> {
   }
 
   return {
+    status: "ok",
+    summary: "Route selected; caller should execute via x402 client",
     query: input.query,
     selected,
     alternatives: resources.slice(0, 5),

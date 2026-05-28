@@ -8,11 +8,19 @@ export type RefundArbiterInput = {
 };
 
 export type RefundArbiterResult = {
+  status: "ok";
+  summary: string;
   refundEligible: boolean;
   protectionTier: "full" | "partial" | "none";
   grade: string;
   reasons: string[];
   buyerGuidance: string;
+  inputsUsed: {
+    verificationScore: number;
+    responseEmpty: boolean;
+    responseGeneric: boolean;
+    endpointReachable: boolean;
+  };
 };
 
 function gradeFromScore(score: number): string {
@@ -59,6 +67,8 @@ export function runRefundArbiter(input: RefundArbiterInput): RefundArbiterResult
   }
 
   return {
+    status: "ok",
+    summary: "Refund decision computed from verification signals.",
     refundEligible,
     protectionTier,
     grade: gradeFromScore(score),
@@ -67,5 +77,11 @@ export function runRefundArbiter(input: RefundArbiterInput): RefundArbiterResult
       refundEligible && protectionTier !== "none"
         ? "Buyer may qualify for a refund claim through Dexter refund protection. Attach settlement receipt and verification notes."
         : "Refund not recommended. Seller meets minimum quality threshold.",
+    inputsUsed: {
+      verificationScore: score,
+      responseEmpty: Boolean(input.responseEmpty),
+      responseGeneric: Boolean(input.responseGeneric),
+      endpointReachable: input.endpointReachable !== false,
+    },
   };
 }

@@ -15,8 +15,10 @@ export type X402ProxyInput = PreX402GuardInput & {
 };
 
 export type X402ProxyResult = {
+  status: "ok";
   allowed: boolean;
   summary: string;
+  nextActions: string[];
   securityGrade: string;
   riskScore: number;
   guard: Awaited<ReturnType<typeof runPreX402Guard>>;
@@ -76,10 +78,22 @@ const paid = await x402Fetch("${input.targetUrl}", { method: "${input.downstream
 
   const supportedChains: ChainKey[] = ["solana", "base", "polygon"];
   const payload: X402ProxyResult = {
+    status: "ok",
     allowed,
     summary: allowed
       ? "Proxy preflight passed — safe to pay downstream x402 endpoint"
       : `Blocked — guard/identity/security failed (grade ${merged.securityGrade})`,
+    nextActions: allowed
+      ? [
+          `x402_fetch ${input.targetUrl}`,
+          attestation
+            ? `POST ${config.publicBaseUrl}/api/attestation/verify`
+            : `POST ${config.publicBaseUrl}/api/receipt-auditor/verify`,
+        ]
+      : [
+          `Review policy caps and host allowlist`,
+          `Re-run POST ${config.publicBaseUrl}/api/x402/proxy after fixes`,
+        ],
     securityGrade: merged.securityGrade,
     riskScore: merged.riskScore,
     guard,

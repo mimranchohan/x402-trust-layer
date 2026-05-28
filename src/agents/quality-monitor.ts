@@ -15,6 +15,7 @@ export type QualityEntry = {
 };
 
 export type QualityMonitorResult = {
+  status: "ok";
   checkedAt: string;
   results: QualityEntry[];
   averageScore: number;
@@ -66,6 +67,7 @@ export async function runQualityMonitor(input: QualityMonitorInput): Promise<Qua
         : "fail";
 
   return {
+    status: "ok",
     checkedAt: new Date().toISOString(),
     results,
     averageScore: Number(averageScore.toFixed(1)),
