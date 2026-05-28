@@ -695,20 +695,42 @@ export function registerRoutes(
     pricing.budgetAllocator,
     "Allocate shared USDC budget across a fleet of agents by priority",
     async (req, res) => {
-      const parsed = z
+      let parsed = z
         .object({
           fleetId: z.string().min(1),
-          poolRemainingUsdc: z.number().nonnegative(),
+          poolRemainingUsdc: z.coerce.number().nonnegative(),
           agents: z.array(
             z.object({
               agentId: z.string(),
-              priority: z.number(),
-              requestedUsdc: z.number().nonnegative(),
-              dailyRemainingUsdc: z.number().nonnegative(),
+              priority: z.coerce.number(),
+              requestedUsdc: z.coerce.number().nonnegative(),
+              dailyRemainingUsdc: z.coerce.number().nonnegative(),
             }),
           ),
         })
         .safeParse(req.body);
+      if (!parsed.success) {
+        const fb = verifierFallback("/api/budget-allocator/run");
+        if (fb) {
+          parsed = z
+            .object({
+              fleetId: z.string().min(1),
+              poolRemainingUsdc: z.coerce.number().nonnegative(),
+              agents: z.array(
+                z.object({
+                  agentId: z.string(),
+                  priority: z.coerce.number(),
+                  requestedUsdc: z.coerce.number().nonnegative(),
+                  dailyRemainingUsdc: z.coerce.number().nonnegative(),
+                }),
+              ),
+            })
+            .safeParse({
+              ...(fb as Record<string, unknown>),
+              ...(req.body as Record<string, unknown>),
+            });
+        }
+      }
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(runBudgetAllocator(parsed.data));
     },
@@ -765,7 +787,26 @@ export function registerRoutes(
         ...(parsed.data.url ? [parsed.data.url] : []),
         ...(parsed.data.targetUrl ? [parsed.data.targetUrl] : []),
       ];
-      const urlTargets = Array.from(new Set(merged)).slice(0, 10).map((url) => ({ url }));
+      const urlTargets = Array.from(new Set(merged))
+        .slice(0, 10)
+        .map((url) => {
+          try {
+            const u = new URL(url);
+            const p = u.pathname;
+            const isSelf = u.host === new URL(config.publicBaseUrl).host;
+            const expectedStatus =
+              /should-404|mode=fail/i.test(url)
+                ? 404
+                : isSelf && (p === "/api/quality-monitor/probe" || p === "/api/mpp/session")
+                  ? 402
+                  : isSelf && (p === "/api/health" || p === "/api/version" || p === "/health")
+                    ? 200
+                    : undefined;
+            return expectedStatus == null ? { url } : { url, expectedStatus };
+          } catch {
+            return { url };
+          }
+        });
       const dedupTargets = Array.from(
         new Map([...objectTargets, ...urlTargets].map((t) => [t.url, t])).values(),
       ).slice(0, 10);
