@@ -320,21 +320,32 @@
     const toggle = $("#nav-toggle");
     const links = $("#nav-links");
     if (!toggle || !links) return;
-    toggle.addEventListener("click", () => {
-      const open = links.classList.toggle("open");
+
+    function setOpen(open) {
+      links.classList.toggle("open", open);
+      document.body.classList.toggle("nav-open", open);
       toggle.setAttribute("aria-expanded", open ? "true" : "false");
       toggle.textContent = open ? "✕" : "☰";
+    }
+
+    toggle.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setOpen(!links.classList.contains("open"));
     });
+
     links.querySelectorAll("a").forEach((a) => {
-      a.addEventListener("click", () => {
-        links.classList.remove("open");
-        toggle.setAttribute("aria-expanded", "false");
-        toggle.textContent = "☰";
-      });
+      a.addEventListener("click", () => setOpen(false));
+    });
+
+    window.matchMedia("(min-width: 861px)").addEventListener("change", (mq) => {
+      if (mq.matches) setOpen(false);
     });
   }
 
   async function init() {
+    initMobileNav();
+
     try {
       catalog = await fetch("/data/agents.json").then((r) => r.json());
     } catch {
