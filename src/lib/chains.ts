@@ -21,8 +21,6 @@ export function usdcAssetForCaip2(network: string): string | undefined {
   return undefined;
 }
 
-const CHAIN_ORDER: ChainKey[] = ["base", "solana", "polygon"];
-
 export function parseChainList(raw: string | undefined): ChainKey[] {
   if (!raw || raw === "all") return ["base", "solana"];
   const keys = raw
@@ -33,8 +31,9 @@ export function parseChainList(raw: string | undefined): ChainKey[] {
   for (const k of keys) {
     if (k in CHAIN_IDS && !out.includes(k as ChainKey)) out.push(k as ChainKey);
   }
-  const list: ChainKey[] = out.length ? out : ["solana"];
-  return [...list].sort((a, b) => CHAIN_ORDER.indexOf(a) - CHAIN_ORDER.indexOf(b));
+  // Preserve the operator-specified order so NETWORKS controls which chain is
+  // advertised first in the 402 `accepts` list (and therefore preferred by payers).
+  return out.length ? out : ["solana"];
 }
 
 export function caip2Networks(chains: ChainKey[]): string[] {
