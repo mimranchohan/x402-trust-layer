@@ -26,8 +26,8 @@ whether the response it paid for was actually worth it. Everything settles in US
 over the [Dexter facilitator](https://x402.dexter.cash), on Base or Solana, for a
 few cents a call.
 
-**Live:** https://x402trustlayer.xyz *(after DNS setup)* · fallback: https://x402-agent-suite-production.up.railway.app
-**Source:** https://github.com/mimranchohan/x402-agent-suite
+**Live:** https://x402trustlayer.xyz *
+
 
 ### The four layers
 
