@@ -1,4 +1,6 @@
 import express, { type Request, type Response, type NextFunction } from "express";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { assertConfig, config } from "./config.js";
 import { createPaidMiddleware } from "./lib/x402-paid.js";
 import {
@@ -32,6 +34,22 @@ app.use("/api", (req, _res, next) => {
   applyVerifierExampleBody(req);
   next();
 });
+
+/** Trust Layer brand landing page — served to browsers at `/`; machines still get JSON. */
+let LANDING_HTML = "";
+try {
+  LANDING_HTML = readFileSync(join(process.cwd(), "public", "index.html"), "utf8");
+} catch {
+  LANDING_HTML = "";
+}
+
+/** Static public files (landing.js, data, assets). index.html served via GET / negotiation. */
+app.use(
+  express.static(join(process.cwd(), "public"), {
+    index: false,
+    maxAge: "1h",
+  }),
+);
 
 const paid = createPaidMiddleware();
 
@@ -115,10 +133,15 @@ app.get("/x402/api/discover", sendDiscoverCatalog);
 app.get("/x402/discover", (_req, res) => res.redirect(301, "/x402/api/discover"));
 app.get("/discover", (_req, res) => res.redirect(301, "/x402/api/discover"));
 
-app.get("/", (_req, res) => {
+app.get("/", (req, res) => {
+  const acceptsHtml = (req.headers.accept ?? "").includes("text/html");
+  if (acceptsHtml && LANDING_HTML) {
+    res.type("html").send(LANDING_HTML);
+    return;
+  }
   const all = listEndpoints();
   res.json({
-    name: "x402 Agent Suite Pro",
+    name: "x402 Trust Layer — Agent Suite",
     description:
       "31 paid x402 infrastructure APIs — start with 3 entry points; 26 advanced routes incl. 7 Tier-1 enterprise agents",
     docs: `${config.publicBaseUrl}/openapi.json`,

@@ -1,8 +1,23 @@
-# x402 Agent Suite Pro
+<p align="center">
+  <img src="public/assets/x402-trustlayer-logo.png" alt="x402 Trust Layer" width="280" />
+</p>
 
-[![x402](https://img.shields.io/badge/x402-Agent%20Suite-v3-blue)](https://x402-agent-suite-production.up.railway.app)
-[![Dexter](https://img.shields.io/badge/Dexter-seller-green)](https://dexter.cash/sellers/9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt)
-[![x402scan](https://img.shields.io/badge/x402scan-31%20resources-7c3aed)](https://www.x402scan.com)
+<h1 align="center">x402 Trust Layer</h1>
+
+<p align="center"><strong>The trust layer for agent payments.</strong><br/>
+<code>x402trustlayer.xyz</code> · Guard · Attest · Comply · Audit</p>
+
+<p align="center">
+<a href="https://x402trustlayer.xyz"><img src="https://img.shields.io/badge/x402%20Trust%20Layer-live-16C7C0" alt="live"/></a>
+<a href="https://x402gle.com/servers/x402-agent-suite-production.up.railway.app"><img src="https://img.shields.io/badge/x402gle-71%25%20verified-16C7C0" alt="verified"/></a>
+<a href="https://dexter.cash/sellers/9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt"><img src="https://img.shields.io/badge/Dexter-seller-green" alt="Dexter"/></a>
+<a href="https://www.x402scan.com"><img src="https://img.shields.io/badge/x402scan-31%20resources-7c3aed" alt="x402scan"/></a>
+</p>
+
+---
+
+> **x402 Trust Layer** *(x402 Agent Suite Pro)* — 31 paid x402 APIs for guard,
+> attestation, compliance and settlement. Live at **https://x402trustlayer.xyz**
 
 A control plane for autonomous agent commerce. Thirty-one paid x402 APIs that an
 AI agent calls *before, during, and after* it spends money — to decide whether a
@@ -11,8 +26,17 @@ whether the response it paid for was actually worth it. Everything settles in US
 over the [Dexter facilitator](https://x402.dexter.cash), on Base or Solana, for a
 few cents a call.
 
-**Live:** https://x402-agent-suite-production.up.railway.app
+**Live:** https://x402trustlayer.xyz *(after DNS setup)* · fallback: https://x402-agent-suite-production.up.railway.app
 **Source:** https://github.com/mimranchohan/x402-agent-suite
+
+### The four layers
+
+| | Layer | Does | Key endpoints |
+|---|-------|------|---------------|
+| **01** | **Guard** | Preflight spend / identity / risk before any payment | `/guard/pre-x402` · `/x402/proxy` |
+| **02** | **Attestation** | Issue, verify & register agent credentials and mandates | `/attestation/*` · `/mandate/*` |
+| **03** | **Compliance** | Ledgers, evidence bundles, disputes, refunds | `/compliance/ledger` · `/dispute/resolve` · `/refund-arbiter` |
+| **04** | **Settlement Ops** | Rail routing, MPP sessions, escrow, receipt audit | `/rail-optimizer` · `/mpp/session` · `/receipt-auditor` |
 
 ---
 

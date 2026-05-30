@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>x402 Trust Layer — the trust layer for agent payments</title>
+<meta name="description" content="x402 Trust Layer — 31 enterprise x402 APIs for guard, attestation, compliance and settlement. Multichain Base + Solana. x402trustlayer.xyz"/>
+<link rel="icon" type="image/png" href="/assets/x402-trustlayer-logo.png"/>
+<meta property="og:title" content="x402 Trust Layer"/>
+<meta property="og:description" content="31 paid APIs — guard, attest, comply and audit every agent payment before the money moves."/>
+<meta property="og:image" content="/assets/x402-trustlayer-logo.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#070A0F;--bg2:#0C1018;--panel:#111827;--panel2:#0F1623;
+  --line:#1E293B;--line2:#243044;
+  --txt:#F1F5F9;--muted:#94A3B8;--dim:#64748B;
+  --cyan:#16C7C0;--cyan-d:rgba(22,199,192,.12);--cyan-b:rgba(22,199,192,.35);
+  --max:1200px;--r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:"Space Grotesk",system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 24px}
+
+/* ambient */
+.glow{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(900px 500px at 85% -5%,rgba(22,199,192,.14),transparent 55%),
+             radial-gradient(700px 400px at 5% 20%,rgba(59,130,246,.06),transparent 50%)}
+
+/* nav */
+.nav{position:sticky;top:0;z-index:50;background:rgba(7,10,15,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav-in{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:600;font-size:15px}
+.brand img{height:36px;width:auto;border-radius:6px}
+.brand-domain{font-size:12px;color:var(--dim);font-weight:400;display:none}
+@media(min-width:768px){.brand-domain{display:block}}
+.nav-links{display:flex;align-items:center;gap:22px;font-size:14px;color:var(--muted)}
+.nav-links a:hover{color:var(--cyan)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:10px;font-weight:600;font-size:13px;border:1px solid var(--cyan-b);background:var(--cyan-d);color:var(--cyan);transition:.15s;cursor:pointer}
+.btn:hover{background:rgba(22,199,192,.22)}
+.btn.solid{background:var(--cyan);color:#04201F;border-color:var(--cyan)}
+.btn.ghost{background:transparent;border-color:var(--line);color:var(--txt)}
+.btn.sm{padding:6px 12px;font-size:12px}
+@media(max-width:860px){.nav-links{display:none}}
+
+/* hero */
+section{position:relative;z-index:1}
+.hero{padding:72px 0 48px}
+.hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--cyan);border:1px solid var(--cyan-b);background:var(--cyan-d);padding:5px 12px;border-radius:999px;font-weight:500}
+.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+h1{font-size:clamp(34px,5.5vw,58px);line-height:1.05;letter-spacing:-1px;font-weight:700;margin-top:18px}
+h1 em{font-style:normal;color:var(--cyan)}
+.hero-sub{margin-top:18px;font-size:clamp(16px,2vw,19px);color:var(--muted);max-width:560px}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.logo-panel{border:1px solid var(--line);border-radius:20px;background:linear-gradient(160deg,var(--panel),var(--bg2));padding:32px;display:flex;align-items:center;justify-content:center;min-height:280px}
+.logo-panel img{max-width:100%;max-height:240px;object-fit:contain;filter:drop-shadow(0 12px 40px rgba(22,199,192,.2))}
+
+/* metrics */
+.metrics{background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.metrics-in{display:grid;grid-template-columns:repeat(5,1fr)}
+.metric{padding:24px 16px;text-align:center;border-right:1px solid var(--line)}
+.metric:last-child{border-right:none}
+.metric .n{font-size:clamp(22px,3vw,28px);font-weight:700}
+.metric .n span{color:var(--cyan)}
+.metric .l{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+
+/* sections */
+.pad{padding:72px 0}
+.section-kicker{color:var(--cyan);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px}
+.section-title{font-size:clamp(26px,4vw,38px);font-weight:700;letter-spacing:-.5px;margin-top:10px}
+.section-desc{color:var(--muted);margin-top:12px;font-size:16px;max-width:640px}
+
+/* layers */
+.layers-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:36px}
+.layer-card{border:1px solid var(--line);border-radius:var(--r);padding:22px;background:var(--panel);transition:.15s}
+.layer-card:hover{border-color:var(--cyan-b)}
+.layer-num{font-family:"JetBrains Mono";font-size:12px;color:var(--cyan);letter-spacing:1px}
+.layer-card h3{font-size:17px;margin-top:8px;font-weight:600}
+.layer-card p{font-size:13px;color:var(--muted);margin-top:6px}
+
+/* catalog toolbar */
+.catalog-toolbar{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;margin:36px 0 20px}
+.search-wrap{flex:1;min-width:220px;max-width:360px;position:relative}
+.search-wrap input{width:100%;padding:10px 14px 10px 38px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--txt);font-size:14px;outline:none}
+.search-wrap input:focus{border-color:var(--cyan-b)}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--dim);width:16px;height:16px}
+.catalog-meta{font-size:13px;color:var(--dim)}
+.catalog-meta strong{color:var(--cyan)}
+
+/* tier pills */
+.tier-nav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+.tier-pill{padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--muted);font-size:12px;font-weight:500;cursor:pointer;transition:.15s}
+.tier-pill:hover,.tier-pill.active{border-color:var(--cyan-b);color:var(--cyan);background:var(--cyan-d)}
+
+/* api grid */
+.api-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.api-card{border:1px solid var(--line);border-radius:var(--r);background:var(--panel2);padding:22px;display:flex;flex-direction:column;gap:10px;transition:.15s}
+.api-card:hover{border-color:var(--line2);box-shadow:0 8px 32px rgba(0,0,0,.25)}
+.api-card-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.api-tier{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;padding:3px 8px;border-radius:6px;background:color-mix(in srgb,var(--tc) 15%,transparent);color:var(--tc);border:1px solid color-mix(in srgb,var(--tc) 35%,transparent)}
+.api-price{font-family:"JetBrains Mono";font-size:14px;font-weight:600;color:var(--cyan)}
+.api-name{font-size:18px;font-weight:600;line-height:1.2}
+.api-route{font-size:12px;color:var(--dim)}
+.api-route span{color:var(--muted)}
+.api-summary{font-size:13.5px;color:var(--muted);flex:1;line-height:1.5}
+.api-details summary{cursor:pointer;font-size:12px;font-weight:600;color:var(--cyan);list-style:none;padding-top:4px}
+.api-details summary::-webkit-details-marker{display:none}
+.api-detail-body{padding-top:14px;border-top:1px solid var(--line);margin-top:10px;display:flex;flex-direction:column;gap:14px}
+.detail-block h4{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim);margin-bottom:6px}
+.detail-block p{font-size:13px;color:var(--muted)}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-family:"JetBrains Mono";font-size:10.5px;padding:3px 8px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--muted)}
+.code-block{font-family:"JetBrains Mono";font-size:11px;line-height:1.6;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto;color:#CBD5E1;white-space:pre-wrap;word-break:break-all}
+.hint{font-size:11px;color:var(--dim);margin-top:6px}
+.api-actions{display:flex;gap:8px;flex-wrap:wrap}
+.empty{color:var(--dim);padding:40px;text-align:center;grid-column:1/-1}
+
+/* integrate */
+.integrate-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:40px;align-items:start;margin-top:36px}
+.terminal{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#080C12}
+.term-bar{display:flex;align-items:center;gap:6px;padding:10px 14px;border-bottom:1px solid var(--line);background:#0A0F16}
+.term-bar .d{width:10px;height:10px;border-radius:50%;background:#273040}
+.term-bar .t{margin-left:8px;font-size:11px;color:var(--dim);font-family:"JetBrains Mono"}
+.terminal pre{padding:18px;font-family:"JetBrains Mono";font-size:12px;line-height:1.7;color:#CBD5E1;overflow:auto}
+.ck{color:#7AA2FF}.cs{color:#9ECE9B}.cf{color:var(--cyan)}.cc{color:var(--dim)}.cn{color:#FBBF24}
+
+/* cta */
+.cta-band{margin-top:48px;border:1px solid var(--cyan-b);border-radius:20px;background:linear-gradient(135deg,rgba(22,199,192,.08),transparent);padding:48px 32px;text-align:center}
+.cta-band h2{font-size:clamp(24px,3.5vw,34px);letter-spacing:-.4px}
+.cta-band p{color:var(--muted);margin:12px auto 24px;max-width:520px}
+
+/* footer */
+footer{border-top:1px solid var(--line);background:var(--bg2);padding:40px 0;margin-top:48px}
+.foot-in{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:20px}
+.foot-links{display:flex;flex-wrap:wrap;gap:20px;font-size:13px;color:var(--muted)}
+.foot-links a:hover{color:var(--cyan)}
+.foot-note{font-size:12px;color:var(--dim);margin-top:16px;line-height:1.6}
+
+@media(max-width:900px){
+  .hero-grid,.integrate-grid{grid-template-columns:1fr}
+  .layers-grid{grid-template-columns:repeat(2,1fr)}
+  .metrics-in{grid-template-columns:repeat(2,1fr)}
+  .metric{border-bottom:1px solid var(--line)}
+  .detail-grid{grid-template-columns:1fr}
+  .api-grid{grid-template-columns:1fr}
+}
+@media(max-width:520px){.layers-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="glow"></div>
+
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="/">
+      <img src="/assets/x402-trustlayer-logo.png" alt="x402 Trust Layer logo"/>
+      <span>
+        x402 Trust Layer
+        <div class="brand-domain mono">x402trustlayer.xyz</div>
+      </span>
+    </a>
+    <nav class="nav-links">
+      <a href="#platform">Platform</a>
+      <a href="#catalog">API Catalog</a>
+      <a href="#integrate">Integrate</a>
+      <a href="/openapi.json">OpenAPI</a>
+      <a class="btn solid" href="/health">Status</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow"><span class="dot"></span> Enterprise x402 control plane</span>
+      <h1>Trust every agent payment <em>before</em> the money moves.</h1>
+      <p class="hero-sub" id="hero-sub">The trust layer for agent payments · x402trustlayer.xyz</p>
+      <div class="hero-actions">
+        <a class="btn solid" href="#catalog">Explore 31 APIs &rarr;</a>
+        <a class="btn ghost" href="/openapi.json">OpenAPI spec</a>
+        <a class="btn ghost" href="https://github.com/mimranchohan/x402-agent-suite" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+    <div class="logo-panel">
+      <img src="/assets/x402-trustlayer-logo.png" alt="x402 Trust Layer — shield and wordmark"/>
+    </div>
+  </div>
+</section>
+
+<section class="metrics">
+  <div class="wrap metrics-in">
+    <div class="metric"><div class="n" id="m-endpoints">31</div><div class="l">Paid endpoints</div></div>
+    <div class="metric"><div class="n">71<span>%</span></div><div class="l">Verified on x402gle</div></div>
+    <div class="metric"><div class="n">Top <span>25</span></div><div class="l">Of 299 hosts</div></div>
+    <div class="metric"><div class="n mono" id="m-chains">Base + Solana</div><div class="l">Multichain USDC</div></div>
+    <div class="metric"><div class="n mono" id="m-version">v3.1.0</div><div class="l">Suite version</div></div>
+  </div>
+</section>
+
+<section class="pad" id="platform">
+  <div class="wrap">
+    <div class="section-kicker">Architecture</div>
+    <h2 class="section-title">Four layers. Thirty-one agents.</h2>
+    <p class="section-desc">Each layer is a composable set of x402 endpoints. Call them individually or bundle into a single preflight before any payment.</p>
+    <div class="layers-grid" id="layers-grid"></div>
+  </div>
+</section>
+
+<section class="pad" id="catalog" style="padding-top:0;background:var(--bg2);border-top:1px solid var(--line)">
+  <div class="wrap">
+    <div class="section-kicker">API Catalog</div>
+    <h2 class="section-title">Every agent, fully documented.</h2>
+    <p class="section-desc">All endpoints settle in USDC via the Dexter facilitator. Click any card for inputs, outputs, pricing and example calls.</p>
+
+    <div class="catalog-toolbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="search" id="api-search" placeholder="Search agents, paths, tags…" autocomplete="off"/>
+      </div>
+      <div class="catalog-meta">Showing <strong id="api-count">31</strong> agents</div>
+    </div>
+
+    <div class="tier-nav" id="tier-nav"></div>
+    <div class="api-grid" id="api-grid"></div>
+  </div>
+</section>
+
+<section class="pad" id="integrate">
+  <div class="wrap">
+    <div class="section-kicker">Integration</div>
+    <h2 class="section-title">One guard call before every payment.</h2>
+    <div class="integrate-grid">
+      <div>
+        <p class="section-desc" style="margin-top:0">Works with OpenDexter, the Dexter SDK, Visa CLI, or raw x402 fetch. Every call returns HTTP 402 first — pay in USDC, retry with settlement header.</p>
+        <ul style="margin-top:20px;color:var(--muted);font-size:14px;display:flex;flex-direction:column;gap:10px;list-style:none">
+          <li>✓ &nbsp;Multichain Base + Solana</li>
+          <li>✓ &nbsp;OpenAPI 3.1 + <code class="mono">/.well-known/x402</code> discovery</li>
+          <li>✓ &nbsp;Registered on x402scan — 31/31 resources</li>
+          <li>✓ &nbsp;On-chain receipt verification via receipt-auditor</li>
+        </ul>
+        <div style="margin-top:24px;display:flex;gap:10px;flex-wrap:wrap">
+          <a class="btn solid" href="/.well-known/x402">Discovery manifest</a>
+          <a class="btn ghost" href="/x402/api/discover">Bazaar catalog</a>
+        </div>
+      </div>
+      <div class="terminal">
+        <div class="term-bar"><span class="d"></span><span class="d"></span><span class="d"></span><span class="t">guard.ts · x402trustlayer.xyz</span></div>
+<pre><span class="cc">// Preflight before any x402 payment</span>
+<span class="ck">const</span> res = <span class="ck">await</span> <span class="cf">fetch</span>(
+  <span class="cs">"https://x402trustlayer.xyz/api/guard/pre-x402"</span>,
+  {
+    method: <span class="cs">"POST"</span>,
+    headers: { <span class="cs">"content-type"</span>: <span class="cs">"application/json"</span> },
+    body: <span class="cf">JSON</span>.stringify({
+      agentId: <span class="cs">"buyer-1"</span>,
+      walletAddress: wallet,
+      targetUrl: downstreamUrl,
+      estimatedCostUsdc: <span class="cn">0.05</span>,
+      policy: {
+        dailyCapUsdc: <span class="cn">10</span>,
+        perCallCapUsdc: <span class="cn">0.5</span>
+      }
+    })
+  }
+);
+
+<span class="ck">const</span> gate = <span class="ck">await</span> res.json();
+<span class="ck">if</span> (gate.allowed) {
+  <span class="ck">await</span> <span class="cf">x402Fetch</span>(downstreamUrl);
+}</pre>
+      </div>
+    </div>
+
+    <div class="cta-band">
+      <h2>Ready to guard your next agent payment?</h2>
+      <p>Start with <strong style="color:var(--cyan)">POST /api/x402/proxy</strong> ($0.08) or <strong style="color:var(--cyan)">POST /api/guard/pre-x402</strong> ($0.05).</p>
+      <a class="btn solid" href="#catalog">Browse all 31 endpoints &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-in">
+      <a class="brand" href="/">
+        <img src="/assets/x402-trustlayer-logo.png" alt="x402 Trust Layer" style="height:28px"/>
+        <span>x402 Trust Layer</span>
+      </a>
+      <nav class="foot-links">
+        <a href="#catalog">API Catalog</a>
+        <a href="/openapi.json">OpenAPI</a>
+        <a href="/.well-known/x402">Discovery</a>
+        <a href="/health">Health</a>
+        <a href="https://x402gle.com/servers/x402-agent-suite-production.up.railway.app" target="_blank" rel="noopener">x402gle</a>
+        <a href="https://github.com/mimranchohan/x402-agent-suite" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+    <p class="foot-note">
+      x402 Trust Layer · <span class="mono">x402trustlayer.xyz</span> · Guard · Attest · Comply · Audit<br/>
+      31 paid x402 infrastructure APIs · Multichain Base + Solana · USDC via Dexter facilitator · &copy; 2026
+    </p>
+  </div>
+</footer>
+
+<script src="/landing.js"></script>
+</body>
+</html>
