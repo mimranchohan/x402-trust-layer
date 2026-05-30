@@ -126,6 +126,11 @@ app.get("/discovery", (_req, res) => {
   res.type("html").send(renderDiscoveryPage(buildWellKnownX402Resources(), config.publicBaseUrl));
 });
 
+/** Same manifest as /.well-known/x402 — safe path for browsers (Chrome may flag .well-known). */
+app.get("/discovery.json", (_req, res) => {
+  res.json(buildWellKnownX402Resources());
+});
+
 app.get("/x402/api/services.json", (_req, res) => {
   res.json(buildServicesManifest());
 });

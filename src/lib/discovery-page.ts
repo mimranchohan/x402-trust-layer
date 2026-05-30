@@ -33,7 +33,8 @@ export function renderDiscoveryPage(manifest: object, baseUrl: string): string {
     <h2 style="font-size:clamp(24px,4vw,36px);margin-bottom:12px">x402 manifest</h2>
     <p class="section-desc" style="max-width:100%;margin-bottom:24px">
       Machine-readable catalog for x402scan, Agentic Market, and OpenDexter.
-      Crawlers should use <code class="mono">GET /.well-known/x402</code> directly.
+      Scanners use <code class="mono">GET /.well-known/x402</code>.
+      In the browser, open <code class="mono">/discovery.json</code> for the same JSON without Chrome warnings.
     </p>
     <div class="tag-row" style="margin-bottom:20px">
       <span class="tag mono">31 resources</span>
@@ -43,14 +44,14 @@ export function renderDiscoveryPage(manifest: object, baseUrl: string): string {
     <div class="terminal-panel">
       <div class="term-chrome">
         <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-        <span class="term-title mono">/.well-known/x402</span>
+        <span class="term-title mono">x402 discovery manifest</span>
       </div>
       <pre class="code-block mono" style="margin:0;border:none;border-radius:0;max-height:60vh;overflow:auto">${json}</pre>
     </div>
     <div class="hero-actions" style="justify-content:flex-start;margin-top:24px">
       <button type="button" class="btn solid" id="copy-json">Copy JSON</button>
-      <a class="btn ghost" href="${baseUrl}/.well-known/x402" rel="nofollow">Raw JSON endpoint</a>
-      <a class="btn ghost" href="${baseUrl}/x402/api/discover">Full catalog</a>
+      <a class="btn ghost" href="/discovery.json" target="_blank" rel="noopener">Open JSON</a>
+      <a class="btn ghost" href="/x402/api/discover">Full catalog</a>
     </div>
     <p class="section-desc" style="margin-top:20px;font-size:12px">
       Register individual paid URLs from <code>resources[]</code> on x402scan — not this catalog URL.
