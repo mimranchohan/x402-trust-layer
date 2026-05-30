@@ -316,49 +316,7 @@
     } catch (_) {}
   }
 
-  function initMobileNav() {
-    const nav = document.getElementById("site-nav");
-    const toggle = document.getElementById("nav-toggle");
-    const menu = document.getElementById("nav-menu");
-    const backdrop = document.getElementById("nav-backdrop");
-    if (!nav || !toggle || !menu) return;
-
-    function setOpen(open) {
-      nav.classList.toggle("nav-open", open);
-      document.body.classList.toggle("nav-open", open);
-      toggle.setAttribute("aria-expanded", open ? "true" : "false");
-      toggle.textContent = open ? "✕" : "☰";
-      if (backdrop) backdrop.hidden = !open;
-    }
-
-    function onToggle(e) {
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-      setOpen(!nav.classList.contains("nav-open"));
-    }
-
-    toggle.addEventListener("click", onToggle);
-
-    if (backdrop) backdrop.addEventListener("click", () => setOpen(false));
-
-    menu.querySelectorAll("a").forEach((a) => {
-      a.addEventListener("click", () => setOpen(false));
-    });
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") setOpen(false);
-    });
-
-    window.matchMedia("(min-width: 1025px)").addEventListener("change", (mq) => {
-      if (mq.matches) setOpen(false);
-    });
-  }
-
   async function init() {
-    initMobileNav();
-
     try {
       catalog = await fetch("/data/agents.json").then((r) => r.json());
     } catch {
