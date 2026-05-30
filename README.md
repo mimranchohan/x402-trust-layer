@@ -4,7 +4,7 @@
 [![Dexter](https://img.shields.io/badge/Dexter-seller-green)](https://dexter.cash/sellers/9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt)
 [![Agentic Market](https://img.shields.io/badge/Agentic.Market-listing-orange)](https://agentic.market/)
 
-**24 paid x402 APIs** for AI agent fleets. Settles USDC via [Dexter facilitator](https://x402.dexter.cash).
+**31 paid x402 APIs** for AI agent fleets (24 core + 7 Tier-1 enterprise agents). Settles USDC via [Dexter facilitator](https://x402.dexter.cash).
 
 **Live:** https://x402-agent-suite-production.up.railway.app
 
@@ -21,7 +21,7 @@ Recent route auditions (paid, live response scoring):
 
 Whole-origin discovery is healthy (`24/24` routes registered from OpenAPI). x402gle whole-server runs mark routes as `pending` while background scoring completes; use per-route audition links above for immediate proof.
 
-**Docs:** [Architecture](docs/ARCHITECTURE.md) · [Security](docs/SECURITY.md) · [Deploy checklist](docs/DEPLOY-CHECKLIST.md) · [Roadmap](docs/ROADMAP.md) · [Changelog](CHANGELOG.md)
+**Docs:** [Agent Catalog (all 31 agents)](docs/AGENT-CATALOG.md) · [Architecture](docs/ARCHITECTURE.md) · [Security](docs/SECURITY.md) · [Deploy checklist](docs/DEPLOY-CHECKLIST.md) · [Roadmap](docs/ROADMAP.md) · [Changelog](CHANGELOG.md)
 
 ---
 
@@ -60,7 +60,23 @@ Helper: [`packages/x402-preflight`](packages/x402-preflight/README.md)
 
 ---
 
-## Advanced (19 routes)
+## Tier-1 enterprise agents (new)
+
+The control-plane layer for the Visa CLI / AP2 era — trust, verifiable intent, cross-rail routing, compliance, disputes, and quality-gated settlement. Full reference: [docs/AGENT-CATALOG.md](docs/AGENT-CATALOG.md).
+
+| Endpoint | Price | What it solves |
+|----------|-------|----------------|
+| `POST /api/merchant-trust/score` | $0.06 | Know-Your-Merchant trust + wash-trading score before paying |
+| `POST /api/mandate/compile` | $0.08 | Signed, scoped AP2-style payment mandate from intent |
+| `POST /api/mandate/verify` | $0.02 | Verify mandate signature + scope a proposed payment |
+| `POST /api/rail-optimizer/route` | $0.04 | Best rail across Visa CLI / Stripe MPP / Circle / Base / Solana |
+| `POST /api/compliance/ledger` | $0.12 | CFO/SOC2-grade spend reconciliation + policy flags |
+| `POST /api/dispute/resolve` | $0.10 | Visa chargeback dossier or on-chain refund claim |
+| `POST /api/quality-escrow/settle` | $0.10 | Quality-gated escrow with auto-refund |
+
+---
+
+## Advanced (24 core routes)
 
 MPP sessions, attestation registry, router, facilitator failover, receipt auditor, escrow, quality monitor, etc. Full list: `GET /` or `GET /openapi.json`.
 
@@ -71,7 +87,7 @@ MPP sessions, attestation registry, router, facilitator failover, receipt audito
 | URL | Purpose |
 |-----|---------|
 | `GET /openapi.json` | AgentCash / x402scan OpenAPI |
-| `GET /.well-known/x402` | 24 paid resource URLs |
+| `GET /.well-known/x402` | 31 paid resource URLs |
 | `GET /x402/api/services.json` | Bazaar manifest |
 
 Register: [x402scan.com/resources/register](https://www.x402scan.com/resources/register)
@@ -95,6 +111,7 @@ Target: **≥75** Dexter score per resource — see [docs/DEXTER-SCORE.md](docs/
 
 | Doc | Topic |
 |-----|--------|
+| [AGENT-CATALOG.md](docs/AGENT-CATALOG.md) | Enterprise reference for all 31 agents |
 | [INTEGRATE.md](docs/INTEGRATE.md) | Fleet flow, attestation, 3-line rule |
 | [MARKETPLACES.md](docs/MARKETPLACES.md) | Dexter + x402scan + Agentic checklist |
 | [DEXTER-SCORE.md](docs/DEXTER-SCORE.md) | Verification 75+ |

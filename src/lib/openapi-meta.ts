@@ -96,4 +96,32 @@ export const ENDPOINT_META: Record<string, { summary: string; tags: string[] }> 
     summary: "Seller audition coach: OpenAPI, 402 probes, Bazaar fixes before Dexter ingest",
     tags: ["seller", "audition", "discovery", "quality"],
   },
+  "/api/merchant-trust/score": {
+    summary: "Know-Your-Merchant trust + wash-trading score before payment",
+    tags: ["trust", "kym", "wash-trade", "preflight"],
+  },
+  "/api/mandate/compile": {
+    summary: "Compile a signed, scoped AP2-style payment mandate from intent",
+    tags: ["mandate", "ap2", "intent", "governance"],
+  },
+  "/api/mandate/verify": {
+    summary: "Verify mandate signature and scope a proposed payment",
+    tags: ["mandate", "verify", "governance"],
+  },
+  "/api/rail-optimizer/route": {
+    summary: "Choose best rail: Visa CLI, Stripe MPP, Circle, Base, Solana",
+    tags: ["rail", "router", "visa-cli", "mpp", "cost"],
+  },
+  "/api/compliance/ledger": {
+    summary: "CFO/SOC2-grade spend reconciliation with policy flags and tamper hash",
+    tags: ["compliance", "audit", "cfo", "ledger"],
+  },
+  "/api/dispute/resolve": {
+    summary: "Visa chargeback dossier or on-chain refund claim builder",
+    tags: ["dispute", "chargeback", "visa", "refund"],
+  },
+  "/api/quality-escrow/settle": {
+    summary: "Quality-gated escrow with response verification and auto-refund",
+    tags: ["escrow", "quality", "refund", "trust"],
+  },
 };

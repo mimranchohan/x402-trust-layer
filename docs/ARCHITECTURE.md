@@ -1,6 +1,6 @@
 # Architecture
 
-Production-grade x402 infrastructure API for AI agent fleets. **24 paid routes**, multi-chain (Base + Solana), Dexter facilitator settlement.
+Production-grade x402 infrastructure API for AI agent fleets. **31 paid routes** (24 core + 7 Tier-1 enterprise agents), multi-chain (Base + Solana), Dexter facilitator settlement. Full agent reference: [AGENT-CATALOG.md](./AGENT-CATALOG.md).
 
 ## Request flow
 
@@ -53,5 +53,11 @@ src/
 | Before downstream x402 | `POST /api/x402/proxy` or `POST /api/guard/pre-x402` |
 | Full orchestration | `POST /api/pipeline/execute` |
 | Seller QA | `POST /api/seller/audition-coach` |
+| Merchant trust (KYM) | `POST /api/merchant-trust/score` |
+| Verifiable intent (AP2) | `POST /api/mandate/compile` + `/verify` |
+| Cross-rail routing | `POST /api/rail-optimizer/route` |
+| Compliance / audit | `POST /api/compliance/ledger` |
+| Dispute / chargeback | `POST /api/dispute/resolve` |
+| Quality-gated escrow | `POST /api/quality-escrow/settle` |
 
 See [INTEGRATE.md](./INTEGRATE.md) for client SDK usage.

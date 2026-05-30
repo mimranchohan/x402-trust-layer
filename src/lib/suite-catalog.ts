@@ -72,6 +72,13 @@ export const SUITE_PRICES = {
   trustRegistry: 0.02,
   marketBuyAdvisor: 0.08,
   auditionCoach: 0.06,
+  merchantTrust: 0.06,
+  mandateCompile: 0.08,
+  mandateVerify: 0.02,
+  railOptimizer: 0.04,
+  complianceLedger: 0.12,
+  disputeResolve: 0.1,
+  qualityEscrow: 0.1,
 } as const;
 
 export function suiteUrl(path: string): string {

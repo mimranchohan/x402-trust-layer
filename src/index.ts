@@ -120,7 +120,7 @@ app.get("/", (_req, res) => {
   res.json({
     name: "x402 Agent Suite Pro",
     description:
-      "24 paid x402 infrastructure APIs — start with 3 entry points; 19 advanced fine-grained routes",
+      "31 paid x402 infrastructure APIs — start with 3 entry points; 26 advanced routes incl. 7 Tier-1 enterprise agents",
     docs: `${config.publicBaseUrl}/openapi.json`,
     discovery: `${config.publicBaseUrl}/x402/api/discover`,
     bazaar: `${config.publicBaseUrl}/x402/api/services.json`,

@@ -22,6 +22,12 @@ import { runSpendGovernor } from "./agents/spend-governor.js";
 import { runAuditionCoach } from "./agents/audition-coach.js";
 import { runMarketBuyAdvisor } from "./agents/market-buy-advisor.js";
 import { runX402Proxy } from "./agents/x402-proxy.js";
+import { runMerchantTrust } from "./agents/merchant-trust.js";
+import { runMandateCompile, runMandateVerify } from "./agents/mandate-compiler.js";
+import { runRailOptimizer } from "./agents/rail-optimizer.js";
+import { runComplianceLedger } from "./agents/compliance-ledger.js";
+import { runDisputeResolve } from "./agents/dispute-resolver.js";
+import { runQualityEscrow } from "./agents/quality-escrow.js";
 import { config, pricing } from "./config.js";
 import { SUITE_PRICES } from "./lib/suite-catalog.js";
 import { VERIFY_EXAMPLES } from "./lib/verify-examples.js";
@@ -65,6 +71,13 @@ export function listEndpoints() {
     { path: "POST /api/quality-monitor/probe", price: `$${pricing.qualityMonitor}`, tier: "intelligence" },
     { path: "POST /api/evidence-locker/export", price: `$${pricing.evidenceLocker}`, tier: "enterprise" },
     { path: "POST /api/agent-escrow", price: `$${pricing.agentEscrow}`, tier: "enterprise" },
+    { path: "POST /api/merchant-trust/score", price: `$${pricing.merchantTrust}`, tier: "tier1" },
+    { path: "POST /api/mandate/compile", price: `$${pricing.mandateCompile}`, tier: "tier1" },
+    { path: "POST /api/mandate/verify", price: `$${pricing.mandateVerify}`, tier: "tier1" },
+    { path: "POST /api/rail-optimizer/route", price: `$${pricing.railOptimizer}`, tier: "tier1" },
+    { path: "POST /api/compliance/ledger", price: `$${pricing.complianceLedger}`, tier: "tier1" },
+    { path: "POST /api/dispute/resolve", price: `$${pricing.disputeResolve}`, tier: "tier1" },
+    { path: "POST /api/quality-escrow/settle", price: `$${pricing.qualityEscrow}`, tier: "tier1" },
   ];
 }
 
@@ -1012,6 +1025,242 @@ export function registerRoutes(
         return;
       }
       res.json(await runAgentEscrow({ action: b.action, escrowId: b.escrowId }));
+    },
+  );
+
+  post(
+    "/api/merchant-trust/score",
+    pricing.merchantTrust,
+    "Know-Your-Merchant trust + wash-trading score before paying an x402 host",
+    async (req, res) => {
+      const parsed = z
+        .object({
+          host: z.string().min(1).optional(),
+          targetUrl: z.string().url().optional(),
+          observedTxns: z.coerce.number().nonnegative().optional(),
+          observedVolumeUsdc: z.coerce.number().nonnegative().optional(),
+          washTradePct: z.coerce.number().min(0).max(100).optional(),
+          verifiedResources: z.coerce.number().nonnegative().optional(),
+          totalResources: z.coerce.number().nonnegative().optional(),
+          avgTxUsdc: z.coerce.number().nonnegative().optional(),
+          p50LatencyMs: z.coerce.number().nonnegative().optional(),
+          probe: z.coerce.boolean().optional(),
+        })
+        .refine((d) => d.host || d.targetUrl, { message: "host or targetUrl required" })
+        .safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(await runMerchantTrust({ host: parsed.data.host ?? "", ...parsed.data }));
+    },
+  );
+
+  post(
+    "/api/mandate/compile",
+    pricing.mandateCompile,
+    "Compile a human intent into a signed, scoped AP2-style payment mandate",
+    async (req, res) => {
+      const parsed = z
+        .object({
+          principal: z.string().min(1),
+          agentId: z.string().min(1),
+          intent: z.string().min(3),
+          maxPerTxUsdc: z.coerce.number().positive(),
+          dailyCapUsdc: z.coerce.number().positive(),
+          allowedMerchants: z.array(z.string()).optional(),
+          allowedCategories: z.array(z.string()).optional(),
+          allowedRails: z.array(z.string()).optional(),
+          ttlMinutes: z.coerce.number().int().min(1).max(43200).optional(),
+        })
+        .safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(await runMandateCompile(parsed.data));
+    },
+  );
+
+  post(
+    "/api/mandate/verify",
+    pricing.mandateVerify,
+    "Verify a mandate signature and check a proposed payment against its scope",
+    async (req, res) => {
+      const parsed = z
+        .object({
+          mandateId: z.string().min(8),
+          proposed: z
+            .object({
+              amountUsdc: z.coerce.number().nonnegative(),
+              merchant: z.string().optional(),
+              category: z.string().optional(),
+              rail: z.string().optional(),
+            })
+            .optional(),
+        })
+        .safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(await runMandateVerify(parsed.data));
+    },
+  );
+
+  post(
+    "/api/rail-optimizer/route",
+    pricing.railOptimizer,
+    "Pick the best settlement rail across Visa CLI, Stripe MPP, Circle, Base, Solana",
+    async (req, res) => {
+      const parsed = z
+        .object({
+          amountUsdc: z.coerce.number().nonnegative(),
+          disputable: z.coerce.boolean().optional(),
+          latencySensitive: z.coerce.boolean().optional(),
+          expectedCalls: z.coerce.number().int().positive().optional(),
+          merchantRailsSupported: z
+            .array(z.enum(["visa-cli", "stripe-mpp", "circle-nano", "base-x402", "solana-x402"]))
+            .optional(),
+          preferProtection: z.coerce.boolean().optional(),
+        })
+        .safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(runRailOptimizer(parsed.data));
+    },
+  );
+
+  post(
+    "/api/compliance/ledger",
+    pricing.complianceLedger,
+    "Reconcile agent spend into a CFO/SOC2-grade audit ledger with policy flags",
+    async (req, res) => {
+      let parsed = z
+        .object({
+          organizationId: z.string().min(1),
+          period: z.string().optional(),
+          records: z.array(
+            z.object({
+              merchant: z.string().optional(),
+              endpoint: z.string().optional(),
+              amountUsdc: z.coerce.number().nonnegative(),
+              rail: z.string().optional(),
+              network: z.string().optional(),
+              category: z.string().optional(),
+              agentId: z.string().optional(),
+              transactionHash: z.string().optional(),
+              timestamp: z.string().optional(),
+            }),
+          ).min(1),
+          policy: z
+            .object({
+              monthlyCapUsdc: z.coerce.number().optional(),
+              perMerchantCapUsdc: z.coerce.number().optional(),
+              disallowedCategories: z.array(z.string()).optional(),
+              requireTxHash: z.coerce.boolean().optional(),
+            })
+            .optional(),
+        })
+        .safeParse(req.body);
+      if (!parsed.success) {
+        const fb = verifierFallback("/api/compliance/ledger");
+        if (fb) {
+          parsed = z
+            .object({
+              organizationId: z.string().min(1),
+              period: z.string().optional(),
+              records: z.array(
+                z.object({
+                  merchant: z.string().optional(),
+                  endpoint: z.string().optional(),
+                  amountUsdc: z.coerce.number().nonnegative(),
+                  rail: z.string().optional(),
+                  network: z.string().optional(),
+                  category: z.string().optional(),
+                  agentId: z.string().optional(),
+                  transactionHash: z.string().optional(),
+                  timestamp: z.string().optional(),
+                }),
+              ).min(1),
+              policy: z
+                .object({
+                  monthlyCapUsdc: z.coerce.number().optional(),
+                  perMerchantCapUsdc: z.coerce.number().optional(),
+                  disallowedCategories: z.array(z.string()).optional(),
+                  requireTxHash: z.coerce.boolean().optional(),
+                })
+                .optional(),
+            })
+            .safeParse(fb);
+        }
+      }
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      const data = parsed.data;
+      res.json(
+        runComplianceLedger({
+          organizationId: data.organizationId,
+          period: data.period,
+          records: data.records.map((r) => ({ ...r, merchant: r.merchant ?? r.endpoint ?? "unknown" })),
+          policy: data.policy,
+        }),
+      );
+    },
+  );
+
+  post(
+    "/api/dispute/resolve",
+    pricing.disputeResolve,
+    "Auto-build a Visa chargeback dossier (card) or on-chain refund claim (stablecoin)",
+    async (req, res) => {
+      const parsed = z
+        .object({
+          rail: z.enum(["visa-cli", "card", "base-x402", "solana-x402", "circle-nano", "stripe-mpp"]),
+          merchant: z.string().min(1),
+          amountUsdc: z.coerce.number().nonnegative(),
+          reason: z.enum(["non_delivery", "quality_mismatch", "overcharge", "duplicate", "unauthorized"]),
+          transactionHash: z.string().optional(),
+          evidence: z
+            .object({
+              expectedSchema: z.array(z.string()).optional(),
+              actualResponseEmpty: z.coerce.boolean().optional(),
+              verificationScore: z.coerce.number().min(0).max(100).optional(),
+              receiptValid: z.coerce.boolean().optional(),
+              duplicateOfTx: z.string().optional(),
+              chargedUsdc: z.coerce.number().optional(),
+              quotedUsdc: z.coerce.number().optional(),
+            })
+            .optional(),
+        })
+        .safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(runDisputeResolve(parsed.data));
+    },
+  );
+
+  post(
+    "/api/quality-escrow/settle",
+    pricing.qualityEscrow,
+    "Quality-gated escrow: verify response vs profile, release to merchant or auto-refund",
+    async (req, res) => {
+      const parsed = z
+        .object({
+          action: z.enum(["hold", "settle", "refund"]).default("settle"),
+          escrowId: z.string().optional(),
+          payerAgentId: z.string().optional(),
+          payeeMerchant: z.string().optional(),
+          amountUsdc: z.coerce.number().positive().optional(),
+          releaseThreshold: z.coerce.number().min(0).max(100).optional(),
+          expectedProfile: z
+            .object({
+              requiredKeys: z.array(z.string()).optional(),
+              minLengthBytes: z.coerce.number().nonnegative().optional(),
+              mustMatchRegex: z.string().optional(),
+              forbidEmpty: z.coerce.boolean().optional(),
+            })
+            .optional(),
+          actualResponse: z
+            .object({
+              bodyKeys: z.array(z.string()).optional(),
+              byteLength: z.coerce.number().nonnegative().optional(),
+              sample: z.string().optional(),
+              empty: z.coerce.boolean().optional(),
+            })
+            .optional(),
+        })
+        .safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(runQualityEscrow({ ...parsed.data, action: parsed.data.action ?? "settle" }));
     },
   );
 
