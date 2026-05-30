@@ -66,6 +66,17 @@ export function runRefundArbiter(input: RefundArbiterInput): RefundArbiterResult
     reasons.push("Verification score below minimum marketplace threshold");
   }
 
+  let buyerGuidance: string;
+  if (!refundEligible) {
+    buyerGuidance = "Refund not recommended. Seller meets minimum quality threshold.";
+  } else if (protectionTier !== "none") {
+    buyerGuidance =
+      "Refund recommended. Buyer likely qualifies for a Dexter refund-protection claim — attach the settlement receipt and verification notes.";
+  } else {
+    buyerGuidance =
+      "Refund recommended, but verification score is below the marketplace protection threshold — pursue via dispute/chargeback (POST /api/dispute/resolve) with the settlement receipt; Dexter refund protection does not apply.";
+  }
+
   return {
     status: "ok",
     summary: "Refund decision computed from verification signals.",
@@ -73,10 +84,7 @@ export function runRefundArbiter(input: RefundArbiterInput): RefundArbiterResult
     protectionTier,
     grade: gradeFromScore(score),
     reasons,
-    buyerGuidance:
-      refundEligible && protectionTier !== "none"
-        ? "Buyer may qualify for a refund claim through Dexter refund protection. Attach settlement receipt and verification notes."
-        : "Refund not recommended. Seller meets minimum quality threshold.",
+    buyerGuidance,
     inputsUsed: {
       verificationScore: score,
       responseEmpty: Boolean(input.responseEmpty),
