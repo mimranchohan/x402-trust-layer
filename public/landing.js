@@ -6,6 +6,9 @@
   let catalog = null;
   let activeTier = "all";
   let searchQuery = "";
+  let activeView = "terminal";
+  let heroIdx = 0;
+  let heroTimer = null;
 
   const TIER_COLORS = {
     entry: "#16C7C0",
@@ -28,78 +31,159 @@
   }
 
   function chips(arr) {
-    return (arr || [])
-      .map((t) => `<span class="chip">${esc(t)}</span>`)
-      .join("");
+    return (arr || []).map((t) => `<span class="chip">${esc(t)}</span>`).join("");
   }
 
-  function renderAgent(a) {
-    const url = `${BASE}${a.path}`;
+  function filteredAgents() {
+    if (!catalog) return [];
+    const q = searchQuery.toLowerCase();
+    return catalog.agents.filter((a) => {
+      if (activeTier !== "all" && a.tier !== activeTier) return false;
+      if (!q) return true;
+      const hay = (a.name + a.path + a.summary + a.tags.join(" ") + a.tierLabel).toLowerCase();
+      return hay.includes(q);
+    });
+  }
+
+  function priceFmt(n) {
+    return "$" + Number(n).toFixed(2);
+  }
+
+  function renderTerminalRow(a) {
+    return `
+<div class="term-row" data-id="${esc(a.id)}" role="button" tabindex="0">
+  <div class="method">${esc(a.method)}</div>
+  <div>
+    <div class="path-main">${esc(a.path)}</div>
+    <div class="path-name">${esc(a.name)}</div>
+    <div class="tier-tag">${esc(a.tierLabel)} · ${esc(a.layer)}</div>
+  </div>
+  <div class="price-tag">${priceFmt(a.price)}</div>
+</div>`;
+  }
+
+  function renderCard(a) {
     const color = TIER_COLORS[a.tier] || "#16C7C0";
     return `
-<article class="api-card" data-tier="${esc(a.tier)}" data-search="${esc(
-      (a.name + " " + a.path + " " + a.tags.join(" ") + " " + a.summary).toLowerCase(),
-    )}">
+<article class="api-card" data-id="${esc(a.id)}" role="button" tabindex="0">
   <div class="api-card-head">
-    <div class="api-tier" style="--tc:${color}">${esc(a.tierLabel)}</div>
-    <div class="api-price">$${a.price.toFixed(2)}</div>
+    <div class="api-tier" style="border-color:${color};color:${color}">${esc(a.tierLabel)}</div>
+    <div class="api-price">${priceFmt(a.price)}</div>
   </div>
   <h3 class="api-name">${esc(a.name)}</h3>
-  <div class="api-route mono">${esc(a.method)} <span>${esc(a.path)}</span></div>
+  <div class="api-route mono">${esc(a.method)} ${esc(a.path)}</div>
   <p class="api-summary">${esc(a.summary)}</p>
-  <details class="api-details">
-    <summary>Full specification</summary>
-    <div class="api-detail-body">
-      <div class="detail-block">
-        <h4>Why it matters</h4>
-        <p>${esc(a.why)}</p>
-      </div>
-      <div class="detail-grid">
-        <div class="detail-block">
-          <h4>Key inputs</h4>
-          <div class="chips">${chips(a.inputs)}</div>
-        </div>
-        <div class="detail-block">
-          <h4>Response highlights</h4>
-          <div class="chips">${chips(a.outputs)}</div>
-        </div>
-      </div>
-      <div class="detail-block">
-        <h4>Tags</h4>
-        <div class="chips">${chips(a.tags)}</div>
-      </div>
-      <div class="detail-block">
-        <h4>Example</h4>
-        <pre class="code-block">curl -X ${esc(a.method)} ${esc(url)} \\
-  -H "content-type: application/json" \\
-  -d '{}'</pre>
-        <p class="hint">Returns HTTP 402 first — pay with x402 USDC, then retry with X-Payment header.</p>
-      </div>
-      <div class="api-actions">
-        <a class="btn sm" href="/openapi.json" target="_blank" rel="noopener">OpenAPI schema</a>
-        <a class="btn sm ghost" href="/.well-known/x402" target="_blank" rel="noopener">Discovery</a>
-      </div>
-    </div>
-  </details>
 </article>`;
   }
 
-  function renderCatalog() {
-    const grid = $("#api-grid");
-    if (!grid || !catalog) return;
-    const q = searchQuery.toLowerCase();
-    const filtered = catalog.agents.filter((a) => {
-      if (activeTier !== "all" && a.tier !== activeTier) return false;
-      if (!q) return true;
-      const hay = (a.name + a.path + a.summary + a.tags.join(" ")).toLowerCase();
-      return hay.includes(q);
+  function renderDetail(a) {
+    const url = `${BASE}${a.path}`;
+    const color = TIER_COLORS[a.tier] || "#16C7C0";
+    const body =
+      a.method === "GET"
+        ? `curl ${esc(url)}`
+        : `curl -X ${esc(a.method)} ${esc(url)} \\\n  -H "content-type: application/json" \\\n  -d '{}'`;
+
+    return `
+<div class="detail-head">
+  <div>
+    <div class="api-tier" style="border-color:${color};color:${color};display:inline-block;margin-bottom:8px">${esc(a.tierLabel)}</div>
+    <h3>${esc(a.name)}</h3>
+    <div class="detail-route mono">${esc(a.method)} ${esc(a.path)} · layer: ${esc(a.layer)}</div>
+  </div>
+  <div class="detail-price">${priceFmt(a.price)}</div>
+</div>
+<div class="detail-block">
+  <h4>Summary</h4>
+  <p>${esc(a.summary)}</p>
+</div>
+<div class="detail-block">
+  <h4>Why it matters</h4>
+  <p>${esc(a.why)}</p>
+</div>
+<div class="detail-block">
+  <h4>Key inputs</h4>
+  <div class="chips">${chips(a.inputs)}</div>
+</div>
+<div class="detail-block">
+  <h4>Response highlights</h4>
+  <div class="chips">${chips(a.outputs)}</div>
+</div>
+<div class="detail-block">
+  <h4>Tags</h4>
+  <div class="chips">${chips(a.tags)}</div>
+</div>
+<div class="detail-block">
+  <h4>Example call</h4>
+  <pre class="code-block">${body}</pre>
+  <p style="font-size:12px;color:var(--dim);margin-top:8px">Returns HTTP 402 first — pay with x402 USDC, then retry with X-Payment header.</p>
+</div>`;
+  }
+
+  function openDetail(id) {
+    const a = catalog.agents.find((x) => x.id === id);
+    if (!a) return;
+    const panel = $("#agent-detail");
+    const content = $("#detail-content");
+    if (!panel || !content) return;
+    content.innerHTML = renderDetail(a);
+    panel.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeDetail() {
+    const panel = $("#agent-detail");
+    if (!panel) return;
+    panel.classList.add("hidden");
+    document.body.style.overflow = "";
+  }
+
+  function bindAgentClicks(root) {
+    if (!root) return;
+    root.addEventListener("click", (e) => {
+      const row = e.target.closest("[data-id]");
+      if (!row) return;
+      openDetail(row.dataset.id);
     });
-    grid.innerHTML =
-      filtered.length === 0
-        ? `<p class="empty">No agents match your filter.</p>`
-        : filtered.map(renderAgent).join("");
+    root.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      const row = e.target.closest("[data-id]");
+      if (!row) return;
+      e.preventDefault();
+      openDetail(row.dataset.id);
+    });
+  }
+
+  function renderViews() {
+    const agents = filteredAgents();
+    const termList = $("#terminal-list");
+    const cards = $("#view-cards");
     const count = $("#api-count");
-    if (count) count.textContent = String(filtered.length);
+
+    if (count) count.textContent = String(agents.length);
+
+    if (termList) {
+      termList.innerHTML =
+        agents.length === 0
+          ? `<div class="term-row"><div></div><div>No agents match your filter.</div><div></div></div>`
+          : agents.map(renderTerminalRow).join("");
+    }
+
+    if (cards) {
+      cards.innerHTML =
+        agents.length === 0
+          ? `<p style="color:var(--muted);padding:24px">No agents match your filter.</p>`
+          : agents.map(renderCard).join("");
+    }
+  }
+
+  function setView(view) {
+    activeView = view;
+    const term = $("#view-terminal");
+    const cards = $("#view-cards");
+    $$(".vt").forEach((b) => b.classList.toggle("active", b.dataset.view === view));
+    if (term) term.classList.toggle("hidden", view !== "terminal");
+    if (cards) cards.classList.toggle("hidden", view !== "cards");
   }
 
   function renderTiers(agents) {
@@ -125,7 +209,7 @@
     nav.innerHTML = order
       .filter((t) => t === "all" || tiers.includes(t))
       .map((t) => {
-        const label = t === "all" ? "All agents" : labels[t] || t;
+        const label = t === "all" ? "All 31" : labels[t] || t;
         const active = t === activeTier ? " active" : "";
         return `<button type="button" class="tier-pill${active}" data-tier="${t}">${esc(label)}</button>`;
       })
@@ -135,7 +219,7 @@
       if (!btn) return;
       activeTier = btn.dataset.tier;
       $$(".tier-pill", nav).forEach((b) => b.classList.toggle("active", b === btn));
-      renderCatalog();
+      renderViews();
     };
   }
 
@@ -146,7 +230,7 @@
       .map(
         (l) => `
 <div class="layer-card">
-  <div class="layer-num">${esc(l.num)}</div>
+  <div class="layer-num">${esc(l.num)} · ${esc(l.title)}</div>
   <h3>${esc(l.title)}</h3>
   <p>${esc(l.desc)}</p>
 </div>`,
@@ -154,12 +238,81 @@
       .join("");
   }
 
+  function animateCounters() {
+    $$("[data-count]").forEach((el) => {
+      const target = parseInt(el.dataset.count, 10);
+      if (Number.isNaN(target)) return;
+      const isPct = el.id === "s-verified";
+      const duration = 1200;
+      const start = performance.now();
+      function tick(now) {
+        const p = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - p, 3);
+        const val = Math.round(target * eased);
+        el.textContent = isPct ? val + "%" : String(val);
+        if (p < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    });
+  }
+
+  function observeStats() {
+    const stats = $("#stats");
+    if (!stats) {
+      animateCounters();
+      return;
+    }
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            animateCounters();
+            obs.disconnect();
+          }
+        });
+      },
+      { threshold: 0.3 },
+    );
+    obs.observe(stats);
+  }
+
+  function startHeroTerminal(agents) {
+    const el = $("#hero-terminal");
+    if (!el || !agents.length) return;
+    const sample = agents.slice().sort((a, b) => a.path.localeCompare(b.path));
+
+    function paint() {
+      const lines = [];
+      for (let i = 0; i < 5; i++) {
+        const a = sample[(heroIdx + i) % sample.length];
+        lines.push(
+          `<div class="term-line"><span class="path">${esc(a.method)} ${esc(a.path)}</span><span class="price">${priceFmt(a.price)}</span></div>`,
+        );
+      }
+      lines.push(`<div><span class="cursor-blink">▊</span></div>`);
+      el.innerHTML = lines.join("");
+      heroIdx = (heroIdx + 1) % sample.length;
+    }
+
+    paint();
+    if (heroTimer) clearInterval(heroTimer);
+    heroTimer = setInterval(paint, 2800);
+  }
+
+  function updateCheapest(agents) {
+    const el = $("#s-cheapest");
+    if (!el || !agents.length) return;
+    const min = Math.min(...agents.map((a) => a.price));
+    el.textContent = priceFmt(min);
+  }
+
   async function loadHealth() {
     try {
       const h = await fetch("/health").then((r) => r.json());
-      if (h.endpointCount) $("#m-endpoints").textContent = h.endpointCount;
-      if (h.version) $("#m-version").textContent = "v" + h.version;
-      if (h.chains) $("#m-chains").textContent = h.chains.join(" + ");
+      const badge = $("#hero-badge-text");
+      if (badge && h.endpointCount) {
+        badge.textContent = `${h.endpointCount} Live Endpoints · Base + Solana`;
+      }
     } catch (_) {}
   }
 
@@ -167,24 +320,45 @@
     try {
       catalog = await fetch("/data/agents.json").then((r) => r.json());
     } catch {
-      $("#api-grid").innerHTML = `<p class="empty">Could not load agent catalog.</p>`;
+      const termList = $("#terminal-list");
+      if (termList) termList.innerHTML = `<div class="term-row"><div></div><div>Could not load agent catalog.</div><div></div></div>`;
       return;
     }
-    document.title = catalog.product + " — " + catalog.tagline;
-    const sub = $("#hero-sub");
-    if (sub) sub.textContent = catalog.tagline + " · " + catalog.domain;
+
     renderLayers(catalog.layers);
     renderTiers(catalog.agents);
-    renderCatalog();
+    renderViews();
+    updateCheapest(catalog.agents);
+    startHeroTerminal(catalog.agents);
+    observeStats();
     loadHealth();
+
+    bindAgentClicks($("#terminal-list"));
+    bindAgentClicks($("#view-cards"));
 
     const search = $("#api-search");
     if (search) {
       search.addEventListener("input", () => {
         searchQuery = search.value.trim();
-        renderCatalog();
+        renderViews();
       });
     }
+
+    $$(".view-toggle .vt").forEach((btn) => {
+      btn.addEventListener("click", () => setView(btn.dataset.view));
+    });
+
+    const closeBtn = $("#detail-close");
+    const panel = $("#agent-detail");
+    if (closeBtn) closeBtn.addEventListener("click", closeDetail);
+    if (panel) {
+      panel.addEventListener("click", (e) => {
+        if (e.target === panel) closeDetail();
+      });
+    }
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeDetail();
+    });
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

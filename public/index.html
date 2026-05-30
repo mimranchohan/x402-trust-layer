@@ -3,310 +3,189 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>x402 Trust Layer — the trust layer for agent payments</title>
-<meta name="description" content="x402 Trust Layer — 31 enterprise x402 APIs for guard, attestation, compliance and settlement. Multichain Base + Solana. x402trustlayer.xyz"/>
+<title>x402 Trust Layer — Agent trust intelligence as a service</title>
+<meta name="description" content="31 enterprise x402 APIs — guard, attest, comply and audit every agent payment. Pay-per-call USDC on Base + Solana. x402trustlayer.xyz"/>
 <link rel="icon" type="image/png" href="/assets/x402-trustlayer-logo.png"/>
-<meta property="og:title" content="x402 Trust Layer"/>
-<meta property="og:description" content="31 paid APIs — guard, attest, comply and audit every agent payment before the money moves."/>
-<meta property="og:image" content="/assets/x402-trustlayer-logo.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
-<style>
-:root{
-  --bg:#070A0F;--bg2:#0C1018;--panel:#111827;--panel2:#0F1623;
-  --line:#1E293B;--line2:#243044;
-  --txt:#F1F5F9;--muted:#94A3B8;--dim:#64748B;
-  --cyan:#16C7C0;--cyan-d:rgba(22,199,192,.12);--cyan-b:rgba(22,199,192,.35);
-  --max:1200px;--r:14px;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:"Space Grotesk",system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.55;-webkit-font-smoothing:antialiased}
-a{color:inherit;text-decoration:none}
-.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
-.wrap{max-width:var(--max);margin:0 auto;padding:0 24px}
-
-/* ambient */
-.glow{position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(900px 500px at 85% -5%,rgba(22,199,192,.14),transparent 55%),
-             radial-gradient(700px 400px at 5% 20%,rgba(59,130,246,.06),transparent 50%)}
-
-/* nav */
-.nav{position:sticky;top:0;z-index:50;background:rgba(7,10,15,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-.nav-in{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
-.brand{display:flex;align-items:center;gap:12px;font-weight:600;font-size:15px}
-.brand img{height:36px;width:auto;border-radius:6px}
-.brand-domain{font-size:12px;color:var(--dim);font-weight:400;display:none}
-@media(min-width:768px){.brand-domain{display:block}}
-.nav-links{display:flex;align-items:center;gap:22px;font-size:14px;color:var(--muted)}
-.nav-links a:hover{color:var(--cyan)}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:10px;font-weight:600;font-size:13px;border:1px solid var(--cyan-b);background:var(--cyan-d);color:var(--cyan);transition:.15s;cursor:pointer}
-.btn:hover{background:rgba(22,199,192,.22)}
-.btn.solid{background:var(--cyan);color:#04201F;border-color:var(--cyan)}
-.btn.ghost{background:transparent;border-color:var(--line);color:var(--txt)}
-.btn.sm{padding:6px 12px;font-size:12px}
-@media(max-width:860px){.nav-links{display:none}}
-
-/* hero */
-section{position:relative;z-index:1}
-.hero{padding:72px 0 48px}
-.hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
-.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--cyan);border:1px solid var(--cyan-b);background:var(--cyan-d);padding:5px 12px;border-radius:999px;font-weight:500}
-.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
-h1{font-size:clamp(34px,5.5vw,58px);line-height:1.05;letter-spacing:-1px;font-weight:700;margin-top:18px}
-h1 em{font-style:normal;color:var(--cyan)}
-.hero-sub{margin-top:18px;font-size:clamp(16px,2vw,19px);color:var(--muted);max-width:560px}
-.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
-.logo-panel{border:1px solid var(--line);border-radius:20px;background:linear-gradient(160deg,var(--panel),var(--bg2));padding:32px;display:flex;align-items:center;justify-content:center;min-height:280px}
-.logo-panel img{max-width:100%;max-height:240px;object-fit:contain;filter:drop-shadow(0 12px 40px rgba(22,199,192,.2))}
-
-/* metrics */
-.metrics{background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.metrics-in{display:grid;grid-template-columns:repeat(5,1fr)}
-.metric{padding:24px 16px;text-align:center;border-right:1px solid var(--line)}
-.metric:last-child{border-right:none}
-.metric .n{font-size:clamp(22px,3vw,28px);font-weight:700}
-.metric .n span{color:var(--cyan)}
-.metric .l{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
-
-/* sections */
-.pad{padding:72px 0}
-.section-kicker{color:var(--cyan);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px}
-.section-title{font-size:clamp(26px,4vw,38px);font-weight:700;letter-spacing:-.5px;margin-top:10px}
-.section-desc{color:var(--muted);margin-top:12px;font-size:16px;max-width:640px}
-
-/* layers */
-.layers-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:36px}
-.layer-card{border:1px solid var(--line);border-radius:var(--r);padding:22px;background:var(--panel);transition:.15s}
-.layer-card:hover{border-color:var(--cyan-b)}
-.layer-num{font-family:"JetBrains Mono";font-size:12px;color:var(--cyan);letter-spacing:1px}
-.layer-card h3{font-size:17px;margin-top:8px;font-weight:600}
-.layer-card p{font-size:13px;color:var(--muted);margin-top:6px}
-
-/* catalog toolbar */
-.catalog-toolbar{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;margin:36px 0 20px}
-.search-wrap{flex:1;min-width:220px;max-width:360px;position:relative}
-.search-wrap input{width:100%;padding:10px 14px 10px 38px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--txt);font-size:14px;outline:none}
-.search-wrap input:focus{border-color:var(--cyan-b)}
-.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--dim);width:16px;height:16px}
-.catalog-meta{font-size:13px;color:var(--dim)}
-.catalog-meta strong{color:var(--cyan)}
-
-/* tier pills */
-.tier-nav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
-.tier-pill{padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--muted);font-size:12px;font-weight:500;cursor:pointer;transition:.15s}
-.tier-pill:hover,.tier-pill.active{border-color:var(--cyan-b);color:var(--cyan);background:var(--cyan-d)}
-
-/* api grid */
-.api-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
-.api-card{border:1px solid var(--line);border-radius:var(--r);background:var(--panel2);padding:22px;display:flex;flex-direction:column;gap:10px;transition:.15s}
-.api-card:hover{border-color:var(--line2);box-shadow:0 8px 32px rgba(0,0,0,.25)}
-.api-card-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.api-tier{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;padding:3px 8px;border-radius:6px;background:color-mix(in srgb,var(--tc) 15%,transparent);color:var(--tc);border:1px solid color-mix(in srgb,var(--tc) 35%,transparent)}
-.api-price{font-family:"JetBrains Mono";font-size:14px;font-weight:600;color:var(--cyan)}
-.api-name{font-size:18px;font-weight:600;line-height:1.2}
-.api-route{font-size:12px;color:var(--dim)}
-.api-route span{color:var(--muted)}
-.api-summary{font-size:13.5px;color:var(--muted);flex:1;line-height:1.5}
-.api-details summary{cursor:pointer;font-size:12px;font-weight:600;color:var(--cyan);list-style:none;padding-top:4px}
-.api-details summary::-webkit-details-marker{display:none}
-.api-detail-body{padding-top:14px;border-top:1px solid var(--line);margin-top:10px;display:flex;flex-direction:column;gap:14px}
-.detail-block h4{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim);margin-bottom:6px}
-.detail-block p{font-size:13px;color:var(--muted)}
-.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.chips{display:flex;flex-wrap:wrap;gap:5px}
-.chip{font-family:"JetBrains Mono";font-size:10.5px;padding:3px 8px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--muted)}
-.code-block{font-family:"JetBrains Mono";font-size:11px;line-height:1.6;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto;color:#CBD5E1;white-space:pre-wrap;word-break:break-all}
-.hint{font-size:11px;color:var(--dim);margin-top:6px}
-.api-actions{display:flex;gap:8px;flex-wrap:wrap}
-.empty{color:var(--dim);padding:40px;text-align:center;grid-column:1/-1}
-
-/* integrate */
-.integrate-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:40px;align-items:start;margin-top:36px}
-.terminal{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#080C12}
-.term-bar{display:flex;align-items:center;gap:6px;padding:10px 14px;border-bottom:1px solid var(--line);background:#0A0F16}
-.term-bar .d{width:10px;height:10px;border-radius:50%;background:#273040}
-.term-bar .t{margin-left:8px;font-size:11px;color:var(--dim);font-family:"JetBrains Mono"}
-.terminal pre{padding:18px;font-family:"JetBrains Mono";font-size:12px;line-height:1.7;color:#CBD5E1;overflow:auto}
-.ck{color:#7AA2FF}.cs{color:#9ECE9B}.cf{color:var(--cyan)}.cc{color:var(--dim)}.cn{color:#FBBF24}
-
-/* cta */
-.cta-band{margin-top:48px;border:1px solid var(--cyan-b);border-radius:20px;background:linear-gradient(135deg,rgba(22,199,192,.08),transparent);padding:48px 32px;text-align:center}
-.cta-band h2{font-size:clamp(24px,3.5vw,34px);letter-spacing:-.4px}
-.cta-band p{color:var(--muted);margin:12px auto 24px;max-width:520px}
-
-/* footer */
-footer{border-top:1px solid var(--line);background:var(--bg2);padding:40px 0;margin-top:48px}
-.foot-in{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:20px}
-.foot-links{display:flex;flex-wrap:wrap;gap:20px;font-size:13px;color:var(--muted)}
-.foot-links a:hover{color:var(--cyan)}
-.foot-note{font-size:12px;color:var(--dim);margin-top:16px;line-height:1.6}
-
-@media(max-width:900px){
-  .hero-grid,.integrate-grid{grid-template-columns:1fr}
-  .layers-grid{grid-template-columns:repeat(2,1fr)}
-  .metrics-in{grid-template-columns:repeat(2,1fr)}
-  .metric{border-bottom:1px solid var(--line)}
-  .detail-grid{grid-template-columns:1fr}
-  .api-grid{grid-template-columns:1fr}
-}
-@media(max-width:520px){.layers-grid{grid-template-columns:1fr}}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/landing.css"/>
 </head>
 <body>
+<div class="grid-bg"></div>
 <div class="glow"></div>
 
 <header class="nav">
   <div class="wrap nav-in">
     <a class="brand" href="/">
-      <img src="/assets/x402-trustlayer-logo.png" alt="x402 Trust Layer logo"/>
-      <span>
-        x402 Trust Layer
-        <div class="brand-domain mono">x402trustlayer.xyz</div>
-      </span>
+      <img src="/assets/x402-trustlayer-logo.png" alt="x402 Trust Layer"/>
+      <span class="brand-text">x402<span class="dim">trustlayer</span></span>
     </a>
     <nav class="nav-links">
-      <a href="#platform">Platform</a>
-      <a href="#catalog">API Catalog</a>
-      <a href="#integrate">Integrate</a>
+      <a href="#about">About</a>
+      <a href="#why">Why</a>
+      <a href="#agents">31 Agents</a>
+      <a href="#how">How</a>
       <a href="/openapi.json">OpenAPI</a>
-      <a class="btn solid" href="/health">Status</a>
+      <a class="btn solid" href="/health">Live</a>
     </nav>
   </div>
 </header>
 
 <section class="hero">
-  <div class="wrap hero-grid">
+  <div class="wrap hero-inner">
+    <p class="hero-badge mono"><span class="live-dot"></span> <span id="hero-badge-text">31 Live Endpoints · Base + Solana</span></p>
+    <h1>Agent trust intelligence<br/><span class="grad">as a service</span></h1>
+    <p class="hero-lead">Guard, attest, comply and audit every x402 payment — before the money moves. No API keys. No signup. USDC is the only gate.</p>
+    <div class="hero-actions">
+      <a class="btn solid" href="#agents">Browse 31 agents →</a>
+      <a class="btn ghost" href="/openapi.json">OpenAPI spec</a>
+      <a class="btn ghost" href="https://github.com/mimranchohan/x402-agent-suite" target="_blank" rel="noopener">GitHub</a>
+    </div>
+    <div class="hero-terminal">
+      <div class="term-chrome">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="term-title mono">trust-terminal — x402trustlayer.xyz</span>
+        <span class="term-live mono">LIVE</span>
+      </div>
+      <div class="term-body mono" id="hero-terminal"></div>
+    </div>
+    <a class="scroll-hint" href="#stats">Scroll ↓</a>
+  </div>
+</section>
+
+<section class="stats" id="stats">
+  <div class="wrap stats-grid">
+    <div class="stat"><div class="stat-n" data-count="31" id="s-endpoints">0</div><div class="stat-l">ENDPOINTS</div></div>
+    <div class="stat"><div class="stat-n" data-count="71" id="s-verified">0</div><div class="stat-l">% VERIFIED</div></div>
+    <div class="stat"><div class="stat-n" data-count="2" id="s-chains">0</div><div class="stat-l">NETWORKS</div></div>
+    <div class="stat"><div class="stat-n mono" id="s-cheapest">$0.02</div><div class="stat-l">CHEAPEST CALL</div></div>
+  </div>
+</section>
+
+<section class="pad" id="about">
+  <div class="wrap split">
     <div>
-      <span class="eyebrow"><span class="dot"></span> Enterprise x402 control plane</span>
-      <h1>Trust every agent payment <em>before</em> the money moves.</h1>
-      <p class="hero-sub" id="hero-sub">The trust layer for agent payments · x402trustlayer.xyz</p>
-      <div class="hero-actions">
-        <a class="btn solid" href="#catalog">Explore 31 APIs &rarr;</a>
-        <a class="btn ghost" href="/openapi.json">OpenAPI spec</a>
-        <a class="btn ghost" href="https://github.com/mimranchohan/x402-agent-suite" target="_blank" rel="noopener">GitHub</a>
+      <p class="kicker">What is x402 Trust Layer</p>
+      <h2>Raw payments are risky.<br/>Trust is everything.</h2>
+    </div>
+    <div class="prose">
+      <p>x402 Trust Layer is the control plane between AI agents and the open x402 marketplace. Every call decides <em>whether</em> to pay, <em>whom</em> to trust, <em>which rail</em> to use, and <em>what to do</em> when something goes wrong.</p>
+      <p>Built for agent fleets that handle real money — finance teams that need audit trails, developers wiring OpenDexter, and sellers who want verified attestations before accepting payment.</p>
+      <div class="tag-row">
+        <span class="tag mono">x402 + MPP</span>
+        <span class="tag mono">Base · Solana</span>
+        <span class="tag mono">Dexter facilitator</span>
+        <span class="tag mono">OpenDexter MCP</span>
       </div>
     </div>
-    <div class="logo-panel">
-      <img src="/assets/x402-trustlayer-logo.png" alt="x402 Trust Layer — shield and wordmark"/>
+  </div>
+</section>
+
+<section class="pad dim" id="why">
+  <div class="wrap">
+    <p class="kicker">Why x402 Trust Layer</p>
+    <h2>Built for the agentic web</h2>
+    <div class="features" id="features-grid">
+      <div class="feat"><div class="feat-ic">◎</div><h3>4-Layer Architecture</h3><p>Guard → Attestation → Compliance → Settlement Ops. Compose individually or bundle in one preflight.</p></div>
+      <div class="feat"><div class="feat-ic">⬡</div><h3>Pay-Per-Call via x402</h3><p>No API keys, no subscriptions. USDC micropayments on Base and Solana through Dexter.</p></div>
+      <div class="feat"><div class="feat-ic">⚡</div><h3>71% Verified</h3><p>Top-25 of 299 x402gle hosts. One of the highest verified ratios in the entire directory.</p></div>
+      <div class="feat"><div class="feat-ic">⊡</div><h3>Multichain Native</h3><p>Base + Solana out of the box. Automatic facilitator failover when one rail degrades.</p></div>
+      <div class="feat"><div class="feat-ic">◇</div><h3>Tier-1 Enterprise</h3><p>KYM merchant trust, AP2 mandates, Visa dispute codes, SOC2 ledgers — nobody else ships these.</p></div>
+      <div class="feat"><div class="feat-ic">⟐</div><h3>Structured Trust Signals</h3><p>Every response: confidence, checks_passed, security grade, buyer guidance — not raw booleans.</p></div>
     </div>
   </div>
 </section>
 
-<section class="metrics">
-  <div class="wrap metrics-in">
-    <div class="metric"><div class="n" id="m-endpoints">31</div><div class="l">Paid endpoints</div></div>
-    <div class="metric"><div class="n">71<span>%</span></div><div class="l">Verified on x402gle</div></div>
-    <div class="metric"><div class="n">Top <span>25</span></div><div class="l">Of 299 hosts</div></div>
-    <div class="metric"><div class="n mono" id="m-chains">Base + Solana</div><div class="l">Multichain USDC</div></div>
-    <div class="metric"><div class="n mono" id="m-version">v3.1.0</div><div class="l">Suite version</div></div>
-  </div>
-</section>
-
-<section class="pad" id="platform">
+<section class="pad" id="agents">
   <div class="wrap">
-    <div class="section-kicker">Architecture</div>
-    <h2 class="section-title">Four layers. Thirty-one agents.</h2>
-    <p class="section-desc">Each layer is a composable set of x402 endpoints. Call them individually or bundle into a single preflight before any payment.</p>
-    <div class="layers-grid" id="layers-grid"></div>
-  </div>
-</section>
-
-<section class="pad" id="catalog" style="padding-top:0;background:var(--bg2);border-top:1px solid var(--line)">
-  <div class="wrap">
-    <div class="section-kicker">API Catalog</div>
-    <h2 class="section-title">Every agent, fully documented.</h2>
-    <p class="section-desc">All endpoints settle in USDC via the Dexter facilitator. Click any card for inputs, outputs, pricing and example calls.</p>
-
-    <div class="catalog-toolbar">
-      <div class="search-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input type="search" id="api-search" placeholder="Search agents, paths, tags…" autocomplete="off"/>
-      </div>
-      <div class="catalog-meta">Showing <strong id="api-count">31</strong> agents</div>
-    </div>
-
-    <div class="tier-nav" id="tier-nav"></div>
-    <div class="api-grid" id="api-grid"></div>
-  </div>
-</section>
-
-<section class="pad" id="integrate">
-  <div class="wrap">
-    <div class="section-kicker">Integration</div>
-    <h2 class="section-title">One guard call before every payment.</h2>
-    <div class="integrate-grid">
+    <div class="section-head-row">
       <div>
-        <p class="section-desc" style="margin-top:0">Works with OpenDexter, the Dexter SDK, Visa CLI, or raw x402 fetch. Every call returns HTTP 402 first — pay in USDC, retry with settlement header.</p>
-        <ul style="margin-top:20px;color:var(--muted);font-size:14px;display:flex;flex-direction:column;gap:10px;list-style:none">
-          <li>✓ &nbsp;Multichain Base + Solana</li>
-          <li>✓ &nbsp;OpenAPI 3.1 + <code class="mono">/.well-known/x402</code> discovery</li>
-          <li>✓ &nbsp;Registered on x402scan — 31/31 resources</li>
-          <li>✓ &nbsp;On-chain receipt verification via receipt-auditor</li>
-        </ul>
-        <div style="margin-top:24px;display:flex;gap:10px;flex-wrap:wrap">
-          <a class="btn solid" href="/.well-known/x402">Discovery manifest</a>
-          <a class="btn ghost" href="/x402/api/discover">Bazaar catalog</a>
+        <p class="kicker">// x402 API</p>
+        <h2>31 agents. Pay-per-call.<br/>No keys required.</h2>
+        <p class="section-desc">Standard HTTP + x402 protocol. Get 402, sign USDC, retry — receive trust signals, compliance records, and settlement proof.</p>
+      </div>
+      <div class="toolbar">
+        <input type="search" id="api-search" class="search mono" placeholder="Search agents…"/>
+        <div class="view-toggle">
+          <button type="button" class="vt active" data-view="terminal">Terminal</button>
+          <button type="button" class="vt" data-view="cards">Cards</button>
         </div>
       </div>
-      <div class="terminal">
-        <div class="term-bar"><span class="d"></span><span class="d"></span><span class="d"></span><span class="t">guard.ts · x402trustlayer.xyz</span></div>
-<pre><span class="cc">// Preflight before any x402 payment</span>
-<span class="ck">const</span> res = <span class="ck">await</span> <span class="cf">fetch</span>(
-  <span class="cs">"https://x402trustlayer.xyz/api/guard/pre-x402"</span>,
-  {
-    method: <span class="cs">"POST"</span>,
-    headers: { <span class="cs">"content-type"</span>: <span class="cs">"application/json"</span> },
-    body: <span class="cf">JSON</span>.stringify({
-      agentId: <span class="cs">"buyer-1"</span>,
-      walletAddress: wallet,
-      targetUrl: downstreamUrl,
-      estimatedCostUsdc: <span class="cn">0.05</span>,
-      policy: {
-        dailyCapUsdc: <span class="cn">10</span>,
-        perCallCapUsdc: <span class="cn">0.5</span>
-      }
-    })
-  }
-);
+    </div>
+    <div class="tier-nav" id="tier-nav"></div>
 
-<span class="ck">const</span> gate = <span class="ck">await</span> res.json();
-<span class="ck">if</span> (gate.allowed) {
-  <span class="ck">await</span> <span class="cf">x402Fetch</span>(downstreamUrl);
-}</pre>
+    <div class="terminal-panel" id="view-terminal">
+      <div class="term-chrome">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="term-title mono">x402-api — <span id="api-count">31</span> routes</span>
       </div>
+      <div class="term-list mono" id="terminal-list"></div>
     </div>
 
-    <div class="cta-band">
-      <h2>Ready to guard your next agent payment?</h2>
-      <p>Start with <strong style="color:var(--cyan)">POST /api/x402/proxy</strong> ($0.08) or <strong style="color:var(--cyan)">POST /api/guard/pre-x402</strong> ($0.05).</p>
-      <a class="btn solid" href="#catalog">Browse all 31 endpoints &rarr;</a>
+    <div class="api-grid hidden" id="view-cards"></div>
+    <div class="agent-detail-panel hidden" id="agent-detail">
+      <button type="button" class="detail-close" id="detail-close">×</button>
+      <div id="detail-content"></div>
     </div>
   </div>
 </section>
 
-<footer>
+<section class="pad dim" id="how">
   <div class="wrap">
-    <div class="foot-in">
-      <a class="brand" href="/">
-        <img src="/assets/x402-trustlayer-logo.png" alt="x402 Trust Layer" style="height:28px"/>
-        <span>x402 Trust Layer</span>
-      </a>
-      <nav class="foot-links">
-        <a href="#catalog">API Catalog</a>
-        <a href="/openapi.json">OpenAPI</a>
-        <a href="/.well-known/x402">Discovery</a>
-        <a href="/health">Health</a>
-        <a href="https://x402gle.com/servers/x402-agent-suite-production.up.railway.app" target="_blank" rel="noopener">x402gle</a>
-        <a href="https://github.com/mimranchohan/x402-agent-suite" target="_blank" rel="noopener">GitHub</a>
-      </nav>
+    <p class="kicker">How it works</p>
+    <h2>Request. Pay. Get trust signals.</h2>
+    <div class="steps">
+      <div class="step active"><div class="step-n mono">01</div><h3>Call</h3><p>Hit any endpoint — no signup, no API key. Standard HTTP POST or GET.</p><pre class="step-code mono">POST /api/guard/pre-x402</pre></div>
+      <div class="step"><div class="step-n mono">02</div><h3>Pay</h3><p>Receive HTTP 402 + payment challenge. Sign USDC micropayment via Dexter facilitator.</p><pre class="step-code mono">402 → sign → X-Payment header</pre></div>
+      <div class="step"><div class="step-n mono">03</div><h3>Receive</h3><p>Retry with proof. Get structured trust output — grade, confidence, next steps.</p><pre class="step-code mono">200 · allowed: true · grade: A</pre></div>
     </div>
-    <p class="foot-note">
-      x402 Trust Layer · <span class="mono">x402trustlayer.xyz</span> · Guard · Attest · Comply · Audit<br/>
-      31 paid x402 infrastructure APIs · Multichain Base + Solana · USDC via Dexter facilitator · &copy; 2026
-    </p>
+    <div class="flow-terminal mono">
+      <span class="flow-line">Request</span> → <span class="flow-line">x402 challenge</span> → <span class="flow-line">Sign + retry</span> → <span class="flow-ok">200 · trust signal ready</span>
+    </div>
   </div>
+</section>
+
+<section class="pad">
+  <div class="wrap split">
+    <div>
+      <p class="kicker">Dual payment rail</p>
+      <h2>x402 + MPP sessions</h2>
+      <ul class="check-list">
+        <li>✓ x402: Base + Solana via Dexter (gas sponsored)</li>
+        <li>✓ MPP: batch sessions at <code>/api/mpp/session</code></li>
+        <li>✓ Registered on x402scan — 31/31 resources</li>
+        <li>✓ OpenAPI 3.1 + <code>/.well-known/x402</code> discovery</li>
+        <li>✓ OpenDexter MCP compatible</li>
+      </ul>
+    </div>
+    <div class="layers-stack" id="layers-grid"></div>
+  </div>
+</section>
+
+<section class="pad cta-section">
+  <div class="wrap cta-inner">
+    <h2>Agent payments.<br/>Trust-first.</h2>
+    <p>No signup. No API key. Just pay per call with USDC.<br/>Base · Solana — pick your rail.</p>
+    <div class="hero-actions" style="justify-content:center;margin-top:24px">
+      <a class="btn solid" href="#agents">Explore all 31 agents</a>
+      <a class="btn ghost" href="/.well-known/x402">Discovery manifest</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="wrap foot-in">
+    <a class="brand" href="/"><img src="/assets/x402-trustlayer-logo.png" alt=""/><span class="brand-text">x402<span class="dim">trustlayer</span></span></a>
+    <nav class="foot-links mono">
+      <a href="https://x402trustlayer.xyz">x402trustlayer.xyz</a>
+      <a href="/openapi.json">OpenAPI</a>
+      <a href="/health">Status</a>
+      <a href="https://x402gle.com/servers/x402-agent-suite-production.up.railway.app" target="_blank" rel="noopener">x402gle</a>
+      <a href="https://github.com/mimranchohan/x402-agent-suite" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+  <p class="wrap foot-note mono">x402 Trust Layer · 31 paid infrastructure APIs · Guard · Attest · Comply · Audit · © 2026</p>
 </footer>
 
 <script src="/landing.js"></script>
