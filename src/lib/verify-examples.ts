@@ -86,15 +86,16 @@ export const VERIFY_EXAMPLES: Record<string, unknown> = {
     includePrice: true,
   },
   "/api/receipt-auditor/verify": {
-    network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-    expectedAmountUsdc: 0.03,
+    network: "eip155:8453",
+    expectedAmountUsdc: 0.05,
     transactionHash:
-      "5VERv8NMvzbJMEkV8xnrLkEbWRPnf7wDQUJwo9aH7H9f3aDu4xfVVbmAJnW9MJz6HTWu7jnQvuKv4W4vKMnBiix",
+      "0x0000000000000000000000000000000000000000000000000000000000000001",
     settlement: {
       transaction:
-        "5VERv8NMvzbJMEkV8xnrLkEbWRPnf7wDQUJwo9aH7H9f3aDu4xfVVbmAJnW9MJz6HTWu7jnQvuKv4W4vKMnBiix",
-      amountUsdc: 0.03,
-      network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "0x0000000000000000000000000000000000000000000000000000000000000001",
+      amountUsdc: 0.05,
+      network: "eip155:8453",
+      payer: "0x0000000000000000000000000000000000000001",
     },
   },
   "/api/refund-arbiter/evaluate": {

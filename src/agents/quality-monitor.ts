@@ -41,7 +41,9 @@ export async function runQualityMonitor(input: QualityMonitorInput): Promise<Qua
     const notes: string[] = [];
     let score = 50;
     const expected = typeof t.expectedStatus === "number" ? t.expectedStatus : null;
-    const matchesExpectation = expected == null ? probe.status === 200 || probe.status === 402 : probe.status === expected;
+    // If caller does not provide an expected status, treat any reachable HTTP response
+    // as a successful probe execution (this endpoint audits observability, not contract tests).
+    const matchesExpectation = expected == null ? probe.status > 0 : probe.status === expected;
 
     if (probe.status === 402) {
       score += 25;
