@@ -316,6 +316,24 @@
     } catch (_) {}
   }
 
+  function initMobileNav() {
+    const toggle = $("#nav-toggle");
+    const links = $("#nav-links");
+    if (!toggle || !links) return;
+    toggle.addEventListener("click", () => {
+      const open = links.classList.toggle("open");
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      toggle.textContent = open ? "✕" : "☰";
+    });
+    links.querySelectorAll("a").forEach((a) => {
+      a.addEventListener("click", () => {
+        links.classList.remove("open");
+        toggle.setAttribute("aria-expanded", "false");
+        toggle.textContent = "☰";
+      });
+    });
+  }
+
   async function init() {
     try {
       catalog = await fetch("/data/agents.json").then((r) => r.json());

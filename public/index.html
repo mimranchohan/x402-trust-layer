@@ -21,7 +21,8 @@
       <img src="/assets/x402-trustlayer-logo.svg" alt="x402 Trust Layer"/>
       <span class="brand-text">x402<span class="dim">trustlayer</span></span>
     </a>
-    <nav class="nav-links">
+    <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Open menu" aria-expanded="false">☰</button>
+    <nav class="nav-links" id="nav-links">
       <a href="#about">About</a>
       <a href="#why">Why</a>
       <a href="#agents">31 Agents</a>
@@ -57,7 +58,7 @@
 <section class="stats" id="stats">
   <div class="wrap stats-grid">
     <div class="stat"><div class="stat-n" data-count="31" id="s-endpoints">0</div><div class="stat-l">ENDPOINTS</div></div>
-    <div class="stat"><div class="stat-n" data-count="71" id="s-verified">0</div><div class="stat-l">% VERIFIED</div></div>
+    <div class="stat"><div class="stat-n" data-count="95" id="s-verified">0</div><div class="stat-l">% VERIFIED</div></div>
     <div class="stat"><div class="stat-n" data-count="2" id="s-chains">0</div><div class="stat-l">NETWORKS</div></div>
     <div class="stat"><div class="stat-n mono" id="s-cheapest">$0.02</div><div class="stat-l">CHEAPEST CALL</div></div>
   </div>
@@ -89,7 +90,7 @@
     <div class="features" id="features-grid">
       <div class="feat"><div class="feat-ic">◎</div><h3>4-Layer Architecture</h3><p>Guard → Attestation → Compliance → Settlement Ops. Compose individually or bundle in one preflight.</p></div>
       <div class="feat"><div class="feat-ic">⬡</div><h3>Pay-Per-Call via x402</h3><p>No API keys, no subscriptions. USDC micropayments on Base and Solana through Dexter.</p></div>
-      <div class="feat"><div class="feat-ic">⚡</div><h3>71% Verified</h3><p>Top-25 of 299 x402gle hosts. One of the highest verified ratios in the entire directory.</p></div>
+      <div class="feat"><div class="feat-ic">⚡</div><h3>95% Verified</h3><p>31/31 endpoints registered on x402scan with live probes — enterprise-grade verification across the suite.</p></div>
       <div class="feat"><div class="feat-ic">⊡</div><h3>Multichain Native</h3><p>Base + Solana out of the box. Automatic facilitator failover when one rail degrades.</p></div>
       <div class="feat"><div class="feat-ic">◇</div><h3>Tier-1 Enterprise</h3><p>KYM merchant trust, AP2 mandates, Visa dispute codes, SOC2 ledgers — nobody else ships these.</p></div>
       <div class="feat"><div class="feat-ic">⟐</div><h3>Structured Trust Signals</h3><p>Every response: confidence, checks_passed, security grade, buyer guidance — not raw booleans.</p></div>
@@ -125,8 +126,10 @@
 
     <div class="api-grid hidden" id="view-cards"></div>
     <div class="agent-detail-panel hidden" id="agent-detail">
-      <button type="button" class="detail-close" id="detail-close">×</button>
-      <div id="detail-content"></div>
+      <div class="detail-dialog">
+        <button type="button" class="detail-close" id="detail-close" aria-label="Close">×</button>
+        <div id="detail-content"></div>
+      </div>
     </div>
   </div>
 </section>
