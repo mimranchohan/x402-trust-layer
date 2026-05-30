@@ -9,6 +9,7 @@ import {
   buildWellKnownX402,
 } from "./lib/bazaar.js";
 import { buildAgentCashOpenApi, buildWellKnownX402Resources } from "./lib/openapi-agentcash.js";
+import { renderDiscoveryPage } from "./lib/discovery-page.js";
 import { applyVerifierExampleBody } from "./lib/apply-verifier-body.js";
 import { registerAgenticProbes, stripTrailingSlash } from "./lib/agentic-probes.js";
 import { KILLER_SELLER_ENDPOINTS, PRIMARY_ENTRYPOINTS } from "./lib/suite-catalog.js";
@@ -118,6 +119,11 @@ app.get("/.well-known/x402", (_req, res) => {
 
 app.get("/.well-known/x402.json", (_req, res) => {
   res.json(buildWellKnownX402());
+});
+
+/** Human-friendly discovery view (landing page links here instead of raw JSON path). */
+app.get("/discovery", (_req, res) => {
+  res.type("html").send(renderDiscoveryPage(buildWellKnownX402Resources(), config.publicBaseUrl));
 });
 
 app.get("/x402/api/services.json", (_req, res) => {
