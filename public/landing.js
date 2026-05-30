@@ -338,7 +338,7 @@
       a.addEventListener("click", () => setOpen(false));
     });
 
-    window.matchMedia("(min-width: 861px)").addEventListener("change", (mq) => {
+    window.matchMedia("(min-width: 1025px)").addEventListener("change", (mq) => {
       if (mq.matches) setOpen(false);
     });
   }
