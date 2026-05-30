@@ -9,19 +9,19 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="/landing.css?v=2"/>
+<link rel="stylesheet" href="/landing.css?v=3"/>
 </head>
 <body>
 <div class="grid-bg"></div>
 <div class="glow"></div>
 
-<header class="nav">
-  <div class="wrap nav-in">
+<header class="nav" id="site-nav">
+  <div class="nav-shell">
     <a class="brand" href="/">
       <img src="/assets/x402-trustlayer-logo.svg" alt="x402 Trust Layer"/>
       <span class="brand-text">x402<span class="dim">trustlayer</span></span>
     </a>
-    <nav class="nav-links" id="nav-links">
+    <nav class="nav-menu" id="nav-menu" aria-label="Main navigation">
       <a href="#about">About</a>
       <a href="#why">Why</a>
       <a href="#agents">31 Agents</a>
@@ -29,8 +29,9 @@
       <a href="/openapi.json">OpenAPI</a>
       <a class="btn solid nav-cta" href="/health">Live</a>
     </nav>
-    <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">☰</button>
+    <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="nav-menu">☰</button>
   </div>
+  <div class="nav-backdrop" id="nav-backdrop" hidden></div>
 </header>
 
 <section class="hero">
@@ -191,6 +192,6 @@
   <p class="wrap foot-note mono">x402 Trust Layer · 31 paid infrastructure APIs · Guard · Attest · Comply · Audit · © 2026</p>
 </footer>
 
-<script src="/landing.js"></script>
+<script src="/landing.js?v=3"></script>
 </body>
 </html>
