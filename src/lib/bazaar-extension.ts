@@ -1,6 +1,13 @@
 import type { Request } from "express";
+import {
+  bazaarResourceServerExtension,
+  declareDiscoveryExtension,
+} from "@x402/extensions/bazaar";
 import { listEndpoints } from "../routes.js";
 import { VERIFY_EXAMPLES } from "./verify-examples.js";
+
+/** Extension key registered on every paid route (`extensions.bazaar`). */
+export const BAZAAR_EXTENSION_KEY = bazaarResourceServerExtension.key;
 
 type JsonSchema = Record<string, unknown>;
 
@@ -80,120 +87,88 @@ export function defaultOutputExample(path: string): Record<string, unknown> {
   }
   if (path.includes("buy-advisor")) {
     return {
-      recommendation: { action: "pay_external", confidence: 0.85 },
-      quotes: [{ rank: 1, name: "Example API", allInCostUsdc: 0.05 }],
+      status: "ok",
+      ok: true,
+      intent: "ETH USD spot price oracle",
+      checkedAt: new Date(0).toISOString(),
+      recommendation: {
+        action: "pay_external",
+        url: "https://api.example.com/oracle/eth/usd",
+        network: "eip155:8453",
+        allInCostUsdc: 0.05,
+        confidence: 0.85,
+        rationale: "Best catalog match within policy caps",
+      },
+      quotes: [{ rank: 1, name: "Example API", allInCostUsdc: 0.05, requiresPayment: true }],
+      policy: { evaluated: true, allowed: true, summary: "Within daily and per-call limits" },
     };
   }
   if (path.includes("audition-coach")) {
-    return { hostScoreEstimate: 78, summary: "Audited routes with fix list", routes: [] };
+    return {
+      status: "ok",
+      ok: true,
+      hostScoreEstimate: 78,
+      summary: "Audited routes with fix list",
+      discovery: { openapiOk: true, wellKnownOk: true, resourceCount: 31, openapiPathCount: 31 },
+      routes: [{ url: "https://example.com/api/guard/pre-x402", scoreEstimate: 85, status: "pass" }],
+    };
+  }
+  if (path.includes("quality-escrow")) {
+    return {
+      ok: true,
+      action: "settle",
+      escrowId: "qesc_example",
+      status: "released",
+      decision: "release-to-merchant",
+      qualityScore: 100,
+      releaseThreshold: 70,
+      amountUsdc: 0.05,
+      reasons: ["All required keys present"],
+    };
+  }
+  if (path.includes("x402/proxy")) {
+    return {
+      status: "ok",
+      ok: true,
+      allowed: true,
+      summary: "Proxy preflight passed — safe to pay downstream x402 endpoint",
+      securityGrade: "A",
+      riskScore: 12,
+      targetProbe: { status: 402, requiresPayment: true, priceUsdc: 0.05 },
+    };
   }
   return { ok: true, allowed: true, summary: "Paid response after x402 settlement" };
 }
 
-/**
- * AgentCash @agentcash/discovery extractSchemas2 expects:
- * - schema.properties.input.properties.body (POST JSON body schema), or
- * - schema.properties.input.properties.queryParams (GET query schema)
- * - schema.properties.output.properties.example (response example object)
- */
-function buildInputSchemaProperty(
-  path: string,
-  method: string,
-  inputExample: unknown,
-): JsonSchema {
-  if (method.toUpperCase() === "GET") {
-    const querySchema =
-      path === "/api/attestation/registry"
-        ? {
-            type: "object",
-            properties: {
-              minGrade: { type: "string", description: "Minimum security grade (A–F)" },
-              agentId: { type: "string", description: "Filter by agent id" },
-              limit: { type: "integer", description: "Max records to return" },
-            },
-          }
-        : { type: "object", properties: {} };
-    return {
-      type: "object",
-      properties: { queryParams: querySchema },
-      required: ["queryParams"],
-    };
-  }
-
-  const bodySchema =
-    inputExample && typeof inputExample === "object"
-      ? exampleToJsonSchema(inputExample)
-      : { type: "object", properties: {} };
-
-  return {
-    type: "object",
-    properties: { body: bodySchema },
-    required: ["body"],
-  };
-}
-
-function buildOutputSchemaProperty(path: string): JsonSchema {
-  return {
-    type: "object",
-    properties: {
-      example: defaultOutputExample(path),
-    },
-    required: ["example"],
-  };
-}
-
-function buildBazaarInfo(
-  path: string,
-  method: string,
-  inputExample: unknown,
-): Record<string, unknown> {
-  if (method.toUpperCase() === "GET") {
-    return {
-      input: {
-        type: "http",
-        method: "GET",
-        queryParams:
-          path === "/api/attestation/registry"
-            ? { minGrade: "C", limit: 20 }
-            : {},
-      },
-      output: {
-        type: "json",
-        example: defaultOutputExample(path),
-      },
-    };
-  }
-  return {
-    input: {
-      type: "http",
-      method: "POST",
-      bodyType: "json",
-      body: inputExample ?? {},
-    },
-    output: {
-      type: "json",
-      example: defaultOutputExample(path),
-    },
-  };
-}
-
-/** CDP / AgentCash Bazaar v2 extension payload */
+/** CDP Bazaar extension via official `declareDiscoveryExtension()` helper. */
 export function buildBazaarExtension(
   path: string,
   method: string,
   inputExample: unknown,
 ): { info: Record<string, unknown>; schema: JsonSchema } {
-  return {
-    info: buildBazaarInfo(path, method, inputExample),
-    schema: {
-      type: "object",
-      properties: {
-        input: buildInputSchemaProperty(path, method, inputExample),
-        output: buildOutputSchemaProperty(path),
-      },
-      required: ["input", "output"],
-    },
-  };
+  const outputExample = defaultOutputExample(path);
+  const outputSchema = exampleToJsonSchema(outputExample);
+
+  if (method.toUpperCase() === "GET") {
+    const queryParams =
+      path === "/api/attestation/registry"
+        ? { minGrade: "C", limit: 20 }
+        : {};
+    const declared = declareDiscoveryExtension({
+      queryParams,
+      output: { example: outputExample, schema: outputSchema },
+    } as never);
+    return declared.bazaar as unknown as { info: Record<string, unknown>; schema: JsonSchema };
+  }
+
+  const body =
+    inputExample && typeof inputExample === "object" ? inputExample : {};
+  const declared = declareDiscoveryExtension({
+    bodyType: "json",
+    body,
+    output: { example: outputExample, schema: outputSchema },
+  } as never);
+  return declared.bazaar as unknown as { info: Record<string, unknown>; schema: JsonSchema };
 }
 
 export function bazaarExtensionForRequest(req: Request): {
@@ -201,6 +176,13 @@ export function bazaarExtensionForRequest(req: Request): {
   schema: JsonSchema;
 } {
   const example = VERIFY_EXAMPLES[req.path];
-  const method = declaredHttpMethod(req.path);
+  const declared = declaredHttpMethod(req.path);
+  /** Agentic / Bazaar crawlers probe POST routes with GET — declare GET input for probes. */
+  const method =
+    declared === "GET"
+      ? "GET"
+      : req.method === "POST"
+        ? "POST"
+        : "GET";
   return buildBazaarExtension(req.path, method, example);
 }

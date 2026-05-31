@@ -49,8 +49,21 @@ function resolveAttestationHmacSecret(): string {
 }
 
 const chains = parseChainList(
-  env("NETWORKS") || env("NETWORK") || "solana,base",
+  env("NETWORKS") || env("NETWORK") || "base,solana",
 );
+
+/** CDP facilitator — required for CDP Bazaar catalog indexing on agentic.market */
+export const CDP_FACILITATOR_URL =
+  "https://api.cdp.coinbase.com/platform/v2/x402/facilitator";
+
+function resolveFacilitatorUrl(): string {
+  const explicit = env("FACILITATOR_URL");
+  if (explicit) return explicit;
+  if (env("USE_CDP_FACILITATOR") === "1" || env("AGENTIC_CDP") === "1") {
+    return CDP_FACILITATOR_URL;
+  }
+  return "https://x402.dexter.cash";
+}
 
 export const config = {
   port: Number(process.env.PORT ?? 3402),
@@ -61,7 +74,11 @@ export const config = {
   chains,
   networks: caip2Networks(chains),
   primaryChain: (chains[0] ?? "solana") as ChainKey,
-  facilitatorUrl: env("FACILITATOR_URL") || "https://x402.dexter.cash",
+  facilitatorUrl: resolveFacilitatorUrl(),
+  cdpFacilitatorEnabled:
+    resolveFacilitatorUrl() === CDP_FACILITATOR_URL ||
+    env("USE_CDP_FACILITATOR") === "1" ||
+    env("AGENTIC_CDP") === "1",
   baseRpcUrl: env("BASE_RPC_URL") || "https://mainnet.base.org",
   network: (chains[0] ?? "solana") as ChainKey,
   attestationHmacSecret: resolveAttestationHmacSecret(),

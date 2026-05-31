@@ -100,15 +100,16 @@ function bazaarShapeOk(path: string, method: string, example: unknown): boolean 
   const ext = buildBazaarExtension(path, method, example);
   const schema = ext.schema as Record<string, unknown>;
   const props = schema.properties as Record<string, unknown> | undefined;
-  if (!props) return false;
-  const inputProps = props.input as Record<string, unknown> | undefined;
-  const inputInner = inputProps?.properties as Record<string, unknown> | undefined;
+  if (!props?.input) return false;
+  const inputProps = props.input as Record<string, unknown>;
+  const inputInner = inputProps.properties as Record<string, unknown> | undefined;
   const hasInput =
-    Boolean(inputInner?.body) || Boolean(inputInner?.queryParams) || method === "GET";
+    Boolean(inputInner?.body) ||
+    Boolean(inputInner?.queryParams) ||
+    method === "GET";
   const outputProps = props.output as Record<string, unknown> | undefined;
-  const outputInner = outputProps?.properties as Record<string, unknown> | undefined;
-  const hasOutput = Boolean(outputInner?.example);
-  return hasInput && hasOutput;
+  const hasOutput = Boolean(ext.info.output) || Boolean(outputProps);
+  return hasInput && hasOutput && Boolean(schema.$schema);
 }
 
 function auditRoute(url: string, method: string, fastProbe: boolean): Promise<RouteAudit> {

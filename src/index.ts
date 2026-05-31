@@ -144,9 +144,13 @@ app.get("/discovery", (_req, res) => {
   res.type("html").send(renderDiscoveryPage(buildWellKnownX402Resources(), config.publicBaseUrl));
 });
 
-/** Same manifest as /.well-known/x402 — safe path for browsers (Chrome may flag .well-known). */
+/** Same manifest as /.well-known/x402 — free catalog (HTTP 200). Not for agentic.market Validate. */
 app.get("/discovery.json", (_req, res) => {
-  res.json(buildWellKnownX402Resources());
+  res.json({
+    ...buildWellKnownX402Resources(),
+    agenticValidateNote:
+      "Do not submit this URL to agentic.market Validate. Use paid /api/* URLs from GET /api/agentic/validate-urls instead.",
+  });
 });
 
 app.get("/x402/api/services.json", (_req, res) => {
@@ -198,7 +202,16 @@ app.get("/api/agentic/validate-urls", (_req, res) => {
   const base = config.publicBaseUrl;
   res.json({
     note: "Paste these exact URLs into agentic.market Validate Endpoint. No trailing slash.",
+    doNotValidate: [
+      `${base}/discovery.json`,
+      `${base}/.well-known/x402`,
+      `${base}/health`,
+      `${base}/x402/api/discover`,
+    ],
     agenticGetProbes: true,
+    cdpBazaarHint:
+      "For CDP Bazaar auto-index, set USE_CDP_FACILITATOR=1 and FACILITATOR_URL=https://api.cdp.coinbase.com/platform/v2/x402/facilitator with CDP API keys, then complete one settlement per route.",
+    facilitator: config.facilitatorUrl,
     urls: listEndpoints().map((e) => {
       const [, path] = e.path.split(" ");
       return `${base}${path}`;

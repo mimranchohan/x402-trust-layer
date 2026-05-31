@@ -36,6 +36,13 @@ const POST_ROUTES = [
   "/api/quality-monitor/probe",
   "/api/evidence-locker/export",
   "/api/agent-escrow",
+  "/api/merchant-trust/score",
+  "/api/mandate/compile",
+  "/api/mandate/verify",
+  "/api/rail-optimizer/route",
+  "/api/compliance/ledger",
+  "/api/dispute/resolve",
+  "/api/quality-escrow/settle",
 ];
 
 async function probePost(path) {
@@ -64,7 +71,7 @@ async function probe() {
   const result = {
     origin,
     at: new Date().toISOString(),
-    expectedPaidRoutes: 24,
+    expectedPaidRoutes: 31,
     checks: {},
     routes: [],
   };
@@ -82,16 +89,17 @@ async function probe() {
   const wk = await fetch(`${origin}/.well-known/x402`);
   const wkJson = await wk.json().catch(() => null);
   const resources = Array.isArray(wkJson?.resources) ? wkJson.resources : [];
-  result.checks.wellKnown = {
-    status: wk.status,
-    resourceCount: resources.length,
-    syncOk: resources.length === 24,
-    ownershipProofs: wkJson?.ownershipProofs?.length ?? 0,
-  };
 
   const openapiRes = await fetch(`${origin}/openapi.json`);
   const openapi = await openapiRes.json().catch(() => ({}));
   const pathCount = openapi.paths ? Object.keys(openapi.paths).length : 0;
+
+  result.checks.wellKnown = {
+    status: wk.status,
+    resourceCount: resources.length,
+    syncOk: resources.length === pathCount && resources.length === 31,
+    ownershipProofs: wkJson?.ownershipProofs?.length ?? 0,
+  };
   result.checks.openapi = {
     status: openapiRes.status,
     pathCount,

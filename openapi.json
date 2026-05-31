@@ -123,7 +123,7 @@
                       "dexter.cash"
                     ]
                   },
-                  "dryRunTarget": false
+                  "dryRunTarget": true
                 }
               }
             }
@@ -217,7 +217,7 @@
                     "dexter.cash"
                   ]
                 },
-                "dryRunTarget": false
+                "dryRunTarget": true
               }
             }
           }
@@ -285,7 +285,7 @@
                 },
                 "example": {
                   "origin": "https://x402trustlayer.xyz",
-                  "maxRoutes": 31
+                  "maxRoutes": 3
                 }
               }
             }
@@ -323,7 +323,7 @@
               },
               "example": {
                 "origin": "https://x402trustlayer.xyz",
-                "maxRoutes": 31
+                "maxRoutes": 3
               }
             }
           }
@@ -1470,7 +1470,8 @@
                 },
                 "example": {
                   "targetUrl": "https://api.myceliasignal.com/oracle/price/eth/usd",
-                  "preferNetwork": "solana"
+                  "preferNetwork": "solana",
+                  "fastProbe": true
                 }
               }
             }
@@ -1499,16 +1500,21 @@
                   },
                   "preferNetwork": {
                     "type": "string"
+                  },
+                  "fastProbe": {
+                    "type": "boolean"
                   }
                 },
                 "required": [
                   "targetUrl",
-                  "preferNetwork"
+                  "preferNetwork",
+                  "fastProbe"
                 ]
               },
               "example": {
                 "targetUrl": "https://api.myceliasignal.com/oracle/price/eth/usd",
-                "preferNetwork": "solana"
+                "preferNetwork": "solana",
+                "fastProbe": true
               }
             }
           }
@@ -2079,7 +2085,8 @@
                 "example": {
                   "query": "ETH USD spot price oracle",
                   "preferNetwork": "solana",
-                  "maxPriceUsdc": 0.1
+                  "maxPriceUsdc": 0.1,
+                  "skipProbes": true
                 }
               }
             }
@@ -2111,18 +2118,23 @@
                   },
                   "maxPriceUsdc": {
                     "type": "number"
+                  },
+                  "skipProbes": {
+                    "type": "boolean"
                   }
                 },
                 "required": [
                   "query",
                   "preferNetwork",
-                  "maxPriceUsdc"
+                  "maxPriceUsdc",
+                  "skipProbes"
                 ]
               },
               "example": {
                 "query": "ETH USD spot price oracle",
                 "preferNetwork": "solana",
-                "maxPriceUsdc": 0.1
+                "maxPriceUsdc": 0.1,
+                "skipProbes": true
               }
             }
           }
@@ -2188,7 +2200,8 @@
                 },
                 "example": {
                   "topic": "Ethereum network fees today",
-                  "includePrice": true
+                  "includePrice": true,
+                  "fastProbe": true
                 }
               }
             }
@@ -2217,16 +2230,21 @@
                   },
                   "includePrice": {
                     "type": "boolean"
+                  },
+                  "fastProbe": {
+                    "type": "boolean"
                   }
                 },
                 "required": [
                   "topic",
-                  "includePrice"
+                  "includePrice",
+                  "fastProbe"
                 ]
               },
               "example": {
                 "topic": "Ethereum network fees today",
-                "includePrice": true
+                "includePrice": true,
+                "fastProbe": true
               }
             }
           }
@@ -2806,7 +2824,7 @@
                 },
                 "example": {
                   "urls": [
-                    "https://api.myceliasignal.com/oracle/price/eth/usd"
+                    "https://x402trustlayer.xyz/health"
                   ]
                 }
               }
@@ -2844,7 +2862,7 @@
               },
               "example": {
                 "urls": [
-                  "https://api.myceliasignal.com/oracle/price/eth/usd"
+                  "https://x402trustlayer.xyz/health"
                 ]
               }
             }
@@ -2916,7 +2934,7 @@
                       "endpoint": "/api/spend-governor/check",
                       "amountUsdc": 0.03,
                       "network": "solana",
-                      "timestamp": "2026-05-31T08:28:25.560Z"
+                      "timestamp": "2026-05-31T10:02:11.080Z"
                     }
                   ]
                 }
@@ -2984,7 +3002,7 @@
                     "endpoint": "/api/spend-governor/check",
                     "amountUsdc": 0.03,
                     "network": "solana",
-                    "timestamp": "2026-05-31T08:28:25.560Z"
+                    "timestamp": "2026-05-31T10:02:11.080Z"
                   }
                 ]
               }
@@ -3765,7 +3783,7 @@
                       "category": "oracle",
                       "agentId": "dexter-verifier-probe",
                       "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
-                      "timestamp": "2026-05-31T08:28:25.560Z"
+                      "timestamp": "2026-05-31T10:02:11.080Z"
                     }
                   ],
                   "policy": {
@@ -3883,7 +3901,7 @@
                     "category": "oracle",
                     "agentId": "dexter-verifier-probe",
                     "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
-                    "timestamp": "2026-05-31T08:28:25.560Z"
+                    "timestamp": "2026-05-31T10:02:11.080Z"
                   }
                 ],
                 "policy": {

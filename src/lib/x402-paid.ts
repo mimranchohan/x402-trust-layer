@@ -39,6 +39,7 @@ function attachBazaarToPayload(parsed: Record<string, unknown>, req: Request): v
   const bazaar = bazaarExtensionForRequest(req);
   const extensions = (parsed.extensions as Record<string, unknown> | undefined) ?? {};
   parsed.extensions = { ...extensions, bazaar };
+  if (parsed.x402Version == null) parsed.x402Version = 2;
 }
 
 type PaymentAccept = {
@@ -121,6 +122,10 @@ export function createPaidMiddleware(): (
           normalizeAccepts(payload);
           attachBazaarToPayload(payload, req);
           syncResourceUrl(payload, req);
+          // x402 HTTP transport v2: full envelope is in PAYMENT-REQUIRED header only.
+          const message =
+            typeof payload.error === "string" ? payload.error : "Payment required";
+          return origJson({ error: message });
         }
         return origJson(body);
       }) as typeof res.json;
