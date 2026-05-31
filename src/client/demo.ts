@@ -44,29 +44,67 @@ if (wrapOpts.preferredNetwork) {
   console.log(`Preferred payment network: ${wrapOpts.preferredNetwork}\n`);
 }
 
-async function post(path: string, body: unknown) {
-  try {
-    const res = await x402Fetch(`${base}${path}`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const text = await res.text();
-    console.log(`--- ${path} (${res.status}) ---`);
-    console.log(text.slice(0, 1200) + (text.length > 1200 ? "..." : ""));
-    console.log();
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error(`--- ${path} FAILED ---`, msg);
-    if (msg.includes("verification failed")) {
-      console.error(
-        "  Hint: restart `npm run dev` after updating; resource URL must match demo target above.",
-      );
-      console.error("  Server: X402_VERBOSE=1 logs invalidReason. Client: X402_VERBOSE=1 for payment trace.\n");
-    } else {
-      console.error();
+const SETTLEMENT_RETRY_DELAY_MS = 3500;
+const SETTLEMENT_RETRY_MATCH =
+  /settlement failed|payment was rejected|insufficient balance/i;
+
+async function post(path: string, body: unknown): Promise<unknown | null> {
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const res = await x402Fetch(`${base}${path}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const text = await res.text();
+      let parsed: unknown = null;
+      try {
+        parsed = text ? JSON.parse(text) : null;
+      } catch {
+        parsed = null;
+      }
+      console.log(`--- ${path} (${res.status}) ---`);
+      if (path === "/api/seller/audition-coach" && parsed && typeof parsed === "object") {
+        const coach = parsed as Record<string, unknown>;
+        console.log(
+          JSON.stringify(
+            {
+              coached: coach.coached,
+              allowed: coach.allowed,
+              hostScoreEstimate: coach.hostScoreEstimate,
+              routeAuditCount: Array.isArray(coach.routeAudits) ? coach.routeAudits.length : 0,
+              confidence: coach.confidence,
+              summary: coach.summary,
+            },
+            null,
+            2,
+          ),
+        );
+      } else {
+        console.log(text.slice(0, 1200) + (text.length > 1200 ? "..." : ""));
+      }
+      console.log();
+      return parsed;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (attempt === 1 && SETTLEMENT_RETRY_MATCH.test(msg)) {
+        console.warn(`--- ${path} settlement retry in ${SETTLEMENT_RETRY_DELAY_MS}ms ---`, msg);
+        await sleep(SETTLEMENT_RETRY_DELAY_MS);
+        continue;
+      }
+      console.error(`--- ${path} FAILED ---`, msg);
+      if (msg.includes("verification failed")) {
+        console.error(
+          "  Hint: restart `npm run dev` after updating; resource URL must match demo target above.",
+        );
+        console.error("  Server: X402_VERBOSE=1 logs invalidReason. Client: X402_VERBOSE=1 for payment trace.\n");
+      } else {
+        console.error();
+      }
+      return null;
     }
   }
+  return null;
 }
 
 console.log("=== marketplace killers ===\n");
@@ -112,7 +150,7 @@ await post("/api/mpp/session", {
 
 await sleep(2000);
 
-await post("/api/attestation/issue", {
+const attestationIssue = await post("/api/attestation/issue", {
   agentId: "demo-fleet-1",
   walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
   targetUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
@@ -122,8 +160,23 @@ await post("/api/attestation/issue", {
 
 await sleep(2000);
 
+const issuedAttestationId =
+  attestationIssue &&
+  typeof attestationIssue === "object" &&
+  "attestation" in attestationIssue &&
+  attestationIssue.attestation &&
+  typeof attestationIssue.attestation === "object" &&
+  "attestationId" in attestationIssue.attestation &&
+  typeof attestationIssue.attestation.attestationId === "string"
+    ? attestationIssue.attestation.attestationId
+    : null;
+
+if (!issuedAttestationId) {
+  console.warn("Attestation issue did not return attestationId — verify step may fail.\n");
+}
+
 await post("/api/attestation/verify", {
-  attestationId: "att_verifier_probe_example",
+  attestationId: issuedAttestationId ?? "att_verifier_probe_example",
 });
 
 await sleep(2000);

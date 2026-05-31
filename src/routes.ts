@@ -524,13 +524,26 @@ export function registerRoutes(
     pricing.identityGate,
     "Wallet identity tier and risk scoring before paid API calls",
     async (req, res) => {
-      const parsed = z
+      const raw = req.body as Record<string, unknown> | undefined;
+      let parsed = z
         .object({
           walletAddress: z.string().min(16),
           maxTierSpendUsdc: z.number().optional(),
           requireMainnet: z.boolean().optional(),
         })
         .safeParse(req.body);
+      if (!parsed.success) {
+        const fb = verifierFallback("/api/identity-gate/check");
+        if (fb) {
+          parsed = z
+            .object({
+              walletAddress: z.string().min(16),
+              maxTierSpendUsdc: z.number().optional(),
+              requireMainnet: z.boolean().optional(),
+            })
+            .safeParse(mergeCompatibleProbeInput(fb, raw ?? {}));
+        }
+      }
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(runIdentityGate(parsed.data));
     },

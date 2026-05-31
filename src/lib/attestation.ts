@@ -1,7 +1,6 @@
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { config } from "../config.js";
 import { SUITE_VERSION } from "./version.js";
 
@@ -20,8 +19,12 @@ export type AttestationRecord = {
   signature: string;
 };
 
-const root = path.dirname(fileURLToPath(import.meta.url));
-const storePath = path.join(root, "..", "..", "data", "attestations.json");
+export function attestationStorePath(): string {
+  const dataDir = process.env.DATA_DIR?.trim() || path.join(process.cwd(), "data");
+  return path.join(dataDir, "attestations.json");
+}
+
+const storePath = attestationStorePath();
 
 async function loadStore(): Promise<AttestationRecord[]> {
   try {

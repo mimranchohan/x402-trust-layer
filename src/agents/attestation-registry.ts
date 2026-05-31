@@ -1,5 +1,5 @@
 import { agentTrustMeta, withAgentTrust } from "../lib/agent-response.js";
-import { verifyAttestation, issueAttestation, type AttestationRecord } from "../lib/attestation.js";
+import { verifyAttestation, issueAttestation, attestationStorePath, type AttestationRecord } from "../lib/attestation.js";
 import { assessUrlSecurity } from "../lib/security.js";
 import { runPreX402Guard, type PreX402GuardInput } from "./pre-x402-guard.js";
 import { config } from "../config.js";
@@ -74,10 +74,7 @@ export type TrustRegistryQuery = {
 
 export async function runTrustRegistryQuery(input: TrustRegistryQuery) {
   const { readFile } = await import("node:fs/promises");
-  const path = await import("node:path");
-  const { fileURLToPath } = await import("node:url");
-  const root = path.dirname(fileURLToPath(import.meta.url));
-  const storePath = path.join(root, "..", "..", "data", "attestations.json");
+  const storePath = attestationStorePath();
   let rows: AttestationRecord[] = [];
   try {
     rows = JSON.parse(await readFile(storePath, "utf8")) as AttestationRecord[];
