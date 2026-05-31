@@ -113,6 +113,7 @@ export function runQualityEscrow(input: QualityEscrowInput) {
 
   return withAgentTrust(
     {
+      ok: true,
       action: "settle",
       escrowId,
       status: release ? "released" : "refunded",

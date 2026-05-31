@@ -1,4 +1,5 @@
 import { buildDefaultPipeline, suiteUrl, SUITE_PRICES, type SuiteStep } from "../lib/suite-catalog.js";
+import { agentTrustMeta, withAgentTrust, type WithAgentTrust } from "../lib/agent-response.js";
 
 export type CompilerInput = {
   task: string;
@@ -9,6 +10,8 @@ export type CompilerInput = {
 };
 
 export type CompilerResult = {
+  status: "ok";
+  ok: true;
   task: string;
   withinBudget: boolean;
   totalEstimatedUsdc: number;
@@ -18,7 +21,7 @@ export type CompilerResult = {
   suiteBaseUrl: string;
 };
 
-export function runPaymentIntentCompiler(input: CompilerInput): CompilerResult {
+export function runPaymentIntentCompiler(input: CompilerInput): WithAgentTrust<CompilerResult> {
   const taskLower = input.task.toLowerCase();
   const includeResearch =
     input.includeResearch ?? /research|report|brief|analyze|analysis/.test(taskLower);
@@ -46,14 +49,24 @@ export function runPaymentIntentCompiler(input: CompilerInput): CompilerResult {
   });
 
   const total = steps.reduce((sum, s) => sum + s.priceUsdc, 0);
+  const withinBudget = total <= input.maxBudgetUsdc;
 
-  return {
-    task: input.task,
-    withinBudget: total <= input.maxBudgetUsdc,
-    totalEstimatedUsdc: Number(total.toFixed(4)),
-    maxBudgetUsdc: input.maxBudgetUsdc,
-    steps,
-    executionOrder: steps.map((s) => `${s.method} ${suiteUrl(s.path)}`),
-    suiteBaseUrl: suiteUrl(""),
-  };
+  return withAgentTrust(
+    {
+      status: "ok",
+      ok: true,
+      task: input.task,
+      withinBudget,
+      totalEstimatedUsdc: Number(total.toFixed(4)),
+      maxBudgetUsdc: input.maxBudgetUsdc,
+      steps,
+      executionOrder: steps.map((s) => `${s.method} ${suiteUrl(s.path)}`),
+      suiteBaseUrl: suiteUrl(""),
+    },
+    agentTrustMeta(["plan_compiled", withinBudget ? "within_budget" : "over_budget"], {
+      confidence: withinBudget ? 0.88 : 0.72,
+      sources: ["payment-intent-compiler", "suite-catalog"],
+      accuracy_note: "Plan estimates suite route costs; external x402 calls are not included unless specified.",
+    }),
+  );
 }

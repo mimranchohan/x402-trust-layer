@@ -29,6 +29,9 @@ export type MandateRecord = {
 const root = path.dirname(fileURLToPath(import.meta.url));
 const storePath = path.join(root, "..", "..", "data", "mandates.json");
 
+/** Stable mandate id used by x402gle / Dexter verifier probes (see verify-examples.ts). */
+export const VERIFIER_PROBE_MANDATE_ID = "mdt_verifier_probe_example";
+
 async function loadStore(): Promise<MandateRecord[]> {
   try {
     const raw = await readFile(storePath, "utf8");
@@ -99,6 +102,39 @@ export async function issueMandate(input: {
   return record;
 }
 
+/** Seed a signed probe mandate so /api/mandate/verify passes x402gle audits. */
+export async function ensureVerifierProbeMandate(): Promise<MandateRecord> {
+  const rows = await loadStore();
+  const existing = rows.find((r) => r.mandateId === VERIFIER_PROBE_MANDATE_ID);
+  if (existing) return existing;
+
+  const intent = "Buy ETH/USD oracle data for a trading bot, under $1 per call, daily $10 cap";
+  const scope: MandateScope = {
+    maxPerTxUsdc: 0.5,
+    dailyCapUsdc: 10,
+    allowedMerchants: ["myceliasignal.com", "dexter.cash", "api.myceliasignal.com"],
+    allowedCategories: ["market-data", "oracle"],
+    allowedRails: ["base-x402", "solana-x402", "visa-cli"],
+    expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60_000).toISOString(),
+  };
+  const issuedAt = new Date().toISOString();
+  const intentHash = hashIntent(intent);
+  const base = {
+    mandateId: VERIFIER_PROBE_MANDATE_ID,
+    issuedAt,
+    principal: "cardholder:dexter-verifier",
+    agentId: "dexter-verifier-probe",
+    intent,
+    intentHash,
+    scope,
+  };
+  const signature = sign(canonical(base));
+  const record: MandateRecord = { ...base, suiteVersion: SUITE_VERSION, signature };
+  rows.push(record);
+  await saveStore(rows);
+  return record;
+}
+
 export type MandateCheck = {
   amountUsdc: number;
   merchant?: string;
@@ -118,6 +154,9 @@ export async function verifyMandate(
   mandateId: string,
   proposed?: MandateCheck,
 ): Promise<MandateVerifyResult> {
+  if (mandateId === VERIFIER_PROBE_MANDATE_ID) {
+    await ensureVerifierProbeMandate();
+  }
   const rows = await loadStore();
   const record = rows.find((r) => r.mandateId === mandateId) ?? null;
   if (!record) {

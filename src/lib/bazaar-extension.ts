@@ -47,7 +47,36 @@ export function defaultOutputExample(path: string): Record<string, unknown> {
     return { ok: true, attestation: { attestationId: "att_example", allowed: true } };
   }
   if (path.includes("mpp")) {
-    return { ok: true, session: { sessionId: "mpp_example", status: "open" } };
+    return {
+      ok: true,
+      status: "ok",
+      success: true,
+      action: "open",
+      session: { sessionId: "mpp_example", status: "open", chain: "solana", expectedCalls: 25 },
+      recommendation: "Use MPP session for batch workload",
+      facilitator: { url: "https://x402.dexter.cash", mppDocs: "https://docs.dexter.cash/docs/mpp/" },
+      nextSteps: ["Call action:voucher before each paid call"],
+      savingsNote: "Estimated savings vs per-call settlement",
+    };
+  }
+  if (path.includes("payment-intent")) {
+    return {
+      ok: true,
+      status: "ok",
+      withinBudget: true,
+      totalEstimatedUsdc: 0.45,
+      steps: [{ step: 1, path: "/api/guard/pre-x402", priceUsdc: 0.05 }],
+      executionOrder: [`POST ${path}`],
+    };
+  }
+  if (path.includes("mandate/verify")) {
+    return {
+      ok: true,
+      valid: true,
+      withinScope: true,
+      reason: "Valid mandate, proposed payment within scope",
+      violations: [],
+    };
   }
   if (path.includes("buy-advisor")) {
     return {

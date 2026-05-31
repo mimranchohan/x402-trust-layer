@@ -22,6 +22,8 @@ export type RouteAudit = {
 };
 
 export type AuditionCoachResult = {
+  status: "ok";
+  ok: true;
   origin: string;
   auditedAt: string;
   hostScoreEstimate: number;
@@ -268,6 +270,8 @@ export async function runAuditionCoach(input: AuditionCoachInput): Promise<Audit
       : `${routes.length} routes audited; ~${hostScoreEstimate} avg score; ${failCount} need fixes before Dexter/x402gle pass (75+).`;
 
   return {
+    status: "ok",
+    ok: true,
     origin,
     auditedAt: new Date().toISOString(),
     hostScoreEstimate,

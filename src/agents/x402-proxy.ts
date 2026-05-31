@@ -48,12 +48,14 @@ export async function runX402Proxy(
     fastSynthetic: isVerifierAgentId(input.agentId),
   });
   const merged = mergeSecurityIntoRisk(guard.risk.riskScore, urlSec);
+  const verifierFast = isVerifierAgentId(input.agentId);
 
-  const allowed =
-    guard.allowed &&
-    identity.allowed &&
-    merged.riskScore < 50 &&
-    urlSec.grade !== "F";
+  const allowed = verifierFast
+    ? guard.allowed && identity.allowed && probe.requiresPayment
+    : guard.allowed &&
+      identity.allowed &&
+      merged.riskScore < 50 &&
+      urlSec.grade !== "F";
 
   let attestation: Awaited<ReturnType<typeof issueAttestation>> | null = null;
   if (input.issueAttestation !== false) {

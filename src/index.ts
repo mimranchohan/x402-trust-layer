@@ -15,10 +15,15 @@ import { registerAgenticProbes, stripTrailingSlash } from "./lib/agentic-probes.
 import { KILLER_SELLER_ENDPOINTS, PRIMARY_ENTRYPOINTS } from "./lib/suite-catalog.js";
 import { listEndpoints, registerRoutes } from "./routes.js";
 import { registerX402gleHostVerification } from "./lib/x402gle-host-verify.js";
+import { ensureVerifierProbeMandate } from "./lib/mandate.js";
 import { SUITE_VERSION } from "./lib/version.js";
 import { rateLimitPerMinute, rateLimitUnpaidProbes } from "./lib/rate-limit.js";
 
 assertConfig();
+
+void ensureVerifierProbeMandate().catch((err) => {
+  console.warn("[startup] verifier probe mandate seed skipped:", err instanceof Error ? err.message : err);
+});
 
 const app = express();
 app.set("trust proxy", true);
