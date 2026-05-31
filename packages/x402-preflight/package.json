@@ -1,6 +1,6 @@
 {
   "name": "x402-agent-suite-preflight",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Default preflight helper — calls x402 Agent Suite proxy before paid API calls",
   "type": "module",
   "main": "dist/index.js",
@@ -11,7 +11,9 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "peerDependencies": {
     "@dexterai/x402": ">=2.0.0"
   },
@@ -23,11 +25,19 @@
     "build": "tsc",
     "prepublishOnly": "npm run build"
   },
-  "keywords": ["x402", "agent", "preflight", "dexter"],
+  "keywords": [
+    "x402",
+    "agent",
+    "preflight",
+    "dexter",
+    "trust-layer"
+  ],
+  "author": "Mimran Chohan",
+  "homepage": "https://x402trustlayer.xyz",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mimranchohan/x402-agent-suite.git",
+    "url": "git+https://github.com/mimranchohan/x402-agent-suite.git",
     "directory": "packages/x402-preflight"
   }
 }

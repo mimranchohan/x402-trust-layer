@@ -32,6 +32,8 @@
     "typecheck": "tsc --noEmit",
     "ci": "npm run typecheck && npm run verify:bazaar",
     "openapi:generate": "tsx scripts/generate-openapi.ts",
+    "docs:ai": "node scripts/generate-ai-docs.mjs",
+    "build:packages": "npm run build --prefix packages/x402-preflight && npm run build --prefix packages/trust-layer-mcp",
     "discovery:discover": "npx -y @agentcash/discovery@latest discover",
     "discovery:check": "npx -y @agentcash/discovery@latest check",
     "verify:bazaar": "tsx scripts/verify-bazaar-shape.ts",

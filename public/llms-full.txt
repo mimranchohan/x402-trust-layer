@@ -1,0 +1,312 @@
+# x402 Trust Layer — Full Agent Catalog
+
+## 1. x402 Proxy
+
+- **Route:** POST /api/x402/proxy
+- **Price:** $0.08 USDC
+- **Tier:** Entry & Gateway
+- **Summary:** All-in-one preflight before any external x402 payment — policy, identity, risk, security grade and optional attestation.
+- **Why:** Replaces 3–4 separate gate calls in one purchase. Default guard for agent fleets.
+- **Inputs:** agentId, walletAddress, targetUrl, estimatedCostUsdc, policy, issueAttestation?
+- **Outputs:** allowed, securityGrade, riskScore, spend, identity, attestation, probe
+
+## 2. Pre-x402 Guard
+
+- **Route:** POST /api/guard/pre-x402
+- **Price:** $0.05 USDC
+- **Tier:** Entry & Gateway
+- **Summary:** Spend governor + identity gate + risk gate in one lightweight call.
+- **Why:** Cheapest allow/deny decision for high-frequency payment loops.
+- **Inputs:** agentId, walletAddress, targetUrl, estimatedCostUsdc, policy
+- **Outputs:** allowed, securityGrade, spend, identity, risk
+
+## 3. Pipeline Execute
+
+- **Route:** POST /api/pipeline/execute
+- **Price:** $0.25 USDC
+- **Tier:** Entry & Gateway
+- **Summary:** One-shot orchestration: guard, NL plan, facilitator routing and marketplace pick.
+- **Why:** Turns a natural-language task and budget into an executed, audited flow.
+- **Inputs:** agentId, walletAddress, targetUrl, task, maxBudgetUsdc, marketplaceQuery
+- **Outputs:** allowed, plan, facilitator, route, recommendedNextCalls
+
+## 4. Market Buy-Advisor
+
+- **Route:** POST /api/market/buy-advisor
+- **Price:** $0.08 USDC
+- **Tier:** Marketplace
+- **Summary:** Jupiter-style buy quote — ranks paid APIs for an intent with policy and MPP advice.
+- **Why:** Stops agents overpaying or buying from low-quality marketplace hosts.
+- **Inputs:** intent, maxPriceUsdc, expectedCalls, policy, dryRunTarget?
+- **Outputs:** recommendation, quotes, mppAdvice, chainAdvisor
+
+## 5. Seller Audition Coach
+
+- **Route:** POST /api/seller/audition-coach
+- **Price:** $0.06 USDC
+- **Tier:** Marketplace
+- **Summary:** Pre-listing QA: audits OpenAPI, discovery manifests and 402 probes.
+- **Why:** Raises verification score before Dexter/x402gle ingest (target ≥75).
+- **Inputs:** origin, maxRoutes?
+- **Outputs:** hostScoreEstimate, routes, globalFixes, discovery
+
+## 6. Payment-Intent Compiler
+
+- **Route:** POST /api/payment-intent/compile
+- **Price:** $0.15 USDC
+- **Tier:** Orchestration
+- **Summary:** Compiles natural-language task + budget into a multi-step x402 execution plan.
+- **Why:** Deterministic planning layer for autonomous spend within budget.
+- **Inputs:** task, maxBudgetUsdc, agentId, externalCallEstimateUsdc?
+- **Outputs:** steps, totalEstimatedUsdc, withinBudget, executionOrder
+
+## 7. Facilitator Failover
+
+- **Route:** POST /api/facilitator/failover
+- **Price:** $0.05 USDC
+- **Tier:** Orchestration
+- **Summary:** Ranks x402 facilitators and recommends a healthy failover route.
+- **Why:** Avoids settlement failures when a facilitator degrades.
+- **Inputs:** targetUrl, preferNetwork?
+- **Outputs:** recommendedFacilitator, facilitators, targetProbe
+
+## 8. MPP Session Plan
+
+- **Route:** POST /api/mpp/session-plan
+- **Price:** $0.02 USDC
+- **Tier:** Orchestration
+- **Summary:** Estimates MPP batch session savings vs per-call settlement.
+- **Why:** Quantifies when Stripe MPP / Dexter sessions beat individual settlements.
+- **Inputs:** action, expectedCalls, avgPricePerCallUsdc
+- **Outputs:** estimatedSavingsUSDC, recommendation, breakEvenCallCount
+
+## 9. MPP Session
+
+- **Route:** POST /api/mpp/session
+- **Price:** $0.03 USDC
+- **Tier:** Orchestration
+- **Summary:** MPP session lifecycle: open, voucher, close — batch settlement on Base/Solana.
+- **Why:** Cuts per-call settlement cost for high-frequency agent workloads.
+- **Inputs:** action, sessionId?, expectedCalls, chain, agentId
+- **Outputs:** session, estimatedSavingsUsdc, nextSteps
+
+## 10. Spend Governor
+
+- **Route:** POST /api/spend-governor/check
+- **Price:** $0.03 USDC
+- **Tier:** Core Gates
+- **Summary:** Enforces per-call and daily USDC spend caps per agent.
+- **Why:** Hard budget guardrail — the floor of every preflight decision.
+- **Inputs:** agentId, estimatedCostUsdc, targetUrl, policy
+- **Outputs:** allowed, spentTodayUsdc, remainingDailyUsdc
+
+## 11. Identity Gate
+
+- **Route:** POST /api/identity-gate/check
+- **Price:** $0.05 USDC
+- **Tier:** Core Gates
+- **Summary:** Wallet identity tier and risk scoring before paid calls.
+- **Why:** Blocks low-trust or unfunded wallets from mainnet spend.
+- **Inputs:** walletAddress, maxTierSpendUsdc?
+- **Outputs:** allowed, tier, riskScore, maxSpendUsdc
+
+## 12. Risk Gate
+
+- **Route:** POST /api/risk-gate/scan
+- **Price:** $0.08 USDC
+- **Tier:** Core Gates
+- **Summary:** Probes URL safety, HTTPS and x402 payment requirements.
+- **Why:** Detects unreachable, mispriced or unsafe endpoints before payment.
+- **Inputs:** targetUrl, estimatedCostUsdc, policy
+- **Outputs:** safe, riskScore, securityGrade, probe
+
+## 13. API Router
+
+- **Route:** POST /api/router/route
+- **Price:** $0.02 USDC
+- **Tier:** Core Gates
+- **Summary:** Routes capability queries to the best verified x402 marketplace API.
+- **Why:** Capability-based routing instead of hard-coded endpoints.
+- **Inputs:** query, preferNetwork?, maxPriceUsdc?
+- **Outputs:** selected, alternatives, probedPriceUsdc
+
+## 14. Research Brief
+
+- **Route:** POST /api/research/brief
+- **Price:** $0.20 USDC
+- **Tier:** Core Gates
+- **Summary:** Builds a paid-API research pipeline and cost estimate for any topic.
+- **Why:** Turns a research goal into a concrete, budgeted API plan.
+- **Inputs:** topic, includePrice?
+- **Outputs:** brief, sources, pipeline, estimatedCostUsdc
+
+## 15. Receipt Auditor
+
+- **Route:** POST /api/receipt-auditor/verify
+- **Price:** $0.05 USDC
+- **Tier:** Core Gates
+- **Summary:** Verifies x402 settlement receipts and on-chain transaction alignment.
+- **Why:** Proof that payment settled for the correct amount on-chain.
+- **Inputs:** transactionHash, network, expectedAmountUsdc, settlement
+- **Outputs:** valid, checks, explorerUrl
+
+## 16. Attestation Issue
+
+- **Route:** POST /api/attestation/issue
+- **Price:** $0.04 USDC
+- **Tier:** Attestation
+- **Summary:** Issues HMAC-signed preflight attestation for partner agent networks.
+- **Why:** Gate partner interactions on verifiable credential status.
+- **Inputs:** agentId, walletAddress, targetUrl, estimatedCostUsdc, policy
+- **Outputs:** attestationId, signature, securityGrade, expiresAt
+
+## 17. Attestation Verify
+
+- **Route:** POST /api/attestation/verify
+- **Price:** $0.02 USDC
+- **Tier:** Attestation
+- **Summary:** Verifies attestation signature, expiry and registry lookup.
+- **Why:** Confirm a partner attestation before trusting their response.
+- **Inputs:** attestationId
+- **Outputs:** valid, record, reason, checks_passed
+
+## 18. Attestation Registry
+
+- **Route:** GET /api/attestation/registry
+- **Price:** $0.02 USDC
+- **Tier:** Attestation
+- **Summary:** Query trust registry of valid agent attestations.
+- **Why:** Fleet controllers reject paid calls without valid X-Suite-Attestation.
+- **Inputs:** minGrade?, agentId?, limit?
+- **Outputs:** count, records, policy
+
+## 19. Refund Arbiter
+
+- **Route:** POST /api/refund-arbiter/evaluate
+- **Price:** $0.08 USDC
+- **Tier:** Trust
+- **Summary:** Evaluates buyer refund eligibility from verification signals.
+- **Why:** Programmatic refund decisions when an API underdelivers.
+- **Inputs:** verificationScore, responseEmpty, endpointReachable
+- **Outputs:** refundEligible, protectionTier, buyerGuidance, grade
+
+## 20. Settlement Graph
+
+- **Route:** POST /api/settlement-graph/next
+- **Price:** $0.02 USDC
+- **Tier:** Intelligence
+- **Summary:** Recommends next paid APIs to call after a settlement receipt.
+- **Why:** Drives multi-step agent journeys and reduces search steps.
+- **Inputs:** lastEndpointPath, lastTopic?
+- **Outputs:** recommendations, graphNote
+
+## 21. Quality Monitor
+
+- **Route:** POST /api/quality-monitor/probe
+- **Price:** $0.03 USDC
+- **Tier:** Intelligence
+- **Summary:** Regression-probes up to 10 x402 endpoints and returns quality scores.
+- **Why:** Continuous SLA monitoring of a fleet's API dependencies.
+- **Inputs:** urls
+- **Outputs:** results, averageScore, overall
+
+## 22. Budget Allocator
+
+- **Route:** POST /api/budget-allocator/run
+- **Price:** $0.03 USDC
+- **Tier:** Enterprise
+- **Summary:** Allocates shared USDC pool across agent fleet by priority.
+- **Why:** Fair, priority-weighted budget distribution at fleet scale.
+- **Inputs:** fleetId, poolRemainingUsdc, agents
+- **Outputs:** allocations, poolAfterUsdc
+
+## 23. Evidence Locker
+
+- **Route:** POST /api/evidence-locker/export
+- **Price:** $0.10 USDC
+- **Tier:** Enterprise
+- **Summary:** Exports tamper-evident compliance bundles for x402 settlements.
+- **Why:** Audit-grade evidence export for finance and security review.
+- **Inputs:** organizationId, records
+- **Outputs:** bundleId, checksum, bundleSignature, export
+
+## 24. Agent Escrow
+
+- **Route:** POST /api/agent-escrow
+- **Price:** $0.12 USDC
+- **Tier:** Enterprise
+- **Summary:** Create, status or release agent-to-agent USDC escrow records.
+- **Why:** Conditional payment between agents — release on verified condition.
+- **Inputs:** action, payerAgentId, payeeAgentId, amountUsdc, escrowId?
+- **Outputs:** escrow, status, releasedAt?
+
+## 25. Merchant Trust (KYM)
+
+- **Route:** POST /api/merchant-trust/score
+- **Price:** $0.06 USDC
+- **Tier:** Tier-1 Enterprise
+- **Summary:** Know-Your-Merchant trust score with wash-trading and verification signals.
+- **Why:** Only public KYM oracle — pay / caution / avoid before any merchant payment.
+- **Inputs:** host, washTradePct, verifiedResources, totalResources, probe?
+- **Outputs:** trustScore, grade, recommendation, penalties
+
+## 26. Mandate Compile
+
+- **Route:** POST /api/mandate/compile
+- **Price:** $0.08 USDC
+- **Tier:** Tier-1 Enterprise
+- **Summary:** Compiles AP2-style signed payment mandate from human intent and guardrails.
+- **Why:** Tamper-resistant intent → execution audit trail for Visa CLI / AP2 fleets.
+- **Inputs:** principal, agentId, intent, maxPerTxUsdc, dailyCapUsdc, allowedMerchants
+- **Outputs:** mandate, mandateId, signature, verifyUrl
+
+## 27. Mandate Verify
+
+- **Route:** POST /api/mandate/verify
+- **Price:** $0.02 USDC
+- **Tier:** Tier-1 Enterprise
+- **Summary:** Verifies mandate signature and scopes a proposed payment against it.
+- **Why:** Merchants confirm agent payment is within authorized human intent.
+- **Inputs:** mandateId, proposed
+- **Outputs:** valid, withinScope, violations, record
+
+## 28. Rail Optimizer
+
+- **Route:** POST /api/rail-optimizer/route
+- **Price:** $0.04 USDC
+- **Tier:** Tier-1 Enterprise
+- **Summary:** Picks best rail: Visa CLI, Stripe MPP, Circle, Base x402 or Solana x402.
+- **Why:** Unifies card and stablecoin rails in one cost + protection decision.
+- **Inputs:** amountUsdc, disputable?, expectedCalls?, latencySensitive?
+- **Outputs:** recommendedRail, ranked, recommendation
+
+## 29. Compliance Ledger
+
+- **Route:** POST /api/compliance/ledger
+- **Price:** $0.12 USDC
+- **Tier:** Tier-1 Enterprise
+- **Summary:** SOC2/tax-ready spend reconciliation with policy flags and tamper hash.
+- **Why:** CFO-grade audit trail for autonomous agent spend at enterprise scale.
+- **Inputs:** organizationId, period, records, policy
+- **Outputs:** summary, breakdown, violations, ledgerHash
+
+## 30. Dispute Resolver
+
+- **Route:** POST /api/dispute/resolve
+- **Price:** $0.10 USDC
+- **Tier:** Tier-1 Enterprise
+- **Summary:** Visa chargeback dossier or on-chain refund claim builder.
+- **Why:** Automates dispute filing for Visa CLI and refund routes for stablecoin rails.
+- **Inputs:** rail, merchant, amountUsdc, reason, evidence
+- **Outputs:** path, reasonCode, disputeStrength, filingSteps
+
+## 31. Quality Escrow
+
+- **Route:** POST /api/quality-escrow/settle
+- **Price:** $0.10 USDC
+- **Tier:** Tier-1 Enterprise
+- **Summary:** Quality-gated escrow — release on pass, auto-refund on response mismatch.
+- **Why:** Closes trust gap on final stablecoin settlements with no chargeback recourse.
+- **Inputs:** action, amountUsdc, expectedProfile, actualResponse, releaseThreshold
+- **Outputs:** decision, qualityScore, status, reasons
+

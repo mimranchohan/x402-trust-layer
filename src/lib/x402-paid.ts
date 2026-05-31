@@ -11,8 +11,12 @@ function resolvePayTo(): string | Record<string, string> {
     [CHAIN_IDS.solana]: config.payTo,
     [CHAIN_IDS.base]: config.payToEvm,
   };
-  if (config.chains.includes("polygon")) {
-    map[CHAIN_IDS.polygon] = config.payToEvm;
+  for (const chain of config.chains) {
+    if (chain === "solana" || chain === "solana_devnet") {
+      map[CHAIN_IDS[chain]] = config.payTo;
+    } else if (chain === "base" || chain === "polygon" || chain === "base_sepolia") {
+      map[CHAIN_IDS[chain]] = config.payToEvm;
+    }
   }
   return map;
 }

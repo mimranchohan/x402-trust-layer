@@ -5,39 +5,94 @@
 - Website: https://x402trustlayer.xyz
 - OpenAPI: https://x402trustlayer.xyz/openapi.json
 - Discovery: https://x402trustlayer.xyz/.well-known/x402
-- Services manifest: https://x402trustlayer.xyz/x402/api/services.json
-- GitHub: https://github.com/mimranchohan/x402-trust-layer
+- Skill (agents): https://x402trustlayer.xyz/skill.md
+- Full context: https://x402trustlayer.xyz/llms-full.txt
+- MCP: npx @x402trustlayer/mcp (see packages/trust-layer-mcp)
+- npm: x402-agent-suite-preflight
+- GitHub: https://github.com/mimranchohan/x402-agent-suite
+
+## Default buyer flow (3 steps)
+
+1. POST /api/x402/proxy — preflight ($0.08)
+2. x402_check → x402_fetch on external marketplace URL
+3. POST /api/receipt-auditor/verify — settlement proof ($0.05)
 
 ## Primary entry points
 
 | Method | Path | Price | Purpose |
 |--------|------|-------|---------|
-| POST | /api/x402/proxy | $0.08 | All-in-one preflight before any external x402 payment |
-| POST | /api/guard/pre-x402 | $0.05 | Spend + identity + risk gate bundle |
-| POST | /api/pipeline/execute | $0.25 | Full orchestration for multi-step agent tasks |
+| POST | /api/x402/proxy | $0.08 | All-in-one preflight before any external x402 payment — policy, identity, risk, security grade and optional attestation. |
+| POST | /api/guard/pre-x402 | $0.05 | Spend governor + identity gate + risk gate in one lightweight call. |
+| POST | /api/pipeline/execute | $0.25 | One-shot orchestration: guard, NL plan, facilitator routing and marketplace pick. |
 
-## Tier-1 enterprise agents
+## Tier-1 enterprise
 
 | Method | Path | Price | Purpose |
 |--------|------|-------|---------|
-| POST | /api/merchant-trust/score | $0.06 | Know-Your-Merchant trust score before payment |
-| POST | /api/mandate/compile | $0.08 | AP2-style signed payment mandate from intent |
-| POST | /api/mandate/verify | $0.02 | Verify mandate scope for a proposed payment |
-| POST | /api/rail-optimizer/route | $0.04 | Cross-rail routing (Visa CLI, MPP, Base, Solana) |
-| POST | /api/compliance/ledger | $0.12 | CFO/SOC2 spend reconciliation ledger |
-| POST | /api/dispute/resolve | $0.10 | Visa chargeback or on-chain refund dossier |
-| POST | /api/quality-escrow/settle | $0.10 | Quality-gated escrow with auto-refund |
+| POST | /api/merchant-trust/score | $0.06 | Know-Your-Merchant trust score with wash-trading and verification signals. |
+| POST | /api/mandate/compile | $0.08 | Compiles AP2-style signed payment mandate from human intent and guardrails. |
+| POST | /api/mandate/verify | $0.02 | Verifies mandate signature and scopes a proposed payment against it. |
+| POST | /api/rail-optimizer/route | $0.04 | Picks best rail: Visa CLI, Stripe MPP, Circle, Base x402 or Solana x402. |
+| POST | /api/compliance/ledger | $0.12 | SOC2/tax-ready spend reconciliation with policy flags and tamper hash. |
+| POST | /api/dispute/resolve | $0.10 | Visa chargeback dossier or on-chain refund claim builder. |
+| POST | /api/quality-escrow/settle | $0.10 | Quality-gated escrow — release on pass, auto-refund on response mismatch. |
 
-## Agentic Market validate URLs
+## All 31 paid routes
 
-Paste each resource URL at https://agentic.market/ (Validate Endpoint):
+| Method | Path | Price | Summary |
+|--------|------|-------|---------|
+| POST | /api/x402/proxy | $0.08 | All-in-one preflight before any external x402 payment — policy, identity, risk, security grade and optional attestation. |
+| POST | /api/guard/pre-x402 | $0.05 | Spend governor + identity gate + risk gate in one lightweight call. |
+| POST | /api/pipeline/execute | $0.25 | One-shot orchestration: guard, NL plan, facilitator routing and marketplace pick. |
+| POST | /api/market/buy-advisor | $0.08 | Jupiter-style buy quote — ranks paid APIs for an intent with policy and MPP advice. |
+| POST | /api/seller/audition-coach | $0.06 | Pre-listing QA: audits OpenAPI, discovery manifests and 402 probes. |
+| POST | /api/payment-intent/compile | $0.15 | Compiles natural-language task + budget into a multi-step x402 execution plan. |
+| POST | /api/facilitator/failover | $0.05 | Ranks x402 facilitators and recommends a healthy failover route. |
+| POST | /api/mpp/session-plan | $0.02 | Estimates MPP batch session savings vs per-call settlement. |
+| POST | /api/mpp/session | $0.03 | MPP session lifecycle: open, voucher, close — batch settlement on Base/Solana. |
+| POST | /api/spend-governor/check | $0.03 | Enforces per-call and daily USDC spend caps per agent. |
+| POST | /api/identity-gate/check | $0.05 | Wallet identity tier and risk scoring before paid calls. |
+| POST | /api/risk-gate/scan | $0.08 | Probes URL safety, HTTPS and x402 payment requirements. |
+| POST | /api/router/route | $0.02 | Routes capability queries to the best verified x402 marketplace API. |
+| POST | /api/research/brief | $0.20 | Builds a paid-API research pipeline and cost estimate for any topic. |
+| POST | /api/receipt-auditor/verify | $0.05 | Verifies x402 settlement receipts and on-chain transaction alignment. |
+| POST | /api/attestation/issue | $0.04 | Issues HMAC-signed preflight attestation for partner agent networks. |
+| POST | /api/attestation/verify | $0.02 | Verifies attestation signature, expiry and registry lookup. |
+| GET | /api/attestation/registry | $0.02 | Query trust registry of valid agent attestations. |
+| POST | /api/refund-arbiter/evaluate | $0.08 | Evaluates buyer refund eligibility from verification signals. |
+| POST | /api/settlement-graph/next | $0.02 | Recommends next paid APIs to call after a settlement receipt. |
+| POST | /api/quality-monitor/probe | $0.03 | Regression-probes up to 10 x402 endpoints and returns quality scores. |
+| POST | /api/budget-allocator/run | $0.03 | Allocates shared USDC pool across agent fleet by priority. |
+| POST | /api/evidence-locker/export | $0.10 | Exports tamper-evident compliance bundles for x402 settlements. |
+| POST | /api/agent-escrow | $0.12 | Create, status or release agent-to-agent USDC escrow records. |
+| POST | /api/merchant-trust/score | $0.06 | Know-Your-Merchant trust score with wash-trading and verification signals. |
+| POST | /api/mandate/compile | $0.08 | Compiles AP2-style signed payment mandate from human intent and guardrails. |
+| POST | /api/mandate/verify | $0.02 | Verifies mandate signature and scopes a proposed payment against it. |
+| POST | /api/rail-optimizer/route | $0.04 | Picks best rail: Visa CLI, Stripe MPP, Circle, Base x402 or Solana x402. |
+| POST | /api/compliance/ledger | $0.12 | SOC2/tax-ready spend reconciliation with policy flags and tamper hash. |
+| POST | /api/dispute/resolve | $0.10 | Visa chargeback dossier or on-chain refund claim builder. |
+| POST | /api/quality-escrow/settle | $0.10 | Quality-gated escrow — release on pass, auto-refund on response mismatch. |
 
-```
-GET https://x402trustlayer.xyz/api/agentic/validate-urls
-```
+## Free endpoints (no x402 payment)
 
-Returns all 31 canonical paid resource URLs for one-click listing.
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | /health | Monitoring |
+| GET | /.well-known/x402 | Paid URL catalog |
+| GET | /llms.txt | AI index (this file) |
+| GET | /skill.md | Agent skill file |
+| GET | /api/agentic/validate-urls | Agentic Market URL list |
+| POST | /api/webhooks/register | Fleet webhook registration (beta) |
+| GET | /api/webhooks/list | List webhooks |
 
 ## Networks
 
-Base (eip155:8453) and Solana — USDC via Dexter facilitator.
+Mainnet: Base (eip155:8453), Solana, Polygon (eip155:137) — USDC via Dexter or CDP facilitator.
+Testnet: set X402_TESTNET=1 → Base Sepolia + Solana Devnet via https://x402.org/facilitator
+
+## Agentic Wallet integration
+
+Coinbase Agentic Wallet MCP pays for x402 services. Call Trust Layer guard BEFORE payments-mcp pays:
+POST /api/guard/pre-x402 → then Agentic Wallet discovers and pays downstream.
+
+See: docs/AGENTIC-WALLET.md

@@ -75,6 +75,7 @@ export async function rankFacilitators(
         supportedNetworks: [
           "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
           "eip155:8453",
+          "eip155:137",
         ],
         error: null,
       },

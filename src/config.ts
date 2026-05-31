@@ -48,9 +48,14 @@ function resolveAttestationHmacSecret(): string {
   return `dev-${randomBytes(16).toString("hex")}`;
 }
 
-const chains = parseChainList(
-  env("NETWORKS") || env("NETWORK") || "base,solana",
-);
+function resolveChains(): ChainKey[] {
+  if (env("X402_TESTNET") === "1" || env("TESTNET") === "1") {
+    return parseChainList(env("NETWORKS") || "base-sepolia,solana-devnet");
+  }
+  return parseChainList(env("NETWORKS") || env("NETWORK") || "base,solana,polygon");
+}
+
+const chains = resolveChains();
 
 /** CDP facilitator — required for CDP Bazaar catalog indexing on agentic.market */
 export const CDP_FACILITATOR_URL =
@@ -59,6 +64,9 @@ export const CDP_FACILITATOR_URL =
 function resolveFacilitatorUrl(): string {
   const explicit = env("FACILITATOR_URL");
   if (explicit) return explicit;
+  if (env("X402_TESTNET") === "1" || env("TESTNET") === "1") {
+    return "https://x402.org/facilitator";
+  }
   if (env("USE_CDP_FACILITATOR") === "1" || env("AGENTIC_CDP") === "1") {
     return CDP_FACILITATOR_URL;
   }
@@ -82,6 +90,7 @@ export const config = {
   baseRpcUrl: env("BASE_RPC_URL") || "https://mainnet.base.org",
   network: (chains[0] ?? "solana") as ChainKey,
   attestationHmacSecret: resolveAttestationHmacSecret(),
+  testnetMode: env("X402_TESTNET") === "1" || env("TESTNET") === "1",
   allowVerifierProbeIds: env("ALLOW_VERIFIER_PROBE_IDS") === "1",
 };
 

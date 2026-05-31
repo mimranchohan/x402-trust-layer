@@ -106,7 +106,11 @@ await x402Fetch(`${BASE}/api/receipt-auditor/verify`, {
 | Channel | Action |
 |---------|--------|
 | Dexter | `npm run demo` → [seller profile](https://dexter.cash/sellers/9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt) → **Verify Now** |
-| x402scan | [Register server](https://www.x402scan.com/resources/register) — **24 paid URLs only, never /health** |
+| x402scan | [Register server](https://www.x402scan.com/resources/register) — **31 paid URLs only, never /health** |
 | Agentic | [AGENTIC-MARKET.md](./AGENTIC-MARKET.md) — validate HTTPS URLs, Base first |
+| Agentic Wallet | [AGENTIC-WALLET.md](./AGENTIC-WALLET.md) — preflight before `@coinbase/payments-mcp` |
+| MCP | `npx @x402trustlayer/mcp` — 5 core trust tools |
+| AI agents | `npx skills add https://x402trustlayer.xyz` → `/skill.md` |
+| Testnet | [TESTNET.md](./TESTNET.md) — `X402_TESTNET=1` + Base Sepolia |
 
 See [MARKETPLACES.md](./MARKETPLACES.md) and [DEXTER-SCORE.md](./DEXTER-SCORE.md).

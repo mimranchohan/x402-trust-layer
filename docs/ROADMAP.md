@@ -3,14 +3,25 @@
 ## P0 — Trust (week 1)
 
 - [x] Security hardening v3.1 (SSRF, HMAC attestations, rate limits)
-- [ ] Railway: `ATTESTATION_HMAC_SECRET` + redeploy
+- [x] `skill.md` + full `llms.txt` + `llms-full.txt` (31 routes)
+- [x] Agentic Wallet integration doc + testnet guide
+- [x] `x402-agent-suite-preflight@1.1.0` ready to publish
+- [ ] Railway: `ATTESTATION_HMAC_SECRET` + redeploy with `NETWORKS=base,solana,polygon`
 - [ ] Dexter Verify Now on proxy, guard, pipeline, buy-advisor
 - [ ] x402scan: 24 paid URLs registered
 - [ ] 3+ external paid calls (non-receive wallet)
 
 ## P1 — Developer adoption (weeks 2–3)
 
-- [ ] Publish `packages/x402-preflight` to npm
+- [x] Publish `packages/x402-preflight` to npm (v1.1.0 — run `npm publish` from packages/x402-preflight)
+- [x] `@x402trustlayer/mcp` MCP server (5 core tools)
+- [x] `skill.md` + `llms.txt` + `llms-full.txt` at site root
+- [x] Agentic Wallet integration doc (`docs/AGENTIC-WALLET.md`)
+- [x] Testnet guide (`docs/TESTNET.md`)
+- [x] Idempotency-Key on paid POSTs
+- [x] Polygon network acceptance (NETWORKS=base,solana,polygon)
+- [x] Per-route docs on landing (detail panel + ?agent= deep links)
+- [x] Webhook beta (`POST /api/webhooks/register`)
 - [ ] Postman collection from `openapi.json`
 - [ ] Uptime monitor on `/health`
 - [ ] Case study: one fleet integration end-to-end

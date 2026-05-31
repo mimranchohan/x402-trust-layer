@@ -114,6 +114,10 @@
   <div class="chips">${chips(a.tags)}</div>
 </div>
 <div class="detail-block">
+  <h4>Docs</h4>
+  <p style="font-size:13px;color:var(--muted)"><a href="/skill.md">skill.md</a> · <a href="/openapi.json">OpenAPI</a> · <a href="?agent=${esc(a.id)}">Permalink</a></p>
+</div>
+<div class="detail-block">
   <h4>Example call</h4>
   <pre class="code-block">${body}</pre>
   <p style="font-size:12px;color:var(--dim);margin-top:8px">Returns HTTP 402 first — pay with x402 USDC, then retry with X-Payment header.</p>
@@ -252,8 +256,8 @@
       elVerified.dataset.count = "100";
     }
     if (elChains) {
-      elChains.textContent = "2";
-      elChains.dataset.count = "2";
+      elChains.textContent = "3";
+      elChains.dataset.count = "3";
     }
     updateCheapest(agents ?? []);
   }
@@ -331,7 +335,8 @@
       const h = await fetch("/health").then((r) => r.json());
       const badge = $("#hero-badge-text");
       if (badge && h.endpointCount) {
-        badge.textContent = `${h.endpointCount} Live Endpoints · Base + Solana`;
+        const chainLabel = Array.isArray(h.chains) ? h.chains.join(" · ") : "Base · Solana · Polygon";
+        badge.textContent = `${h.endpointCount} Live Endpoints · ${chainLabel}`;
       }
     } catch (_) {}
   }
@@ -380,6 +385,16 @@
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") closeDetail();
     });
+
+    const params = new URLSearchParams(window.location.search);
+    const hashAgent = window.location.hash.replace(/^#/, "").replace(/^agent[=\/]?/, "");
+    const deepId = params.get("agent") || (hashAgent && !hashAgent.startsWith("agents") ? hashAgent : null);
+    if (deepId) {
+      openDetail(deepId);
+      if (params.get("agent")) {
+        history.replaceState(null, "", window.location.pathname + "#agents");
+      }
+    }
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

@@ -12,6 +12,7 @@ import { buildAgentCashOpenApi, buildWellKnownX402Resources } from "./lib/openap
 import { renderDiscoveryPage } from "./lib/discovery-page.js";
 import { applyVerifierExampleBody } from "./lib/apply-verifier-body.js";
 import { registerAgenticProbes, stripTrailingSlash } from "./lib/agentic-probes.js";
+import { registerWebhookRoutes } from "./lib/webhook-routes.js";
 import { KILLER_SELLER_ENDPOINTS, PRIMARY_ENTRYPOINTS } from "./lib/suite-catalog.js";
 import { listEndpoints, registerRoutes } from "./routes.js";
 import { registerX402gleHostVerification } from "./lib/x402gle-host-verify.js";
@@ -106,6 +107,24 @@ app.get("/llms.txt", (_req, res) => {
   }
 });
 
+app.get("/llms-full.txt", (_req, res) => {
+  try {
+    const txt = readFileSync(join(process.cwd(), "public", "llms-full.txt"), "utf8");
+    res.type("text/plain").send(txt);
+  } catch {
+    res.status(404).type("text/plain").send("llms-full.txt not found");
+  }
+});
+
+app.get("/skill.md", (_req, res) => {
+  try {
+    const md = readFileSync(join(process.cwd(), "public", "skill.md"), "utf8");
+    res.type("text/markdown").send(md);
+  } catch {
+    res.status(404).type("text/plain").send("skill.md not found");
+  }
+});
+
 app.get("/health", (_req, res) => {
   res.json(healthPayload());
 });
@@ -195,6 +214,7 @@ app.get("/", (req, res) => {
 });
 
 const postHandlers = registerRoutes(app, paid, asyncRoute);
+registerWebhookRoutes(app);
 registerAgenticProbes(app, paid, postHandlers);
 
 /** Copy-paste URLs for Agentic Validate Endpoint (free) */

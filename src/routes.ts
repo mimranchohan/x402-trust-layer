@@ -31,6 +31,8 @@ import { runQualityEscrow } from "./agents/quality-escrow.js";
 import { config, pricing } from "./config.js";
 import { SUITE_PRICES } from "./lib/suite-catalog.js";
 import { VERIFY_EXAMPLES } from "./lib/verify-examples.js";
+import { idempotencyCapture, idempotencyPreCheck } from "./lib/idempotency.js";
+import { dispatchWebhooks } from "./lib/webhooks.js";
 
 type PaidMw = ReturnType<typeof import("@dexterai/x402/server").x402Middleware>;
 type AsyncRoute = (
@@ -106,7 +108,7 @@ export function registerRoutes(
     handler: (req: Request, res: Response) => Promise<void>,
   ) => {
     const core = asyncRoute(handler);
-    app.post(path, paid(String(amount), description), core);
+    app.post(path, idempotencyPreCheck, paid(String(amount), description), idempotencyCapture, core);
     postHandlers.set(path, core);
   };
 
@@ -123,7 +125,14 @@ export function registerRoutes(
     async (req, res) => {
       const parsed = guardBodySchema.safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
-      res.json(await runPreX402Guard(parsed.data));
+      const result = await runPreX402Guard(parsed.data);
+      const fleetId = parsed.data.agentId.split(":")[0] ?? parsed.data.agentId;
+      void dispatchWebhooks(
+        result.allowed ? "guard.allowed" : "guard.denied",
+        { agentId: parsed.data.agentId, targetUrl: parsed.data.targetUrl, allowed: result.allowed, summary: result.summary },
+        fleetId,
+      ).catch(() => undefined);
+      res.json(result);
     },
   );
 
