@@ -1,5 +1,6 @@
 import { config } from "../config.js";
 import { buildBazaarExtension } from "../lib/bazaar-extension.js";
+import { agentTrustMeta, withAgentTrust, type WithAgentTrust } from "../lib/agent-response.js";
 import { hostOf, probeEndpoint } from "../lib/probe.js";
 import { assertSafeOutboundUrl } from "../lib/ssrf.js";
 import { VERIFY_EXAMPLES } from "../lib/verify-examples.js";
@@ -21,9 +22,11 @@ export type RouteAudit = {
   fixInstructions: string[];
 };
 
-export type AuditionCoachResult = {
+export type AuditionCoachResult = WithAgentTrust<{
   status: "ok";
   ok: true;
+  coached: boolean;
+  allowed: boolean;
   origin: string;
   auditedAt: string;
   hostScoreEstimate: number;
@@ -36,9 +39,17 @@ export type AuditionCoachResult = {
   };
   globalFixes: string[];
   routes: RouteAudit[];
+  routeAudits: RouteAudit[];
+  coaching: {
+    hostScoreEstimate: number;
+    failCount: number;
+    passCount: number;
+    warnCount: number;
+    topFixes: string[];
+  };
   nextCommands: string[];
   dexterAuditionNote: string;
-};
+}>;
 
 async function fetchJson(url: string, timeoutMs = 15_000): Promise<{ ok: boolean; status: number; data: unknown }> {
   assertSafeOutboundUrl(url);
@@ -270,27 +281,56 @@ export async function runAuditionCoach(input: AuditionCoachInput): Promise<Audit
       ? "No routes discovered — fix OpenAPI and .well-known/x402 first."
       : `${routes.length} routes audited; ~${hostScoreEstimate} avg score; ${failCount} need fixes before Dexter/x402gle pass (75+).`;
 
-  return {
-    status: "ok",
-    ok: true,
-    origin,
-    auditedAt: new Date().toISOString(),
+  const coaching = {
     hostScoreEstimate,
-    summary,
-    discovery: {
-      openapiOk: openapiRes.ok,
-      wellKnownOk: wellKnownRes.ok,
-      resourceCount: wellKnownUrls.length || null,
-      openapiPathCount: openapiPaths.length || null,
-    },
-    globalFixes,
-    routes: routes.sort((a, b) => a.scoreEstimate - b.scoreEstimate),
-    nextCommands: [
-      `npx -y @dexterai/opendexter@latest audition "${origin}" --json`,
-      `npm run discovery:check -- ${origin}/api/x402/proxy`,
-      "Fix fixInstructions per route → redeploy → re-run coach",
-    ],
-    dexterAuditionNote:
-      "Coach is static + unpaid probes. Dexter audition runs real paid tests and updates catalog quality scores.",
+    failCount,
+    passCount: routes.filter((r) => r.status === "pass").length,
+    warnCount: routes.filter((r) => r.status === "warn").length,
+    topFixes: routes.flatMap((r) => r.fixInstructions).slice(0, 8),
   };
+
+  return withAgentTrust(
+    {
+      status: "ok" as const,
+      ok: true as const,
+      coached: true,
+      allowed: hostScoreEstimate >= 75 && failCount === 0,
+      origin,
+      auditedAt: new Date().toISOString(),
+      hostScoreEstimate,
+      summary,
+      discovery: {
+        openapiOk: openapiRes.ok,
+        wellKnownOk: wellKnownRes.ok,
+        resourceCount: wellKnownUrls.length || null,
+        openapiPathCount: openapiPaths.length || null,
+      },
+      globalFixes,
+      routes: routes.sort((a, b) => a.scoreEstimate - b.scoreEstimate),
+      routeAudits: routes.sort((a, b) => a.scoreEstimate - b.scoreEstimate),
+      coaching,
+      nextCommands: [
+        `npx -y @dexterai/opendexter@latest audition "${origin}" --json`,
+        `npm run discovery:check -- ${origin}/api/x402/proxy`,
+        "Fix fixInstructions per route → redeploy → re-run coach",
+      ],
+      dexterAuditionNote:
+        "Coach is static + unpaid probes. Dexter audition runs real paid tests and updates catalog quality scores.",
+    },
+    agentTrustMeta(
+      [
+        "openapi_checked",
+        "well_known_checked",
+        openapiRes.ok ? "openapi_ok" : "openapi_missing",
+        wellKnownRes.ok ? "well_known_ok" : "well_known_missing",
+        routes.length > 0 ? "routes_audited" : "no_routes_found",
+      ],
+      {
+        confidence: routes.length > 0 ? 0.88 : 0.55,
+        sources: ["audition-coach", "x402gle-aligned"],
+        accuracy_note:
+          "Coach uses unpaid 402 probes only; Dexter/x402gle paid auditions grade live settlement responses.",
+      },
+    ),
+  );
 }

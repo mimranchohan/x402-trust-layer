@@ -60,8 +60,19 @@ export type MandateVerifyInput = {
 
 export async function runMandateVerify(input: MandateVerifyInput) {
   const result = await verifyMandate(input.mandateId, input.proposed);
+  const allowed = result.valid && result.withinScope;
   return withAgentTrust(
-    { ok: true, ...result },
+    {
+      ok: true,
+      allowed,
+      valid: result.valid,
+      withinScope: result.withinScope,
+      reason: result.reason,
+      record: result.record,
+      violations: result.violations,
+      mandateId: input.mandateId,
+      proposed: input.proposed ?? null,
+    },
     agentTrustMeta(
       result.valid
         ? result.withinScope

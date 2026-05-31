@@ -109,21 +109,31 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "intent": "ETH USD spot price oracle for trading bot",
-                  "agentId": "dexter-verifier-probe",
-                  "walletAddress": "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
-                  "preferNetwork": "eip155:8453",
-                  "maxPriceUsdc": 0.15,
-                  "expectedCalls": 12,
-                  "policy": {
-                    "dailyCapUsdc": 10,
-                    "perCallCapUsdc": 0.5,
-                    "allowedHosts": [
-                      "myceliasignal.com",
-                      "dexter.cash"
-                    ]
+                  "status": "ok",
+                  "ok": true,
+                  "intent": "ETH USD spot price oracle",
+                  "checkedAt": "1970-01-01T00:00:00.000Z",
+                  "recommendation": {
+                    "action": "pay_external",
+                    "url": "https://api.example.com/oracle/eth/usd",
+                    "network": "eip155:8453",
+                    "allInCostUsdc": 0.05,
+                    "confidence": 0.85,
+                    "rationale": "Best catalog match within policy caps"
                   },
-                  "dryRunTarget": true
+                  "quotes": [
+                    {
+                      "rank": 1,
+                      "name": "Example API",
+                      "allInCostUsdc": 0.05,
+                      "requiresPayment": true
+                    }
+                  ],
+                  "policy": {
+                    "evaluated": true,
+                    "allowed": true,
+                    "summary": "Within daily and per-call limits"
+                  }
                 }
               }
             }
@@ -284,8 +294,51 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "origin": "https://x402trustlayer.xyz",
-                  "maxRoutes": 3
+                  "status": "ok",
+                  "ok": true,
+                  "coached": true,
+                  "allowed": true,
+                  "hostScoreEstimate": 78,
+                  "summary": "3 routes audited; ~78 avg score; 0 need fixes before Dexter/x402gle pass (75+).",
+                  "discovery": {
+                    "openapiOk": true,
+                    "wellKnownOk": true,
+                    "resourceCount": 31,
+                    "openapiPathCount": 31
+                  },
+                  "routes": [
+                    {
+                      "url": "https://x402trustlayer.xyz/api/guard/pre-x402",
+                      "method": "POST",
+                      "scoreEstimate": 85,
+                      "status": "pass",
+                      "issues": [],
+                      "fixInstructions": []
+                    }
+                  ],
+                  "routeAudits": [
+                    {
+                      "url": "https://x402trustlayer.xyz/api/guard/pre-x402",
+                      "method": "POST",
+                      "scoreEstimate": 85,
+                      "status": "pass",
+                      "issues": [],
+                      "fixInstructions": []
+                    }
+                  ],
+                  "coaching": {
+                    "hostScoreEstimate": 78,
+                    "failCount": 0,
+                    "passCount": 3,
+                    "warnCount": 0,
+                    "topFixes": []
+                  },
+                  "confidence": 0.88,
+                  "checks_passed": [
+                    "openapi_checked",
+                    "well_known_checked",
+                    "routes_audited"
+                  ]
                 }
               }
             }
@@ -390,15 +443,17 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "agentId": "dexter-verifier-probe",
-                  "walletAddress": "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
-                  "targetUrl": "https://api.myceliasignal.com/oracle/price/eth/usd",
-                  "estimatedCostUsdc": 0.05,
-                  "policy": {
-                    "dailyCapUsdc": 10,
-                    "perCallCapUsdc": 0.5
-                  },
-                  "issueAttestation": true
+                  "status": "ok",
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Proxy preflight passed — safe to pay downstream x402 endpoint",
+                  "securityGrade": "A",
+                  "riskScore": 12,
+                  "targetProbe": {
+                    "status": 402,
+                    "requiresPayment": true,
+                    "priceUsdc": 0.05
+                  }
                 }
               }
             }
@@ -544,11 +599,45 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "action": "open",
-                  "expectedCalls": 25,
-                  "avgPricePerCallUsdc": 0.03,
-                  "chain": "solana",
-                  "agentId": "dexter-verifier-probe"
+                  "ok": true,
+                  "status": "ok",
+                  "success": true,
+                  "action": "close",
+                  "session": {
+                    "sessionId": "mpp_example",
+                    "status": "closed",
+                    "chain": "polygon",
+                    "agentId": "agent-mpp-usdc-test-042",
+                    "expectedCalls": 9,
+                    "callsUsed": 0,
+                    "avgPricePerCallUsdc": 0.03
+                  },
+                  "settlement": {
+                    "status": "closed",
+                    "sessionId": "mpp_example",
+                    "network": "eip155:137",
+                    "chain": "polygon",
+                    "agentId": "agent-mpp-usdc-test-042",
+                    "callsSettled": 0,
+                    "plannedCalls": 9,
+                    "estimatedTotalUsdc": 0,
+                    "facilitatorUrl": "https://x402.dexter.cash"
+                  },
+                  "recommendation": "Settle aggregate USDC once on-chain via facilitator",
+                  "facilitator": {
+                    "url": "https://x402.dexter.cash",
+                    "mppDocs": "https://docs.dexter.cash/docs/mpp/"
+                  },
+                  "nextSteps": [
+                    "Facilitator settles session total to payTo wallet"
+                  ],
+                  "savingsNote": "Session closed with settlement metadata",
+                  "confidence": 0.9,
+                  "checks_passed": [
+                    "mpp_session",
+                    "action_close",
+                    "settlement_metadata"
+                  ]
                 }
               }
             }
@@ -667,13 +756,10 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "agentId": "dexter-verifier-probe",
-                  "walletAddress": "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
-                  "targetUrl": "https://api.myceliasignal.com/oracle/price/eth/usd",
-                  "estimatedCostUsdc": 0.03,
-                  "policy": {
-                    "dailyCapUsdc": 10,
-                    "perCallCapUsdc": 0.5
+                  "ok": true,
+                  "attestation": {
+                    "attestationId": "att_example",
+                    "allowed": true
                   }
                 }
               }
@@ -807,7 +893,11 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "attestationId": "att_verifier_probe_example"
+                  "ok": true,
+                  "attestation": {
+                    "attestationId": "att_example",
+                    "allowed": true
+                  }
                 }
               }
             }
@@ -1011,18 +1101,9 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "agentId": "dexter-verifier-probe",
-                  "walletAddress": "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
-                  "targetUrl": "https://api.myceliasignal.com/oracle/price/eth/usd",
-                  "estimatedCostUsdc": 0.05,
-                  "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-                  "policy": {
-                    "dailyCapUsdc": 10,
-                    "perCallCapUsdc": 0.5,
-                    "allowedHosts": [
-                      "myceliasignal.com"
-                    ]
-                  }
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
                 }
               }
             }
@@ -1170,22 +1251,9 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "agentId": "dexter-verifier-probe",
-                  "walletAddress": "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
-                  "targetUrl": "https://api.myceliasignal.com/oracle/price/eth/usd",
-                  "estimatedCostUsdc": 0.05,
-                  "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-                  "policy": {
-                    "dailyCapUsdc": 10,
-                    "perCallCapUsdc": 0.5,
-                    "allowedHosts": [
-                      "myceliasignal.com"
-                    ]
-                  },
-                  "task": "ETH oracle with guard and marketplace routing under one dollar",
-                  "maxBudgetUsdc": 1,
-                  "marketplaceQuery": "ETH USD spot price oracle",
-                  "preferNetwork": "solana"
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
                 }
               }
             }
@@ -1353,10 +1421,20 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "task": "Verify spend policy for ETH oracle call under one dollar budget",
-                  "maxBudgetUsdc": 1,
-                  "agentId": "dexter-verifier-probe",
-                  "externalCallEstimateUsdc": 0.05
+                  "ok": true,
+                  "status": "ok",
+                  "withinBudget": true,
+                  "totalEstimatedUsdc": 0.45,
+                  "steps": [
+                    {
+                      "step": 1,
+                      "path": "/api/guard/pre-x402",
+                      "priceUsdc": 0.05
+                    }
+                  ],
+                  "executionOrder": [
+                    "POST /api/payment-intent/compile"
+                  ]
                 }
               }
             }
@@ -1469,9 +1547,9 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "targetUrl": "https://api.myceliasignal.com/oracle/price/eth/usd",
-                  "preferNetwork": "solana",
-                  "fastProbe": true
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
                 }
               }
             }
@@ -1586,9 +1664,45 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "action": "estimate",
-                  "expectedCalls": 25,
-                  "avgPricePerCallUsdc": 0.03
+                  "ok": true,
+                  "status": "ok",
+                  "success": true,
+                  "action": "close",
+                  "session": {
+                    "sessionId": "mpp_example",
+                    "status": "closed",
+                    "chain": "polygon",
+                    "agentId": "agent-mpp-usdc-test-042",
+                    "expectedCalls": 9,
+                    "callsUsed": 0,
+                    "avgPricePerCallUsdc": 0.03
+                  },
+                  "settlement": {
+                    "status": "closed",
+                    "sessionId": "mpp_example",
+                    "network": "eip155:137",
+                    "chain": "polygon",
+                    "agentId": "agent-mpp-usdc-test-042",
+                    "callsSettled": 0,
+                    "plannedCalls": 9,
+                    "estimatedTotalUsdc": 0,
+                    "facilitatorUrl": "https://x402.dexter.cash"
+                  },
+                  "recommendation": "Settle aggregate USDC once on-chain via facilitator",
+                  "facilitator": {
+                    "url": "https://x402.dexter.cash",
+                    "mppDocs": "https://docs.dexter.cash/docs/mpp/"
+                  },
+                  "nextSteps": [
+                    "Facilitator settles session total to payTo wallet"
+                  ],
+                  "savingsNote": "Session closed with settlement metadata",
+                  "confidence": 0.9,
+                  "checks_passed": [
+                    "mpp_session",
+                    "action_close",
+                    "settlement_metadata"
+                  ]
                 }
               }
             }
@@ -1697,17 +1811,9 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "agentId": "dexter-verifier-probe",
-                  "estimatedCostUsdc": 0.03,
-                  "targetUrl": "https://api.myceliasignal.com/oracle/price/eth/usd",
-                  "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-                  "policy": {
-                    "dailyCapUsdc": 10,
-                    "perCallCapUsdc": 0.5,
-                    "allowedHosts": [
-                      "myceliasignal.com"
-                    ]
-                  }
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
                 }
               }
             }
@@ -1850,8 +1956,9 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "walletAddress": "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
-                  "maxTierSpendUsdc": 10
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
                 }
               }
             }
@@ -1955,12 +2062,9 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "targetUrl": "https://api.myceliasignal.com/oracle/price/eth/usd",
-                  "estimatedCostUsdc": 0.05,
-                  "policy": {
-                    "dailyCapUsdc": 10,
-                    "perCallCapUsdc": 0.5
-                  }
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
                 }
               }
             }
@@ -2083,10 +2187,9 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "query": "ETH USD spot price oracle",
-                  "preferNetwork": "solana",
-                  "maxPriceUsdc": 0.1,
-                  "skipProbes": true
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
                 }
               }
             }
@@ -2199,9 +2302,9 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "topic": "Ethereum network fees today",
-                  "includePrice": true,
-                  "fastProbe": true
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
                 }
               }
             }
@@ -2310,15 +2413,9 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "network": "eip155:8453",
-                  "expectedAmountUsdc": 0.05,
-                  "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
-                  "settlement": {
-                    "transaction": "0x0000000000000000000000000000000000000000000000000000000000000001",
-                    "amountUsdc": 0.05,
-                    "network": "eip155:8453",
-                    "payer": "0x0000000000000000000000000000000000000001"
-                  }
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
                 }
               }
             }
@@ -2456,10 +2553,9 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "verificationScore": 85,
-                  "responseEmpty": false,
-                  "responseGeneric": false,
-                  "endpointReachable": true
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
                 }
               }
             }
@@ -2572,16 +2668,9 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "fleetId": "verifier-fleet",
-                  "poolRemainingUsdc": 1,
-                  "agents": [
-                    {
-                      "agentId": "a1",
-                      "priority": 10,
-                      "requestedUsdc": 0.2,
-                      "dailyRemainingUsdc": 5
-                    }
-                  ]
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
                 }
               }
             }
@@ -2719,8 +2808,9 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "lastEndpointPath": "/api/spend-governor/check",
-                  "lastTopic": "agent spend policy"
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
                 }
               }
             }
@@ -2823,9 +2913,9 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "urls": [
-                    "https://x402trustlayer.xyz/health"
-                  ]
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
                 }
               }
             }
@@ -2928,15 +3018,9 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "organizationId": "verifier-org",
-                  "records": [
-                    {
-                      "endpoint": "/api/spend-governor/check",
-                      "amountUsdc": 0.03,
-                      "network": "solana",
-                      "timestamp": "2026-05-31T10:02:11.080Z"
-                    }
-                  ]
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
                 }
               }
             }
@@ -3002,7 +3086,7 @@
                     "endpoint": "/api/spend-governor/check",
                     "amountUsdc": 0.03,
                     "network": "solana",
-                    "timestamp": "2026-05-31T10:02:11.080Z"
+                    "timestamp": "2026-05-31T12:22:23.877Z"
                   }
                 ]
               }
@@ -3069,11 +3153,9 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "action": "create",
-                  "payerAgentId": "verifier-payer",
-                  "payeeAgentId": "verifier-payee",
-                  "amountUsdc": 0.05,
-                  "releaseCondition": "receipt-auditor valid:true"
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
                 }
               }
             }
@@ -3193,15 +3275,9 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "host": "api.myceliasignal.com",
-                  "targetUrl": "https://api.myceliasignal.com/oracle/price/eth/usd",
-                  "observedTxns": 54,
-                  "observedVolumeUsdc": 1.76,
-                  "washTradePct": 17,
-                  "verifiedResources": 44,
-                  "totalResources": 91,
-                  "p50LatencyMs": 1200,
-                  "probe": false
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
                 }
               }
             }
@@ -3341,25 +3417,9 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "principal": "cardholder:dexter-verifier",
-                  "agentId": "dexter-verifier-probe",
-                  "intent": "Buy ETH/USD oracle data for a trading bot, under $1 per call, daily $10 cap",
-                  "maxPerTxUsdc": 0.5,
-                  "dailyCapUsdc": 10,
-                  "allowedMerchants": [
-                    "myceliasignal.com",
-                    "dexter.cash"
-                  ],
-                  "allowedCategories": [
-                    "market-data",
-                    "oracle"
-                  ],
-                  "allowedRails": [
-                    "base-x402",
-                    "solana-x402",
-                    "visa-cli"
-                  ],
-                  "ttlMinutes": 1440
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
                 }
               }
             }
@@ -3517,13 +3577,25 @@
                   "additionalProperties": true
                 },
                 "example": {
+                  "ok": true,
+                  "allowed": true,
+                  "valid": true,
+                  "withinScope": true,
+                  "reason": "Valid mandate, proposed payment within scope",
+                  "violations": [],
                   "mandateId": "mdt_verifier_probe_example",
                   "proposed": {
                     "amountUsdc": 0.05,
                     "merchant": "api.myceliasignal.com",
                     "category": "oracle",
                     "rail": "base-x402"
-                  }
+                  },
+                  "confidence": 0.93,
+                  "checks_passed": [
+                    "signature_ok",
+                    "scope_ok",
+                    "not_expired"
+                  ]
                 }
               }
             }
@@ -3654,10 +3726,9 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "amountUsdc": 1.5,
-                  "disputable": true,
-                  "latencySensitive": false,
-                  "expectedCalls": 1
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
                 }
               }
             }
@@ -3772,25 +3843,9 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "organizationId": "verifier-org",
-                  "period": "2026-05",
-                  "records": [
-                    {
-                      "merchant": "api.myceliasignal.com",
-                      "amountUsdc": 0.05,
-                      "rail": "base-x402",
-                      "network": "eip155:8453",
-                      "category": "oracle",
-                      "agentId": "dexter-verifier-probe",
-                      "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
-                      "timestamp": "2026-05-31T10:02:11.080Z"
-                    }
-                  ],
-                  "policy": {
-                    "monthlyCapUsdc": 1000,
-                    "perMerchantCapUsdc": 500,
-                    "requireTxHash": true
-                  }
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
                 }
               }
             }
@@ -3901,7 +3956,7 @@
                     "category": "oracle",
                     "agentId": "dexter-verifier-probe",
                     "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
-                    "timestamp": "2026-05-31T10:02:11.080Z"
+                    "timestamp": "2026-05-31T12:22:23.878Z"
                   }
                 ],
                 "policy": {
@@ -3975,14 +4030,9 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "rail": "visa-cli",
-                  "merchant": "api.myceliasignal.com",
-                  "amountUsdc": 1,
-                  "reason": "non_delivery",
-                  "evidence": {
-                    "actualResponseEmpty": true,
-                    "receiptValid": false
-                  }
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
                 }
               }
             }
@@ -4117,28 +4167,17 @@
                   "additionalProperties": true
                 },
                 "example": {
+                  "ok": true,
                   "action": "settle",
-                  "payerAgentId": "dexter-verifier-probe",
-                  "payeeMerchant": "api.myceliasignal.com",
-                  "amountUsdc": 0.05,
+                  "escrowId": "qesc_example",
+                  "status": "released",
+                  "decision": "release-to-merchant",
+                  "qualityScore": 100,
                   "releaseThreshold": 70,
-                  "expectedProfile": {
-                    "requiredKeys": [
-                      "price",
-                      "symbol"
-                    ],
-                    "minLengthBytes": 16,
-                    "forbidEmpty": true
-                  },
-                  "actualResponse": {
-                    "bodyKeys": [
-                      "price",
-                      "symbol",
-                      "ts"
-                    ],
-                    "byteLength": 64,
-                    "empty": false
-                  }
+                  "amountUsdc": 0.05,
+                  "reasons": [
+                    "All required keys present"
+                  ]
                 }
               }
             }

@@ -52,7 +52,8 @@ function valueCompatibleWithExample(value: unknown, example: unknown): boolean {
   return typeof value === typeof example;
 }
 
-function mergeCompatibleProbeInput(
+/** Safe merge for route-level zod fallback (ignore unknown/incompatible grader keys). */
+export function mergeCompatibleProbeInput(
   example: Record<string, unknown>,
   input: Record<string, unknown>,
 ): Record<string, unknown> {

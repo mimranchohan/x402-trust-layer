@@ -92,9 +92,7 @@ function paidResponseSchema(): JsonSchema {
 }
 
 function paid200Response(path: string): Record<string, unknown> {
-  const example =
-    (VERIFY_EXAMPLES[path] as Record<string, unknown> | undefined) ??
-    defaultOutputExample(path);
+  const example = defaultOutputExample(path);
   return {
     description: "Successful response after x402 settlement",
     content: {

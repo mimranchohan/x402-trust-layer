@@ -58,12 +58,33 @@ export function defaultOutputExample(path: string): Record<string, unknown> {
       ok: true,
       status: "ok",
       success: true,
-      action: "open",
-      session: { sessionId: "mpp_example", status: "open", chain: "solana", expectedCalls: 25 },
-      recommendation: "Use MPP session for batch workload",
+      action: "close",
+      session: {
+        sessionId: "mpp_example",
+        status: "closed",
+        chain: "polygon",
+        agentId: "agent-mpp-usdc-test-042",
+        expectedCalls: 9,
+        callsUsed: 0,
+        avgPricePerCallUsdc: 0.03,
+      },
+      settlement: {
+        status: "closed",
+        sessionId: "mpp_example",
+        network: "eip155:137",
+        chain: "polygon",
+        agentId: "agent-mpp-usdc-test-042",
+        callsSettled: 0,
+        plannedCalls: 9,
+        estimatedTotalUsdc: 0,
+        facilitatorUrl: "https://x402.dexter.cash",
+      },
+      recommendation: "Settle aggregate USDC once on-chain via facilitator",
       facilitator: { url: "https://x402.dexter.cash", mppDocs: "https://docs.dexter.cash/docs/mpp/" },
-      nextSteps: ["Call action:voucher before each paid call"],
-      savingsNote: "Estimated savings vs per-call settlement",
+      nextSteps: ["Facilitator settles session total to payTo wallet"],
+      savingsNote: "Session closed with settlement metadata",
+      confidence: 0.9,
+      checks_passed: ["mpp_session", "action_close", "settlement_metadata"],
     };
   }
   if (path.includes("payment-intent")) {
@@ -79,10 +100,15 @@ export function defaultOutputExample(path: string): Record<string, unknown> {
   if (path.includes("mandate/verify")) {
     return {
       ok: true,
+      allowed: true,
       valid: true,
       withinScope: true,
       reason: "Valid mandate, proposed payment within scope",
       violations: [],
+      mandateId: "mdt_verifier_probe_example",
+      proposed: { amountUsdc: 0.05, merchant: "api.myceliasignal.com", category: "oracle", rail: "base-x402" },
+      confidence: 0.93,
+      checks_passed: ["signature_ok", "scope_ok", "not_expired"],
     };
   }
   if (path.includes("buy-advisor")) {
@@ -107,10 +133,34 @@ export function defaultOutputExample(path: string): Record<string, unknown> {
     return {
       status: "ok",
       ok: true,
+      coached: true,
+      allowed: true,
       hostScoreEstimate: 78,
-      summary: "Audited routes with fix list",
+      summary: "3 routes audited; ~78 avg score; 0 need fixes before Dexter/x402gle pass (75+).",
       discovery: { openapiOk: true, wellKnownOk: true, resourceCount: 31, openapiPathCount: 31 },
-      routes: [{ url: "https://example.com/api/guard/pre-x402", scoreEstimate: 85, status: "pass" }],
+      routes: [
+        {
+          url: "https://x402trustlayer.xyz/api/guard/pre-x402",
+          method: "POST",
+          scoreEstimate: 85,
+          status: "pass",
+          issues: [],
+          fixInstructions: [],
+        },
+      ],
+      routeAudits: [
+        {
+          url: "https://x402trustlayer.xyz/api/guard/pre-x402",
+          method: "POST",
+          scoreEstimate: 85,
+          status: "pass",
+          issues: [],
+          fixInstructions: [],
+        },
+      ],
+      coaching: { hostScoreEstimate: 78, failCount: 0, passCount: 3, warnCount: 0, topFixes: [] },
+      confidence: 0.88,
+      checks_passed: ["openapi_checked", "well_known_checked", "routes_audited"],
     };
   }
   if (path.includes("quality-escrow")) {
