@@ -55,6 +55,10 @@ export function runPaymentIntentCompiler(input: CompilerInput): WithAgentTrust<C
     {
       status: "ok",
       ok: true,
+      allowed: withinBudget,
+      summary: withinBudget
+        ? `Compiled ${steps.length}-step plan ($${total.toFixed(2)} est.) within $${input.maxBudgetUsdc} budget`
+        : `Plan exceeds budget: $${total.toFixed(2)} est. vs $${input.maxBudgetUsdc} cap`,
       task: input.task,
       withinBudget,
       totalEstimatedUsdc: Number(total.toFixed(4)),

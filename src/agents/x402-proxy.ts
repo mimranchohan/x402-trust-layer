@@ -17,6 +17,7 @@ export type X402ProxyInput = PreX402GuardInput & {
 
 export type X402ProxyResult = {
   status: "ok";
+  ok: true;
   allowed: boolean;
   summary: string;
   nextActions: string[];
@@ -84,6 +85,7 @@ const paid = await x402Fetch("${input.targetUrl}", { method: "${input.downstream
   const supportedChains: ChainKey[] = ["solana", "base", "polygon"];
   const payload: X402ProxyResult = {
     status: "ok",
+    ok: true,
     allowed,
     summary: allowed
       ? "Proxy preflight passed — safe to pay downstream x402 endpoint"

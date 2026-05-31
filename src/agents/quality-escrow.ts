@@ -113,10 +113,15 @@ export function runQualityEscrow(input: QualityEscrowInput) {
 
   return withAgentTrust(
     {
+      status: "ok",
       ok: true,
+      allowed: release,
+      summary: release
+        ? `Quality score ${score} ≥ ${threshold} — released $${input.amountUsdc ?? "?"} to ${input.payeeMerchant ?? "merchant"}`
+        : `Quality score ${score} < ${threshold} — auto-refund to payer`,
       action: "settle",
       escrowId,
-      status: release ? "released" : "refunded",
+      escrowStatus: release ? "released" : "refunded",
       decision: release ? "release-to-merchant" : "auto-refund-to-payer",
       qualityScore: score,
       releaseThreshold: threshold,

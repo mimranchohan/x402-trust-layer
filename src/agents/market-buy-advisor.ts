@@ -291,7 +291,16 @@ export async function runMarketBuyAdvisor(
   if (policyBlock.evaluated) checks.push(policyBlock.allowed ? "policy_pass" : "policy_block");
   if (quotes.length) checks.push("ranked_quotes");
 
-  const payload: MarketBuyAdvisorResult = {
+  const payload: MarketBuyAdvisorResult & {
+    status: "ok";
+    ok: true;
+    allowed: boolean;
+    summary: string;
+  } = {
+    status: "ok",
+    ok: true,
+    allowed: action !== "no_match" && (policyBlock.allowed !== false),
+    summary: rationale,
     intent: query,
     checkedAt: new Date().toISOString(),
     recommendation: {

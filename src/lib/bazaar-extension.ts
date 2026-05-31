@@ -91,6 +91,8 @@ export function defaultOutputExample(path: string): Record<string, unknown> {
     return {
       ok: true,
       status: "ok",
+      allowed: true,
+      summary: "Compiled 5-step plan ($0.32 est.) within $1 budget",
       withinBudget: true,
       totalEstimatedUsdc: 0.45,
       steps: [{ step: 1, path: "/api/guard/pre-x402", priceUsdc: 0.05 }],
@@ -115,6 +117,8 @@ export function defaultOutputExample(path: string): Record<string, unknown> {
     return {
       status: "ok",
       ok: true,
+      allowed: true,
+      summary: "Best catalog match: Mycelia ETH/USD Oracle at ~$0.05 on eip155:8453.",
       intent: "ETH USD spot price oracle",
       checkedAt: new Date(0).toISOString(),
       recommendation: {
@@ -165,10 +169,13 @@ export function defaultOutputExample(path: string): Record<string, unknown> {
   }
   if (path.includes("quality-escrow")) {
     return {
+      status: "ok",
       ok: true,
+      allowed: true,
+      summary: "Quality score 100 ≥ 70 — released $0.05 to api.myceliasignal.com",
       action: "settle",
       escrowId: "qesc_example",
-      status: "released",
+      escrowStatus: "released",
       decision: "release-to-merchant",
       qualityScore: 100,
       releaseThreshold: 70,
