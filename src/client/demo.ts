@@ -44,58 +44,25 @@ if (wrapOpts.preferredNetwork) {
   console.log(`Preferred payment network: ${wrapOpts.preferredNetwork}\n`);
 }
 
-const SETTLEMENT_RETRY_DELAY_MS = 3500;
-const SETTLEMENT_RETRY_MATCH =
-  /settlement failed|payment was rejected|insufficient balance/i;
+const PAYMENT_RETRY_DELAY_MS = 4500;
+const PAYMENT_RETRY_MATCH =
+  /settlement failed|payment was rejected|insufficient balance|verification failed/i;
 
-async function post(path: string, body: unknown): Promise<unknown | null> {
+async function paidFetch(path: string, init: RequestInit, label = path): Promise<Response | null> {
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
-      const res = await x402Fetch(`${base}${path}`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const text = await res.text();
-      let parsed: unknown = null;
-      try {
-        parsed = text ? JSON.parse(text) : null;
-      } catch {
-        parsed = null;
-      }
-      console.log(`--- ${path} (${res.status}) ---`);
-      if (path === "/api/seller/audition-coach" && parsed && typeof parsed === "object") {
-        const coach = parsed as Record<string, unknown>;
-        console.log(
-          JSON.stringify(
-            {
-              coached: coach.coached,
-              allowed: coach.allowed,
-              hostScoreEstimate: coach.hostScoreEstimate,
-              routeAuditCount: Array.isArray(coach.routeAudits) ? coach.routeAudits.length : 0,
-              confidence: coach.confidence,
-              summary: coach.summary,
-            },
-            null,
-            2,
-          ),
-        );
-      } else {
-        console.log(text.slice(0, 1200) + (text.length > 1200 ? "..." : ""));
-      }
-      console.log();
-      return parsed;
+      return await x402Fetch(`${base}${path}`, init);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      if (attempt === 1 && SETTLEMENT_RETRY_MATCH.test(msg)) {
-        console.warn(`--- ${path} settlement retry in ${SETTLEMENT_RETRY_DELAY_MS}ms ---`, msg);
-        await sleep(SETTLEMENT_RETRY_DELAY_MS);
+      if (attempt === 1 && PAYMENT_RETRY_MATCH.test(msg)) {
+        console.warn(`--- ${label} payment retry in ${PAYMENT_RETRY_DELAY_MS}ms ---`, msg);
+        await sleep(PAYMENT_RETRY_DELAY_MS);
         continue;
       }
-      console.error(`--- ${path} FAILED ---`, msg);
+      console.error(`--- ${label} FAILED ---`, msg);
       if (msg.includes("verification failed")) {
         console.error(
-          "  Hint: restart `npm run dev` after updating; resource URL must match demo target above.",
+          "  Hint: transient facilitator glitch during long demo runs — retry usually succeeds.",
         );
         console.error("  Server: X402_VERBOSE=1 logs invalidReason. Client: X402_VERBOSE=1 for payment trace.\n");
       } else {
@@ -105,6 +72,49 @@ async function post(path: string, body: unknown): Promise<unknown | null> {
     }
   }
   return null;
+}
+
+async function post(path: string, body: unknown): Promise<unknown | null> {
+  const res = await paidFetch(
+    path,
+    {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    },
+    path,
+  );
+  if (!res) return null;
+
+  const text = await res.text();
+  let parsed: unknown = null;
+  try {
+    parsed = text ? JSON.parse(text) : null;
+  } catch {
+    parsed = null;
+  }
+  console.log(`--- ${path} (${res.status}) ---`);
+  if (path === "/api/seller/audition-coach" && parsed && typeof parsed === "object") {
+    const coach = parsed as Record<string, unknown>;
+    console.log(
+      JSON.stringify(
+        {
+          coached: coach.coached,
+          allowed: coach.allowed,
+          hostScoreEstimate: coach.hostScoreEstimate,
+          routeAuditCount: Array.isArray(coach.routeAudits) ? coach.routeAudits.length : 0,
+          confidence: coach.confidence,
+          summary: coach.summary,
+        },
+        null,
+        2,
+      ),
+    );
+  } else {
+    console.log(text.slice(0, 1200) + (text.length > 1200 ? "..." : ""));
+  }
+  console.log();
+  return parsed;
 }
 
 console.log("=== marketplace killers ===\n");
@@ -179,10 +189,17 @@ await post("/api/attestation/verify", {
   attestationId: issuedAttestationId ?? "att_verifier_probe_example",
 });
 
-await sleep(2000);
+await sleep(3500);
 
-const regRes = await x402Fetch(`${base}/api/attestation/registry`, { method: "GET" });
-console.log("--- /api/attestation/registry GET ---", regRes.status, (await regRes.text()).slice(0, 800), "\n");
+const regRes = await paidFetch("/api/attestation/registry", { method: "GET" });
+if (regRes) {
+  console.log(
+    "--- /api/attestation/registry GET ---",
+    regRes.status,
+    (await regRes.text()).slice(0, 800),
+    "\n",
+  );
+}
 
 await sleep(2000);
 
@@ -326,17 +343,23 @@ await post("/api/evidence-locker/export", {
 
 await sleep(1500);
 
-const escrowRes = await x402Fetch(`${base}/api/agent-escrow`, {
-  method: "POST",
-  headers: { "content-type": "application/json" },
-  body: JSON.stringify({
-    action: "create",
-    payerAgentId: "agent-a",
-    payeeAgentId: "agent-b",
-    amountUsdc: 0.1,
-    releaseCondition: "receipt-auditor valid:true",
-  }),
-});
-console.log("--- /api/agent-escrow create ---", escrowRes.status, await escrowRes.text(), "\n");
+const escrowRes = await paidFetch(
+  "/api/agent-escrow",
+  {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      action: "create",
+      payerAgentId: "agent-a",
+      payeeAgentId: "agent-b",
+      amountUsdc: 0.1,
+      releaseCondition: "receipt-auditor valid:true",
+    }),
+  },
+  "/api/agent-escrow create",
+);
+if (escrowRes) {
+  console.log("--- /api/agent-escrow create ---", escrowRes.status, await escrowRes.text(), "\n");
+}
 
 console.log("Full pipeline demo complete.");
