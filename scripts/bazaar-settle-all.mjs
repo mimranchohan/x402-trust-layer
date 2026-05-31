@@ -26,8 +26,14 @@ console.log(`Settling ${urls.length} routes on ${origin} via OpenDexter (${metho
 
 for (const url of urls) {
   process.stdout.write(`${url} … `);
-  const args = ["-y", "@dexterai/opendexter@latest", "fetch", url, "--json"];
-  if (method !== "GET") args.splice(args.length - 1, 0, "--method", method);
+  const args = [
+    "-y",
+    "@dexterai/opendexter@latest",
+    "fetch",
+    url,
+    "--method",
+    method,
+  ];
 
   const proc = spawnSync("npx", args, {
     encoding: "utf8",
@@ -36,19 +42,15 @@ for (const url of urls) {
     env: process.env,
   });
 
-  const raw = (proc.stdout ?? "") + (proc.stderr ?? "");
-  let parsed = null;
-  try {
-    const jsonStart = raw.indexOf("{");
-    if (jsonStart >= 0) parsed = JSON.parse(raw.slice(jsonStart));
-  } catch {
-    parsed = null;
-  }
-
-  const settled = parsed?.payment?.settled === true || parsed?.payment?.details?.success === true;
-  const tx = parsed?.payment?.details?.transaction ?? null;
-  const status = parsed?.status ?? proc.status;
-  const err = parsed?.error ?? (proc.status !== 0 && !settled ? raw.slice(0, 200) : null);
+  const stdout = proc.stdout ?? "";
+  const settled = /"settled"\s*:\s*true/.test(stdout);
+  const tx = stdout.match(/"transaction"\s*:\s*"(0x[a-fA-F0-9]+)"/)?.[1] ?? null;
+  const statusMatch = stdout.match(/"status"\s*:\s*(\d+)/);
+  const status = statusMatch ? Number(statusMatch[1]) : proc.status;
+  const err =
+    proc.status !== 0 && !settled
+      ? (proc.stderr ?? stdout).slice(0, 240)
+      : null;
 
   results.push({ url, settled, status, tx, error: err ?? null });
   console.log(settled ? `OK tx=${tx?.slice(0, 14)}…` : `FAIL ${err ?? proc.status}`);
