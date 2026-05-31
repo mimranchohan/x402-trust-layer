@@ -39,7 +39,7 @@ Add both MCP servers to your agent config:
 {
   "mcpServers": {
     "agentic-wallet": { "command": "npx", "args": ["-y", "@coinbase/payments-mcp"] },
-    "trust-layer": { "command": "npx", "args": ["-y", "@x402trustlayer/mcp"] }
+    "trust-layer": { "command": "npx", "args": ["-y", "@mimranakb/trust-layer-mcp"] }
   }
 }
 ```

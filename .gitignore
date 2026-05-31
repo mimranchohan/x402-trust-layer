@@ -8,3 +8,17 @@ dist/
 .DS_Store
 audit.json
 start-log.txt
+deliverables/
+scripts/.alchemy-siwe-token.txt
+scripts/curl-headers.txt
+scripts/curl-out.txt
+scripts/curl-auth-out.txt
+
+# Local-only video marketing assets (never commit binaries)
+docs/sales/videos/mp4/
+docs/sales/videos/assets/
+docs/sales/videos/thumbnails/
+docs/sales/videos/**/*.mp4
+docs/sales/videos/scripts/
+docs/sales/videos/recorder.html
+docs/sales/videos/ASSETS.md

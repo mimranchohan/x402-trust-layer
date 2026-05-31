@@ -44,6 +44,33 @@ const server = new McpServer({
 });
 
 server.tool(
+  "trust_alchemy_preflight",
+  "Preflight guard tuned for x402.alchemy.com ($0.05)",
+  {
+    agentId: z.string(),
+    walletAddress: z.string(),
+    estimatedCostUsdc: z.number().optional(),
+    dailyCapUsdc: z.number().optional(),
+    perCallCapUsdc: z.number().optional(),
+  },
+  async (args) => {
+    const data = await paidPost("/api/guard/pre-x402", {
+      agentId: args.agentId,
+      walletAddress: args.walletAddress,
+      targetUrl: "https://x402.alchemy.com/base-mainnet/v2",
+      estimatedCostUsdc: args.estimatedCostUsdc ?? 1,
+      network: "eip155:8453",
+      policy: {
+        dailyCapUsdc: args.dailyCapUsdc ?? 20,
+        perCallCapUsdc: args.perCallCapUsdc ?? 2,
+        allowedHosts: ["x402.alchemy.com"],
+      },
+    });
+    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+  },
+);
+
+server.tool(
   "trust_preflight_proxy",
   "All-in-one preflight before external x402 payment ($0.08)",
   {

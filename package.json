@@ -28,6 +28,9 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "demo": "tsx src/client/demo.ts",
+    "demo:alchemy": "tsx src/client/demo-alchemy-live.ts",
+    "demo:alchemy:enterprise": "tsx src/client/demo-alchemy-live.ts --enterprise",
+    "alchemy:doctor": "tsx scripts/alchemy-doctor.ts",
     "doctor": "tsx scripts/doctor.ts",
     "typecheck": "tsc --noEmit",
     "ci": "npm run typecheck && npm run verify:bazaar",
@@ -39,7 +42,8 @@
     "verify:bazaar": "tsx scripts/verify-bazaar-shape.ts",
     "audition:x402gle": "tsx scripts/run-x402gle-audition.ts",
     "probe:production": "node scripts/probe-production.mjs",
-    "bazaar:settle-all": "node scripts/bazaar-settle-all.mjs"
+    "bazaar:settle-all": "node scripts/bazaar-settle-all.mjs",
+    "videos:render": "node scripts/render-marketing-videos.mjs"
   },
   "engines": {
     "node": ">=20"
@@ -48,11 +52,11 @@
     "bigint-buffer": "npm:bigint-buffer-safe@^1.1.5"
   },
   "dependencies": {
+    "@alchemy/x402": "^0.6.6",
     "@dexterai/x402": "^2.0.0",
     "@x402/core": "^2.14.0",
     "@x402/extensions": "^2.14.0",
-    "@x402/core": "^2.14.0",
-    "@x402/extensions": "^2.14.0",
+    "@x402/fetch": "^2.14.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "zod": "^3.24.2"
@@ -60,6 +64,7 @@
   "devDependencies": {
     "@types/express": "^4.17.21",
     "@types/node": "^22.13.10",
+    "ffmpeg-static": "^5.3.0",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2"
   }

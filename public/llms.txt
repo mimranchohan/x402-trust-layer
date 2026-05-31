@@ -7,7 +7,7 @@
 - Discovery: https://x402trustlayer.xyz/.well-known/x402
 - Skill (agents): https://x402trustlayer.xyz/skill.md
 - Full context: https://x402trustlayer.xyz/llms-full.txt
-- MCP: npx @x402trustlayer/mcp (see packages/trust-layer-mcp)
+- MCP: npx @mimranakb/trust-layer-mcp@1.1.0 (trust_alchemy_preflight for x402.alchemy.com)
 - npm: x402-agent-suite-preflight
 - GitHub: https://github.com/mimranchohan/x402-agent-suite
 

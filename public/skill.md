@@ -72,17 +72,30 @@ User task → POST /api/guard/pre-x402 (Trust Layer)
 
 Spend limits: configure in Agentic Wallet UI; enforce policy in Trust Layer `policy` object.
 
-## MCP tools (@x402trustlayer/mcp)
+## Alchemy Agentic Gateway (x402.alchemy.com)
+
+```text
+1. trust_alchemy_preflight OR POST /api/guard/pre-x402 (allowedHosts: ["x402.alchemy.com"])
+2. Pay via @alchemy/x402 (USDC on Base)
+3. trust_receipt_verify from PAYMENT-RESPONSE tx hash
+4. (enterprise) POST /api/compliance/ledger
+```
+
+Demo: `npm run demo:alchemy` (~$1.10) | `npm run demo:alchemy:enterprise` (~$1.32)  
+Alchemy skill: `npx skills add alchemyplatform/skills --yes`
+
+## MCP tools (@mimranakb/trust-layer-mcp v1.1.0)
 
 | Tool | Maps to |
 |------|---------|
+| trust_alchemy_preflight | POST /api/guard/pre-x402 (Alchemy preset) |
 | trust_preflight_proxy | POST /api/x402/proxy |
 | trust_guard_preflight | POST /api/guard/pre-x402 |
 | trust_merchant_score | POST /api/merchant-trust/score |
 | trust_mandate_verify | POST /api/mandate/verify |
 | trust_receipt_verify | POST /api/receipt-auditor/verify |
 
-Setup: `EVM_PRIVATE_KEY` or `SOLANA_PRIVATE_KEY` in env. Run: `npx @x402trustlayer/mcp`
+Setup: `EVM_PRIVATE_KEY` or `SOLANA_PRIVATE_KEY` in env. Run: `npx @mimranakb/trust-layer-mcp@1.1.0`
 
 ## npm helper
 

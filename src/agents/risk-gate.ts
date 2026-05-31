@@ -1,3 +1,7 @@
+import {
+  isExpectedAgenticGatewayProbeStatus,
+  isKnownAgenticGateway,
+} from "../lib/agentic-gateways.js";
 import { hostOf, probeEndpoint } from "../lib/probe.js";
 import { assertSafeOutboundUrl, UnsafeUrlError } from "../lib/ssrf.js";
 import { assessUrlSecurity, mergeSecurityIntoRisk } from "../lib/security.js";
@@ -49,13 +53,16 @@ export async function runRiskGate(input: RiskGateInput): Promise<RiskGateResult>
   }
 
   const probe = await probeEndpoint(input.targetUrl, probeOpts);
+  const knownGateway = host != null && isKnownAgenticGateway(host);
 
   if (probe.status === 0) {
     reasons.push("Endpoint unreachable");
     riskScore += 50;
-  }
-
-  if (!probe.requiresPayment && probe.status === 200) {
+  } else if (knownGateway && isExpectedAgenticGatewayProbeStatus(probe.status)) {
+    // SIWE-first agentic gateways (e.g. x402.alchemy.com) return 401/403 before 402.
+  } else if (knownGateway && probe.status >= 500) {
+    // Gateway may error on unauthenticated probes; allowlist + policy still govern spend.
+  } else if (!probe.requiresPayment && probe.status === 200) {
     reasons.push("Endpoint is not x402-protected (unexpected for paid agent flows)");
     riskScore += 15;
   }

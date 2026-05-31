@@ -1,7 +1,7 @@
 {
-  "name": "@x402trustlayer/mcp",
-  "version": "1.0.0",
-  "description": "MCP server — 5 core x402 Trust Layer tools (preflight, guard, KYM, mandate, receipt)",
+  "name": "@mimranakb/trust-layer-mcp",
+  "version": "1.1.0",
+  "description": "MCP server — 6 core x402 Trust Layer tools (Alchemy preflight, guard, KYM, mandate, receipt)",
   "type": "module",
   "bin": {
     "x402trustlayer-mcp": "dist/index.js"

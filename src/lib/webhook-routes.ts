@@ -1,5 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { z } from "zod";
+import { UnsafeUrlError } from "./ssrf.js";
 import {
   deactivateWebhook,
   dispatchWebhooks,
@@ -7,6 +8,10 @@ import {
   registerWebhook,
   type WebhookEvent,
 } from "./webhooks.js";
+
+function isProduction(): boolean {
+  return process.env.NODE_ENV === "production" || !!process.env.RAILWAY_ENVIRONMENT;
+}
 
 const eventSchema = z.enum([
   "guard.denied",
@@ -29,7 +34,14 @@ export function registerWebhookRoutes(app: Express): void {
       res.status(400).json({ error: parsed.error.flatten() });
       return;
     }
-    const sub = registerWebhook(parsed.data);
+    let sub;
+    try {
+      sub = registerWebhook(parsed.data);
+    } catch (err) {
+      const msg = err instanceof UnsafeUrlError ? err.message : "Invalid webhook URL";
+      res.status(400).json({ error: msg });
+      return;
+    }
     res.status(201).json({
       ok: true,
       subscription: {
@@ -75,6 +87,14 @@ export function registerWebhookRoutes(app: Express): void {
   });
 
   app.post("/api/webhooks/test-dispatch", async (req: Request, res: Response) => {
+    if (isProduction()) {
+      const secret = process.env.WEBHOOK_TEST_SECRET?.trim();
+      const provided = req.headers["x-webhook-test-secret"];
+      if (!secret || provided !== secret) {
+        res.status(403).json({ error: "Forbidden — set WEBHOOK_TEST_SECRET and X-Webhook-Test-Secret header" });
+        return;
+      }
+    }
     const parsed = z
       .object({
         fleetId: z.string().optional(),

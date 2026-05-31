@@ -14,7 +14,7 @@
 ## P1 — Developer adoption (weeks 2–3)
 
 - [x] Publish `packages/x402-preflight` to npm (v1.1.0 — run `npm publish` from packages/x402-preflight)
-- [x] `@x402trustlayer/mcp` MCP server (5 core tools)
+- [x] `@mimranakb/trust-layer-mcp` MCP server (5 core tools)
 - [x] `skill.md` + `llms.txt` + `llms-full.txt` at site root
 - [x] Agentic Wallet integration doc (`docs/AGENTIC-WALLET.md`)
 - [x] Testnet guide (`docs/TESTNET.md`)

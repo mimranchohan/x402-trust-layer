@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { assertSafeOutboundUrl, UnsafeUrlError } from "./ssrf.js";
 
 const STORE_PATH = join(process.cwd(), "data", "webhooks.json");
 
@@ -37,11 +38,20 @@ function saveStore(store: Store): void {
   writeFileSync(STORE_PATH, JSON.stringify(store, null, 2));
 }
 
+/** Reject SSRF targets (localhost, metadata, private IPs) for outbound webhook delivery. */
+export function assertValidWebhookUrl(url: string): void {
+  assertSafeOutboundUrl(url);
+  if (!url.startsWith("https://")) {
+    throw new UnsafeUrlError("Webhook URL must use HTTPS");
+  }
+}
+
 export function registerWebhook(input: {
   fleetId: string;
   url: string;
   events: WebhookEvent[];
 }): WebhookSubscription {
+  assertValidWebhookUrl(input.url);
   const store = loadStore();
   const sub: WebhookSubscription = {
     id: `wh_${randomBytes(8).toString("hex")}`,
@@ -94,6 +104,7 @@ export async function dispatchWebhooks(
   await Promise.all(
     subs.map(async (sub) => {
       try {
+        assertValidWebhookUrl(sub.url);
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 8_000);
         const res = await fetch(sub.url, {
