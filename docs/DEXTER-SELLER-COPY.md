@@ -2,36 +2,42 @@
 
 ### Short bio (paste in seller intro)
 
-x402 Agent Suite Pro is a paid infrastructure layer for AI agents using HTTP 402 + USDC.  
-It helps buyers decide safely before payment (preflight), verify trust signals (attestation), and evaluate post-call quality/refund eligibility.
+x402 Trust Layer is enterprise payment infrastructure for AI agents using HTTP 402 + USDC on Base + Solana.  
+31 paid routes: preflight guard, KYM merchant trust, AP2 mandates, compliance ledger, disputes, quality escrow, and pipeline orchestration.
 
 ### Full description
 
-x402 Agent Suite Pro provides 24 paid APIs for agent payment safety and orchestration on Solana + Base.
+x402 Trust Layer provides **31 paid APIs** for enterprise agent payment safety and orchestration on Solana + Base (Dexter facilitator).
 
-Core value:
-- Preflight guard before spend (`/api/x402/proxy`, `/api/guard/pre-x402`)
-- Multi-step orchestration (`/api/pipeline/execute`)
-- Trust + verification (`/api/attestation/verify`, `/api/attestation/registry`)
-- Post-call quality/refund policy (`/api/quality-monitor/probe`, `/api/refund-arbiter/evaluate`)
+**Four layers:**
+1. **Guard** — spend caps, identity, risk scan, KYM merchant trust, pre-x402 proxy  
+2. **Attestation** — issue/verify/registry + AP2 mandate compile/verify  
+3. **Compliance** — receipt audit, refund arbiter, evidence export, disputes, quality escrow  
+4. **Settlement Ops** — pipeline execute, payment compile, rail optimizer, MPP sessions, agent escrow  
 
-Why buyers use it:
-- Reduce bad downstream paid calls with spend/identity/risk checks
-- Add verifiable trust workflow around x402 calls
-- Get structured JSON outputs suitable for agent automation
+**Tier-1 enterprise agents:** merchant-trust, mandate compile/verify, rail-optimizer, compliance-ledger, dispute/resolve, quality-escrow.
 
-Production: `https://x402-agent-suite-production.up.railway.app`  
-OpenAPI: `https://x402-agent-suite-production.up.railway.app/openapi.json`
+**Why buyers use it:**
+- Reduce bad downstream paid calls with fleet spend/identity/risk/KYM checks  
+- Govern payments with signed mandates and attestation headers  
+- Produce CFO/SOC2-grade audit trails and dispute dossiers  
+- Structured JSON outputs for autonomous agent workflows  
 
-### Proof links (x402gle route auditions)
+Production: `https://x402trustlayer.xyz`  
+OpenAPI: `https://x402trustlayer.xyz/openapi.json`  
+x402gle: `https://x402gle.com/servers/x402trustlayer.xyz`
 
-- Pipeline Execute — 93 pass  
-  https://x402gle.com/audition/04540084-c255-44fd-957a-1487eafaa23d
-- MPP Session Plan — 86 pass  
-  https://x402gle.com/audition/4e16c507-5c6e-4b9e-96e2-a1cba9732a55
-- Quality Monitor Probe — 82 pass  
-  https://x402gle.com/audition/fbad6aad-d2f8-4ccb-9684-3f6474c03784
+### Proof links (x402gle — custom domain)
+
+- Quality Monitor Probe — 96  
+  https://x402gle.com/resources/7436be4f-529c-4f80-8616-2a06ae61ef06
+- Agent Escrow — 92  
+  https://x402gle.com/resources/6a9f4a3f-d94f-4156-93d5-c9d43495a53c
+- Compliance Ledger — 88  
+  https://x402gle.com/resources/1480ddd5-0d62-4f06-8739-030efe8f3b0a
+- Pipeline Execute — 86  
+  https://x402gle.com/resources/a59d06e0-ea89-4643-ae2f-b1122734bafa
 
 ### One-line CTA
 
-Integrate one endpoint first: `POST /api/x402/proxy` ($0.08), then expand to orchestration and trust routes.
+Integrate one endpoint first: `POST /api/x402/proxy` ($0.08), then expand to Tier-1 enterprise agents and `POST /api/pipeline/execute` ($0.25).

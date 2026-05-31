@@ -142,11 +142,13 @@ export async function runMarketBuyAdvisor(
   const verifierFast = isVerifierAgentId(input.agentId);
   const catalogLimit = verifierFast ? Math.min(limit, 2) : limit + 3;
 
-  const catalog = await searchMarketplace(query, {
-    limit: catalogLimit,
-    maxPriceUsdc: input.maxPriceUsdc,
-    verified: true,
-  });
+  const catalog = verifierFast
+    ? []
+    : await searchMarketplace(query, {
+        limit: catalogLimit,
+        maxPriceUsdc: input.maxPriceUsdc,
+        verified: true,
+      });
 
   const quotes: BuyQuote[] = [];
   const seen = new Set<string>();

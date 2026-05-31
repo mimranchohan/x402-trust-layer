@@ -407,6 +407,7 @@ export function registerRoutes(
         .object({
           targetUrl: z.string().url(),
           preferNetwork: z.string().optional(),
+          fastProbe: z.boolean().optional(),
         })
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
@@ -732,6 +733,7 @@ export function registerRoutes(
           topic: z.string().min(2),
           includePrice: z.boolean().optional(),
           language: z.string().optional(),
+          fastProbe: z.boolean().optional(),
         })
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
@@ -935,7 +937,15 @@ export function registerRoutes(
               { url: `${config.publicBaseUrl}/api/version`, expectedStatus: 200 },
               { url: `${config.publicBaseUrl}/health`, expectedStatus: 200 },
             ];
-      res.json(await runQualityMonitor({ targets: fallbackTargets }));
+      const ownHost = new URL(config.publicBaseUrl).host;
+      const fastProbe = dedupTargets.every((t) => {
+        try {
+          return new URL(t.url).host === ownHost;
+        } catch {
+          return false;
+        }
+      });
+      res.json(await runQualityMonitor({ targets: fallbackTargets, fastProbe }));
     },
   );
 

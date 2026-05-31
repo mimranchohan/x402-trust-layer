@@ -23,8 +23,8 @@ Settlement remains **Dexter** (`FACILITATOR_URL`). CDP keys are optional if you 
 ```powershell
 npm run openapi:generate
 # check probes one paid route (root URL returns L3_NOT_FOUND — expected)
-npm run discovery:check -- https://x402-agent-suite-production.up.railway.app/api/x402/proxy
-npm run discovery:discover -- https://x402-agent-suite-production.up.railway.app
+npm run discovery:check -- https://x402trustlayer.xyz/api/x402/proxy
+npm run discovery:discover -- https://x402trustlayer.xyz
 ```
 
 Runtime 402 must match `@agentcash/discovery` extractor shape (see `bazaar-extension.ts`):
@@ -38,7 +38,7 @@ Local shape test: `npm run verify:bazaar`
 ## Register
 
 1. **x402scan:** https://www.x402scan.com/resources/register  
-   - **Add Server:** `https://x402-agent-suite-production.up.railway.app`  
+   - **Add Server:** `https://x402trustlayer.xyz`  
    - OpenAPI declares **`GET /.well-known/x402`** and **`GET /health`** as **free** (`security: []`) — x402scan must not require 402 on them.  
    - Paid routes are only under `/api/*` (24).  
    - Or **Register URL Only** per paid path: `GET /api/agentic/validate-urls`

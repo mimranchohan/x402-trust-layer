@@ -1,7 +1,7 @@
 # X (Twitter) — 25-post launch thread + standalone tweets
 
 **Brand:** x402 Agent Suite Pro  
-**URL:** https://x402-agent-suite-production.up.railway.app  
+**URL:** https://x402trustlayer.xyz  
 **Hashtags (rotate):** `#x402` `#AIAgents` `#USDC` `#micropayments` `#agentic` `#buildinpublic`  
 **Media:** Use **v2 posters** (cyan top header bar + agent name): `marketing-*-v2.png` in Cursor `assets/`. Logo: `x402-agent-suite-logo.png`
 
@@ -40,7 +40,7 @@ That's what we're fixing—without becoming a wallet or a marketplace.
 
 **Go-to-market focus:** 5 endpoints with the strongest verifier scores + 2 hero prefight routes.
 
-Production: https://x402-agent-suite-production.up.railway.app
+Production: https://x402trustlayer.xyz
 
 OpenAPI: /openapi.json
 
@@ -282,11 +282,11 @@ Re-test heroes after our paid-GET fix—proxy/pipeline scores should climb.
 ### 24/25 — Try it
 Unpaid probe (402):
 
-`curl https://x402-agent-suite-production.up.railway.app/api/x402/proxy`
+`curl https://x402trustlayer.xyz/api/x402/proxy`
 
 Discovery:
 
-`curl https://x402-agent-suite-production.up.railway.app/x402/api/discover`
+`curl https://x402trustlayer.xyz/x402/api/discover`
 
 GitHub: github.com/mimranchohan/x402-agent-suite
 
@@ -308,7 +308,7 @@ DM for fleet pricing / Postgres registry hosting.
 ## 10 STANDALONE TWEETS (non-thread)
 
 **S1**  
-402 is the new API key—but USDC per call. Preflight > pay > prove > refund signal. Five endpoints. One suite. https://x402-agent-suite-production.up.railway.app #x402
+402 is the new API key—but USDC per call. Preflight > pay > prove > refund signal. Five endpoints. One suite. https://x402trustlayer.xyz #x402
 
 **S2**  
 Paid $0.08 before you paid $0.50 to the wrong oracle. `POST /api/x402/proxy` — guard + risk + optional attestation. #AIAgents

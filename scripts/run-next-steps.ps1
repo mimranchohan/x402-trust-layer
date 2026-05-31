@@ -10,7 +10,7 @@ Write-Host "`n=== Production probe ===" -ForegroundColor Cyan
 node scripts/probe-production.mjs
 
 Write-Host "`n=== Discovery check (proxy) ===" -ForegroundColor Cyan
-npm run discovery:check -- "https://x402-agent-suite-production.up.railway.app/api/x402/proxy"
+npm run discovery:check -- "https://x402trustlayer.xyz/api/x402/proxy"
 
 Write-Host "`n=== x402gle audition (may cooldown) ===" -ForegroundColor Cyan
 npm run audition:x402gle

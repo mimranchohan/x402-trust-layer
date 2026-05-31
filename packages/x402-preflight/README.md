@@ -1,6 +1,6 @@
 # x402-agent-suite-preflight
 
-Thin client for [x402 Agent Suite Pro](https://x402-agent-suite-production.up.railway.app).
+Thin client for [x402 Agent Suite Pro](https://x402trustlayer.xyz).
 
 ## 3-line rule
 

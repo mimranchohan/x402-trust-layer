@@ -57,6 +57,7 @@ export type ResearchInput = {
   topic: string;
   includePrice?: boolean;
   language?: string;
+  fastProbe?: boolean;
 };
 
 export type MarketplaceResource = {

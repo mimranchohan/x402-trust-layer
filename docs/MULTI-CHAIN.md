@@ -21,7 +21,7 @@ PAY_TO_ADDRESS=YourSolanaBase58Address
 PAY_TO_EVM=0xYourEvmAddress
 
 FACILITATOR_URL=https://x402.dexter.cash
-PUBLIC_BASE_URL=https://x402-agent-suite-production.up.railway.app
+PUBLIC_BASE_URL=https://x402trustlayer.xyz
 ```
 
 ## Railway

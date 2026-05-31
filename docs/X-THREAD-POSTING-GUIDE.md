@@ -16,7 +16,7 @@
 | Item | Value |
 |------|--------|
 | Name | x402 Agent Suite Pro |
-| URL | https://x402-agent-suite-production.up.railway.app |
+| URL | https://x402trustlayer.xyz |
 | Chains | Solana USDC + Base USDC |
 | Facilitator | https://x402.dexter.cash |
 | Logo | `docs/assets/logo.svg` |

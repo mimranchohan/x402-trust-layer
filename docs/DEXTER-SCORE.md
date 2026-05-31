@@ -27,9 +27,9 @@ npm run probe:production
 npm run demo
 # Paid 200 on all routes — needs EVM_PRIVATE_KEY or SOLANA_PRIVATE_KEY in .env
 
-curl -s -X POST https://x402-agent-suite-production.up.railway.app/api/seller/audition-coach \
+curl -s -X POST https://x402trustlayer.xyz/api/seller/audition-coach \
   -H "content-type: application/json" \
-  -d "{\"origin\":\"https://x402-agent-suite-production.up.railway.app\",\"maxRoutes\":24}"
+  -d "{\"origin\":\"https://x402trustlayer.xyz\",\"maxRoutes\":24}"
 ```
 
 Fix routes with `status: "fail"` in audition-coach → redeploy → **Verify Now** on Dexter seller UI.

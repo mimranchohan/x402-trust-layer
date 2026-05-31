@@ -6,7 +6,7 @@
 - OpenAPI: https://x402trustlayer.xyz/openapi.json
 - Discovery: https://x402trustlayer.xyz/.well-known/x402
 - Services manifest: https://x402trustlayer.xyz/x402/api/services.json
-- GitHub: https://github.com/mimranchohan/x402-agent-suite
+- GitHub: https://github.com/mimranchohan/x402-trust-layer
 
 ## Primary entry points
 

@@ -1,6 +1,6 @@
 # x402gle audition (agent.md workflow)
 
-Origin: `https://x402-agent-suite-production.up.railway.app`
+Origin: `https://x402trustlayer.xyz`
 
 ## Run
 
@@ -21,7 +21,7 @@ After host claim / ingest, full server audition is limited (~24h). If you see:
 
 Use until retry:
 
-- https://x402gle.com/servers/x402-agent-suite-production.up.railway.app → **Test now** per route
+- https://x402gle.com/servers/x402trustlayer.xyz → **Test now** per route
 - Dexter **Verify Now** per resource
 - `npm run demo` for settlement signal
 
@@ -37,5 +37,5 @@ Each route: `status: "pass"`, `score >= 75`, `fixInstructions: null`.
 
 ## After pass
 
-- https://x402gle.com/servers/x402-agent-suite-production.up.railway.app/SKILL.md
-- https://x402gle.com/servers/x402-agent-suite-production.up.railway.app/skills.json
+- https://x402gle.com/servers/x402trustlayer.xyz/SKILL.md
+- https://x402gle.com/servers/x402trustlayer.xyz/skills.json

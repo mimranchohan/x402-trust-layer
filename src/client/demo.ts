@@ -182,7 +182,7 @@ await post("/api/identity-gate/check", {
 await sleep(1500);
 
 await post("/api/risk-gate/scan", {
-  targetUrl: "https://x402-agent-suite-production.up.railway.app/health",
+  targetUrl: "https://x402trustlayer.xyz/health",
 });
 
 await sleep(1500);
@@ -252,7 +252,7 @@ await sleep(1500);
 
 await post("/api/quality-monitor/probe", {
   urls: [
-    "https://x402-agent-suite-production.up.railway.app/health",
+    "https://x402trustlayer.xyz/health",
     "https://api.myceliasignal.com/oracle/price/eth/usd",
   ],
 });

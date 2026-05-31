@@ -24,7 +24,7 @@ Returns ranked `quotes`, `recommendation` (pay_external | use_suite_proxy | …)
 
 ```json
 {
-  "origin": "https://x402-agent-suite-production.up.railway.app",
+  "origin": "https://x402trustlayer.xyz",
   "maxRoutes": 22
 }
 ```

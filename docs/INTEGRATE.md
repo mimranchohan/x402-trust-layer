@@ -1,6 +1,6 @@
 # Integrate x402 Agent Suite Pro
 
-**Base:** `https://x402-agent-suite-production.up.railway.app`
+**Base:** `https://x402trustlayer.xyz`
 
 ## 3-line rule (other agents)
 
@@ -56,7 +56,7 @@ import { wrapFetch } from "@dexterai/x402/client";
 // Solana: override Dexter default RPC if you see StructError on USDC mint (EPjFWdd5…)
 // rpcUrls: { "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": process.env.SOLANA_RPC_URL ?? "https://api.mainnet-beta.solana.com" }
 
-const BASE = "https://x402-agent-suite-production.up.railway.app";
+const BASE = "https://x402trustlayer.xyz";
 const x402Fetch = wrapFetch(fetch, { evmPrivateKey: process.env.EVM_PRIVATE_KEY! });
 
 const pre = await x402Fetch(`${BASE}/api/x402/proxy`, {

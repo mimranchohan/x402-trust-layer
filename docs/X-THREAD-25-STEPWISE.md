@@ -7,7 +7,7 @@
 **Logo:** [`assets/logo.svg`](./assets/logo.svg) (vector) · PNG optional in Cursor `assets/logo-x402-suite.png`
 
 **Brand:** x402 Agent Suite Pro  
-**URL:** https://x402-agent-suite-production.up.railway.app  
+**URL:** https://x402trustlayer.xyz  
 **Chains:** Solana USDC + Base USDC · Facilitator: x402.dexter.cash
 
 **Posting order:** Copy tweet → post on X → screenshot/save graphic **below** → attach image under same tweet.
@@ -66,7 +66,7 @@ x402 Agent Suite Pro
 • Settlement: Dexter facilitator (x402.dexter.cash)
 
 Production:
-https://x402-agent-suite-production.up.railway.app
+https://x402trustlayer.xyz
 
 OpenAPI: /openapi.json
 ```
@@ -421,7 +421,7 @@ MIT license · Railway production · v3.1.0
 
 Solana + Base · 24 paid APIs · 5 go-to-market heroes
 
-https://x402-agent-suite-production.up.railway.app
+https://x402trustlayer.xyz
 ```
 
 **Image:** `docs/assets/thread/thread-21.png`  
@@ -475,11 +475,11 @@ Not vs Are checklist in two panels.
 ```
 Try free (402 probe):
 
-curl https://x402-agent-suite-production.up.railway.app/api/x402/proxy
+curl https://x402trustlayer.xyz/api/x402/proxy
 
 Discovery:
 
-curl https://x402-agent-suite-production.up.railway.app/x402/api/discover
+curl https://x402trustlayer.xyz/x402/api/discover
 
 Paid test: separate payer wallet + Dexter sign
 
@@ -504,7 +504,7 @@ Building agents that pay for APIs?
 RT · Follow · DM for fleet pricing / Postgres registry
 
 Production:
-https://x402-agent-suite-production.up.railway.app
+https://x402trustlayer.xyz
 ```
 
 **Image:** `docs/assets/thread/thread-25.png`  

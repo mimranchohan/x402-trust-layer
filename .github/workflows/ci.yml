@@ -47,4 +47,4 @@ jobs:
       - name: Probe live deployment
         run: npm run probe:production
         env:
-          ORIGIN: https://x402-agent-suite-production.up.railway.app
+          ORIGIN: https://x402trustlayer.xyz

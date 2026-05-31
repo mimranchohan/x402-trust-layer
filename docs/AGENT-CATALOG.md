@@ -2,7 +2,7 @@
 
 > Complete reference for all **31 paid x402 infrastructure agents** in this repo: the original **24** plus **7 new Tier-1 enterprise agents**. For every agent: what it does, why it matters, how it works internally, endpoint + price, request/response schema, and an example call.
 
-- **Live:** https://x402-agent-suite-production.up.railway.app
+- **Live:** https://x402trustlayer.xyz
 - **Settlement:** USDC via the [Dexter facilitator](https://x402.dexter.cash), multi-chain (Base + Solana, Polygon-aware)
 - **Discovery:** `GET /openapi.json`, `GET /.well-known/x402`, `GET /x402/api/services.json`
 

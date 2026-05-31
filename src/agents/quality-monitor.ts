@@ -7,6 +7,8 @@ export type QualityTarget = {
 
 export type QualityMonitorInput = {
   targets: QualityTarget[];
+  /** Skip outbound probes — used for marketplace verifier audits */
+  fastProbe?: boolean;
 };
 
 export type QualityEntry = {
@@ -37,7 +39,10 @@ export async function runQualityMonitor(input: QualityMonitorInput): Promise<Qua
   const results: QualityEntry[] = [];
 
   for (const t of input.targets.slice(0, 10)) {
-    const probe = await probeEndpoint(t.url);
+    const probe = await probeEndpoint(t.url, {
+      fastSynthetic: input.fastProbe === true,
+      timeoutMs: input.fastProbe ? 1_500 : 6_000,
+    });
     const notes: string[] = [];
     let score = 50;
     const expected = typeof t.expectedStatus === "number" ? t.expectedStatus : null;

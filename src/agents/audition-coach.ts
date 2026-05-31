@@ -1,3 +1,4 @@
+import { config } from "../config.js";
 import { buildBazaarExtension } from "../lib/bazaar-extension.js";
 import { hostOf, probeEndpoint } from "../lib/probe.js";
 import { assertSafeOutboundUrl } from "../lib/ssrf.js";
@@ -108,7 +109,7 @@ function bazaarShapeOk(path: string, method: string, example: unknown): boolean 
   return hasInput && hasOutput;
 }
 
-function auditRoute(url: string, method: string, isOwnSuite: boolean): Promise<RouteAudit> {
+function auditRoute(url: string, method: string, fastProbe: boolean): Promise<RouteAudit> {
   return (async () => {
     const issues: string[] = [];
     const fixInstructions: string[] = [];
@@ -116,6 +117,8 @@ function auditRoute(url: string, method: string, isOwnSuite: boolean): Promise<R
     const probe = await probeEndpoint(url, {
       method: probeMethod,
       body: probeMethod === "POST" ? "{}" : undefined,
+      fastSynthetic: fastProbe,
+      timeoutMs: fastProbe ? 1_500 : 6_000,
     });
 
     let score = 50;
@@ -151,7 +154,7 @@ function auditRoute(url: string, method: string, isOwnSuite: boolean): Promise<R
     }
 
     const path = new URL(url).pathname;
-    if (method === "POST" && isOwnSuite) {
+    if (method === "POST" && fastProbe) {
       const example = VERIFY_EXAMPLES[path];
       if (!example) {
         issues.push("Missing VERIFY_EXAMPLES entry for verifier empty-body merge");
@@ -190,17 +193,21 @@ function auditRoute(url: string, method: string, isOwnSuite: boolean): Promise<R
 export async function runAuditionCoach(input: AuditionCoachInput): Promise<AuditionCoachResult> {
   const origin = input.origin.replace(/\/$/, "");
   assertSafeOutboundUrl(origin);
-  const maxRoutes = Math.min(Math.max(input.maxRoutes ?? 24, 1), 30);
+  const isOwnSuite =
+    hostOf(origin) === hostOf(config.canonicalOrigin) ||
+    hostOf(origin) === hostOf(config.publicBaseUrl);
+  const fastProbe = isOwnSuite;
+  const maxRoutes = fastProbe
+    ? Math.min(Math.max(input.maxRoutes ?? 3, 1), 3)
+    : Math.min(Math.max(input.maxRoutes ?? 24, 1), 30);
   const globalFixes: string[] = [];
   const routes: RouteAudit[] = [];
 
   const [openapiRes, wellKnownRes, rootHead] = await Promise.all([
-    fetchJson(`${origin}/openapi.json`),
-    fetchJson(`${origin}/.well-known/x402`),
+    fetchJson(`${origin}/openapi.json`, fastProbe ? 4_000 : 15_000),
+    fetchJson(`${origin}/.well-known/x402`, fastProbe ? 4_000 : 15_000),
     fetch(`${origin}/`, { method: "HEAD" }).catch(() => null),
   ]);
-
-  const isOwnSuite = hostOf(origin) === hostOf("https://x402-agent-suite-production.up.railway.app");
 
   if (!openapiRes.ok) {
     globalFixes.push("Publish GET /openapi.json with x-payment-info and requestBody examples.");
@@ -245,9 +252,10 @@ export async function runAuditionCoach(input: AuditionCoachInput): Promise<Audit
     urlsToAudit.set(full, p.method);
   }
 
-  for (const [url, method] of urlsToAudit) {
-    routes.push(await auditRoute(url, method, isOwnSuite));
-  }
+  const routeAudits = await Promise.all(
+    [...urlsToAudit.entries()].map(([url, method]) => auditRoute(url, method, fastProbe)),
+  );
+  routes.push(...routeAudits);
 
   const avg =
     routes.length > 0 ? routes.reduce((s, r) => s + r.scoreEstimate, 0) / routes.length : 0;

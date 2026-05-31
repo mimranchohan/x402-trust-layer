@@ -10,7 +10,14 @@ export type ReceiptAuditorResult = {
   explorerUrl: string | null;
 };
 
+const PLACEHOLDER_TX_RE = /^0x0{63}[0-9a-f]$/i;
+
+function isPlaceholderTx(tx: string): boolean {
+  return PLACEHOLDER_TX_RE.test(tx) || tx === "0x0000000000000000000000000000000000000000000000000000000000000001";
+}
+
 async function fetchBaseTxReceipt(txHash: string): Promise<{ status: string; to: string | null } | null> {
+  if (isPlaceholderTx(txHash)) return null;
   const payload = {
     jsonrpc: "2.0",
     id: 1,

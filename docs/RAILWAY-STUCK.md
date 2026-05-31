@@ -23,7 +23,7 @@ If `/health` shows `"version":"2.0.0"` and `"endpointCount":15` but GitHub `main
 5. **Success**
 
    ```bash
-   curl https://x402-agent-suite-production.up.railway.app/health
+   curl https://x402trustlayer.xyz/health
    ```
 
    Expect: `"version":"2.1.0"`, `"endpointCount":17`, optional `"gitCommit":"84fb6a1"`

@@ -28,7 +28,7 @@ git push
 Write-Host "==> Health check (wait ~30s if deploy just started)"
 Start-Sleep -Seconds 5
 try {
-  Invoke-RestMethod -Uri "https://x402-agent-suite-production.up.railway.app/health" | ConvertTo-Json
+  Invoke-RestMethod -Uri "https://x402trustlayer.xyz/health" | ConvertTo-Json
 } catch {
   Write-Host "Health check failed (deploy may still be building): $_"
 }

@@ -1,0 +1,7 @@
+interface:
+  display_name: x402 Trust Layer
+  short_description: Preflight and audit x402 agent payments via Trust Layer APIs
+  default_prompt: >-
+    Use x402 Trust Layer at https://x402trustlayer.xyz before paying unknown x402
+    endpoints. Start with POST /api/guard/pre-x402 or /api/x402/proxy, then
+    receipt-auditor after external settlement.

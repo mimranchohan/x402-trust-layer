@@ -54,6 +54,7 @@ export const VERIFY_EXAMPLES: Record<string, unknown> = {
   "/api/facilitator/failover": {
     targetUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
     preferNetwork: "solana",
+    fastProbe: true,
   },
   "/api/mpp/session-plan": {
     action: "estimate",
@@ -80,10 +81,12 @@ export const VERIFY_EXAMPLES: Record<string, unknown> = {
     query: "ETH USD spot price oracle",
     preferNetwork: "solana",
     maxPriceUsdc: 0.1,
+    skipProbes: true,
   },
   "/api/research/brief": {
     topic: "Ethereum network fees today",
     includePrice: true,
+    fastProbe: true,
   },
   "/api/receipt-auditor/verify": {
     network: "eip155:8453",
@@ -116,7 +119,7 @@ export const VERIFY_EXAMPLES: Record<string, unknown> = {
     lastTopic: "agent spend policy",
   },
   "/api/quality-monitor/probe": {
-    urls: ["https://api.myceliasignal.com/oracle/price/eth/usd"],
+    urls: ["https://x402trustlayer.xyz/health"],
   },
   "/api/evidence-locker/export": {
     organizationId: "verifier-org",
@@ -144,11 +147,11 @@ export const VERIFY_EXAMPLES: Record<string, unknown> = {
     maxPriceUsdc: 0.15,
     expectedCalls: 12,
     policy: { dailyCapUsdc: 10, perCallCapUsdc: 0.5, allowedHosts: ["myceliasignal.com", "dexter.cash"] },
-    dryRunTarget: false,
+    dryRunTarget: true,
   },
   "/api/seller/audition-coach": {
     origin: "https://x402trustlayer.xyz",
-    maxRoutes: 31,
+    maxRoutes: 3,
   },
   "/api/merchant-trust/score": {
     host: "api.myceliasignal.com",

@@ -58,7 +58,7 @@ FACILITATOR_URL=https://x402.dexter.cash
 Redeploy, then check:
 
 ```powershell
-curl.exe https://x402-agent-suite-production.up.railway.app/health
+curl.exe https://x402trustlayer.xyz/health
 ```
 
 Expect: `"agenticReady": true` and `"chains":["base","solana"]`.
@@ -66,7 +66,7 @@ Expect: `"agenticReady": true` and `"chains":["base","solana"]`.
 Test 402 (first `accepts` entry should be Base):
 
 ```powershell
-curl.exe -i -X GET https://x402-agent-suite-production.up.railway.app/api/x402/proxy
+curl.exe -i -X GET https://x402trustlayer.xyz/api/x402/proxy
 ```
 
 Decode `Payment-Required` header — `resource.url` must start with `https://` and `accepts[0].network` should be `eip155:8453`.
@@ -76,7 +76,7 @@ Decode `Payment-Required` header — `resource.url` must start with `https://` a
 Push latest `main` to Railway. Confirm:
 
 ```powershell
-curl.exe https://x402-agent-suite-production.up.railway.app/x402/api/discover
+curl.exe https://x402trustlayer.xyz/x402/api/discover
 
 Wrong (404 until alias deploy): `/discover` or `/x402/discover` — use `/x402/api/discover`.
 ```
@@ -88,7 +88,7 @@ You should see `"endpointCount": 24` and a `resources` array.
 **Important:** Agentic’s validator sends an unauthenticated **GET** request. Our suite registers a **GET probe** on every POST path so you get **HTTP 402** (not 404). After you deploy the latest code, validate URLs like:
 
 ```
-https://x402-agent-suite-production.up.railway.app/api/x402/proxy
+https://x402trustlayer.xyz/api/x402/proxy
 ```
 
 (not `/discover` — that is a catalog, not a paid API).
@@ -98,9 +98,9 @@ https://x402-agent-suite-production.up.railway.app/api/x402/proxy
 3. For **each** paid URL, submit the full resource URL, for example:
 
 ```
-https://x402-agent-suite-production.up.railway.app/api/x402/proxy
-https://x402-agent-suite-production.up.railway.app/api/guard/pre-x402
-https://x402-agent-suite-production.up.railway.app/api/mpp/session
+https://x402trustlayer.xyz/api/x402/proxy
+https://x402trustlayer.xyz/api/guard/pre-x402
+https://x402trustlayer.xyz/api/mpp/session
 ... (all 22 from /x402/api/discover)
 ```
 
@@ -128,9 +128,9 @@ Many Agentic listings show `eip155:8453` (Base USDC). Your Solana wallet can sta
 Open a issue like [x402-foundation/x402#2132](https://github.com/x402-foundation/x402/issues/2132) with:
 
 - Service name: **x402 Agent Suite Pro**
-- Manifest: `https://x402-agent-suite-production.up.railway.app/x402/api/services.json`
-- Discovery: `https://x402-agent-suite-production.up.railway.app/x402/api/discover`
-- Well-known: `https://x402-agent-suite-production.up.railway.app/.well-known/x402.json`
+- Manifest: `https://x402trustlayer.xyz/x402/api/services.json`
+- Discovery: `https://x402trustlayer.xyz/x402/api/discover`
+- Well-known: `https://x402trustlayer.xyz/.well-known/x402.json`
 - Seller wallet: `9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt`
 - Facilitator: Dexter (primary) + optional CDP for Agentic
 

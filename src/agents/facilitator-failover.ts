@@ -16,7 +16,7 @@ export type FailoverResult = {
 };
 
 export async function runFacilitatorFailover(input: FailoverInput): Promise<FailoverResult> {
-  const facilitators = await rankFacilitators(input.preferNetwork);
+  const facilitators = await rankFacilitators(input.preferNetwork, input.fastProbe === true);
   const targetProbe = await probeEndpoint(input.targetUrl, {
     fastSynthetic: input.fastProbe === true,
   });

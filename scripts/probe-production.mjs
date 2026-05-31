@@ -6,7 +6,7 @@ import { writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const origin = (process.env.ORIGIN ?? "https://x402-agent-suite-production.up.railway.app").replace(
+const origin = (process.env.ORIGIN ?? "https://x402trustlayer.xyz").replace(
   /\/$/,
   "",
 );

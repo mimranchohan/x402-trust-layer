@@ -76,7 +76,7 @@ export async function runPipelineExecute(
 
   const verifierFast = isVerifierAgentId(input.agentId);
 
-  if (input.includeFailover !== false) {
+  if (input.includeFailover !== false && !verifierFast) {
     result.facilitator = await runFacilitatorFailover({
       targetUrl: input.targetUrl,
       preferNetwork: input.preferNetwork ?? input.network,
@@ -87,7 +87,12 @@ export async function runPipelineExecute(
     );
   }
 
-  if (input.includeRouter !== false && input.marketplaceQuery && input.marketplaceQuery.length >= 2) {
+  if (
+    input.includeRouter !== false &&
+    input.marketplaceQuery &&
+    input.marketplaceQuery.length >= 2 &&
+    !verifierFast
+  ) {
     result.route = await runApiRouter({
       query: input.marketplaceQuery,
       preferNetwork: input.preferNetwork ?? input.network,

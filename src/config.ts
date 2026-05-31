@@ -49,7 +49,7 @@ function resolveAttestationHmacSecret(): string {
 }
 
 const chains = parseChainList(
-  env("NETWORKS") || env("NETWORK") || (env("PAY_TO_EVM") ? "base,solana" : "solana,base"),
+  env("NETWORKS") || env("NETWORK") || "solana,base",
 );
 
 export const config = {

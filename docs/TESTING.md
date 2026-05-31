@@ -11,7 +11,7 @@ live deployment. There are three ways to do it, from "no wallet, no spend" to
 Base URL used throughout:
 
 ```
-BASE=https://x402-agent-suite-production.up.railway.app
+BASE=https://x402trustlayer.xyz
 ```
 
 Every paid route costs $0.02–$0.25 in USDC and settles on Base or Solana via the
@@ -53,7 +53,7 @@ Once the OpenDexter wallet is funded with a little USDC, call any endpoint with 
 ```jsonc
 // x402_fetch arguments
 {
-  "url": "https://x402-agent-suite-production.up.railway.app/api/merchant-trust/score",
+  "url": "https://x402trustlayer.xyz/api/merchant-trust/score",
   "method": "POST",
   "body": "{\"host\":\"orbisapi.com\",\"washTradePct\":17,\"verifiedResources\":1225,\"totalResources\":34539}",
   "maxAmountUsdc": 0.10            // per-call safety cap
@@ -131,7 +131,7 @@ The recommended order, with ready-to-send request bodies. Stateful endpoints
 | 24 | `/api/attestation/registry` | GET | query: `?minGrade=C&limit=5` |
 | 25 | `/api/refund-arbiter/evaluate` | POST | `{"verificationScore":25,"responseEmpty":true,"responseGeneric":false,"endpointReachable":true}` |
 | 26 | `/api/settlement-graph/next` | POST | `{"lastEndpointPath":"/api/merchant-trust/score","lastTopic":"merchant trust","maxRecommendations":3}` |
-| 27 | `/api/quality-monitor/probe` | POST | `{"urls":["https://api.myceliasignal.com/oracle/price/eth/usd","https://x402-agent-suite-production.up.railway.app/api/health"]}` |
+| 27 | `/api/quality-monitor/probe` | POST | `{"urls":["https://api.myceliasignal.com/oracle/price/eth/usd","https://x402trustlayer.xyz/api/health"]}` |
 | 28 | `/api/budget-allocator/run` | POST | `{"fleetId":"acme","poolRemainingUsdc":5,"agents":[{"agentId":"a1","priority":10,"requestedUsdc":2,"dailyRemainingUsdc":5},{"agentId":"a2","priority":5,"requestedUsdc":3,"dailyRemainingUsdc":5}]}` |
 | 29 | `/api/evidence-locker/export` | POST | `{"organizationId":"acme","records":[{"endpoint":"/api/merchant-trust/score","amountUsdc":0.06,"network":"eip155:8453","transactionHash":"0x<tx>","timestamp":"2026-05-30T11:10:00.000Z"}]}` |
 | 30 | `/api/agent-escrow` (create) | POST | `{"action":"create","payerAgentId":"buyer-1","payeeAgentId":"merchant-1","amountUsdc":0.05,"releaseCondition":"receipt-auditor valid:true"}` |
@@ -142,7 +142,7 @@ The recommended order, with ready-to-send request bodies. Stateful endpoints
 | Endpoint | Method | Example body |
 |----------|--------|--------------|
 | `/api/market/buy-advisor` | POST | `{"intent":"ETH USD spot price oracle for trading bot","agentId":"buyer-1","walletAddress":"0xYourWallet","preferNetwork":"base","maxPriceUsdc":0.15,"expectedCalls":12,"dryRunTarget":true}` |
-| `/api/seller/audition-coach` | POST | `{"origin":"https://x402-agent-suite-production.up.railway.app","maxRoutes":10}` |
+| `/api/seller/audition-coach` | POST | `{"origin":"https://x402trustlayer.xyz","maxRoutes":10}` |
 
 ---
 

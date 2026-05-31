@@ -1,6 +1,6 @@
 # Listing on Dexter, x402scan, and Agentic
 
-**Production:** https://x402-agent-suite-production.up.railway.app  
+**Production:** https://x402trustlayer.xyz  
 **Paid routes:** 24 (never register `/health` on x402scan)
 
 There is no single API to list everywhere. Use this checklist per channel.
@@ -24,7 +24,7 @@ There is no single API to list everywhere. Use this checklist per channel.
 - [ ] Open https://www.x402scan.com/resources/register  
 - [ ] Add **server URL** = production base (no trailing slash)  
 - [ ] Confirm only **paid** URLs from `GET /.well-known/x402` (24) — **not** `/health`  
-- [ ] `npm run discovery:check -- https://x402-agent-suite-production.up.railway.app/api/x402/proxy`  
+- [ ] `npm run discovery:check -- https://x402trustlayer.xyz/api/x402/proxy`  
 
 ### Agentic Market
 
@@ -69,8 +69,8 @@ We do **not** claim all agents must use this suite. Growth comes from:
 
 ```bash
 npm run probe:production
-npm run discovery:check -- https://x402-agent-suite-production.up.railway.app/api/x402/proxy
-npm run discovery:discover -- https://x402-agent-suite-production.up.railway.app
+npm run discovery:check -- https://x402trustlayer.xyz/api/x402/proxy
+npm run discovery:discover -- https://x402trustlayer.xyz
 npm run demo
 npm run audition:x402gle
 ```

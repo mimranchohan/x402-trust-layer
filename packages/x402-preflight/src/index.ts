@@ -16,7 +16,7 @@ function wrapOptions(wallet: PreflightWallet) {
 }
 
 export const DEFAULT_SUITE_BASE =
-  "https://x402-agent-suite-production.up.railway.app";
+  "https://x402trustlayer.xyz";
 
 export type PreflightPolicy = {
   dailyCapUsdc: number;

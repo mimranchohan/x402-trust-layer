@@ -9,7 +9,7 @@
 
 <p align="center">
 <a href="https://x402trustlayer.xyz"><img src="https://img.shields.io/badge/x402%20Trust%20Layer-live-16C7C0" alt="live"/></a>
-<a href="https://x402gle.com/servers/x402-agent-suite-production.up.railway.app"><img src="https://img.shields.io/badge/x402gle-71%25%20verified-16C7C0" alt="verified"/></a>
+<a href="https://x402gle.com/servers/x402trustlayer.xyz"><img src="https://img.shields.io/badge/x402gle-31%20routes-16C7C0" alt="verified"/></a>
 <a href="https://dexter.cash/sellers/9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt"><img src="https://img.shields.io/badge/Dexter-seller-green" alt="Dexter"/></a>
 <a href="https://www.x402scan.com"><img src="https://img.shields.io/badge/x402scan-31%20resources-7c3aed" alt="x402scan"/></a>
 </p>
@@ -180,7 +180,7 @@ Three levels, from free to fully paid. The complete walkthrough with a request b
 for every endpoint is in **[docs/TESTING.md](docs/TESTING.md)**.
 
 ```bash
-BASE=https://x402-agent-suite-production.up.railway.app
+BASE=https://x402trustlayer.xyz
 
 # 1) Free — confirm everything is alive and paywalled
 npm run probe:production

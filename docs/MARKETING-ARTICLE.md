@@ -1,8 +1,8 @@
 # x402 Agent Suite Pro — Trust Infrastructure for AI Agent Payments
 
-**Production:** https://x402-agent-suite-production.up.railway.app  
-**OpenAPI:** https://x402-agent-suite-production.up.railway.app/openapi.json  
-**Discovery:** https://x402-agent-suite-production.up.railway.app/x402/api/discover  
+**Production:** https://x402trustlayer.xyz  
+**OpenAPI:** https://x402trustlayer.xyz/openapi.json  
+**Discovery:** https://x402trustlayer.xyz/x402/api/discover  
 **Version:** 3.1.0 · Base + Solana USDC · Dexter facilitator
 
 ---
@@ -148,10 +148,10 @@ Payments settle **on-chain** to suite receive wallets; verification via Dexter f
 
 ```bash
 # Probe unpaid 402
-curl https://x402-agent-suite-production.up.railway.app/api/x402/proxy
+curl https://x402trustlayer.xyz/api/x402/proxy
 
 # Full discovery
-curl https://x402-agent-suite-production.up.railway.app/x402/api/discover
+curl https://x402trustlayer.xyz/x402/api/discover
 ```
 
 **GitHub:** https://github.com/mimranchohan/x402-agent-suite  

@@ -1,6 +1,6 @@
 # Route audit table
 
-**Origin:** https://x402-agent-suite-production.up.railway.app  
+**Origin:** https://x402trustlayer.xyz  
 **Suite version:** 3.1.0  
 **Update:** `npm run probe:production` → `scripts/probe-production-result.json`
 
