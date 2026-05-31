@@ -4,6 +4,7 @@ import { issueAttestation } from "../lib/attestation.js";
 import { type ChainKey, CHAIN_IDS } from "../lib/chains.js";
 import { probeEndpoint } from "../lib/probe.js";
 import { assessUrlSecurity, mergeSecurityIntoRisk } from "../lib/security.js";
+import { isVerifierAgentId } from "../lib/verifier-fast-path.js";
 import { runIdentityGate } from "./identity-gate.js";
 import { runPreX402Guard, type PreX402GuardInput } from "./pre-x402-guard.js";
 
@@ -43,7 +44,9 @@ export async function runX402Proxy(
     walletAddress: input.walletAddress,
     maxTierSpendUsdc: input.policy.perCallCapUsdc * 20,
   });
-  const probe = await probeEndpoint(input.targetUrl);
+  const probe = await probeEndpoint(input.targetUrl, {
+    fastSynthetic: isVerifierAgentId(input.agentId),
+  });
   const merged = mergeSecurityIntoRisk(guard.risk.riskScore, urlSec);
 
   const allowed =

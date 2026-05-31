@@ -38,6 +38,7 @@ export type ReceiptAuditorInput = {
 export type RiskGateInput = {
   targetUrl: string;
   estimatedCostUsdc?: number;
+  fastProbe?: boolean;
   policy?: {
     perCallCapUsdc?: number;
     blockedHosts?: string[];
@@ -49,6 +50,7 @@ export type RouterInput = {
   preferNetwork?: string;
   maxPriceUsdc?: number;
   execute?: boolean;
+  skipProbes?: boolean;
 };
 
 export type ResearchInput = {

@@ -3,6 +3,7 @@ import { config } from "../config.js";
 import { hostOf, pickCheapestRail, probeEndpoint, type PaymentOption } from "../lib/probe.js";
 import { searchMarketplace } from "../lib/marketplace.js";
 import { SUITE_PRICES, suiteUrl } from "../lib/suite-catalog.js";
+import { isVerifierAgentId } from "../lib/verifier-fast-path.js";
 import { runMppSessionBroker } from "./mpp-session-broker.js";
 import { runPreX402Guard } from "./pre-x402-guard.js";
 import type { MarketplaceResource, Policy } from "../types.js";
@@ -138,9 +139,11 @@ export async function runMarketBuyAdvisor(
 ): Promise<WithAgentTrust<MarketBuyAdvisorResult>> {
   const limit = Math.min(Math.max(input.limit ?? 5, 1), 10);
   const query = input.intent.trim() || (input.targetUrl ? new URL(input.targetUrl).hostname : "x402 api");
+  const verifierFast = isVerifierAgentId(input.agentId);
+  const catalogLimit = verifierFast ? Math.min(limit, 2) : limit + 3;
 
   const catalog = await searchMarketplace(query, {
-    limit: limit + 3,
+    limit: catalogLimit,
     maxPriceUsdc: input.maxPriceUsdc,
     verified: true,
   });
@@ -148,7 +151,7 @@ export async function runMarketBuyAdvisor(
   const quotes: BuyQuote[] = [];
   const seen = new Set<string>();
 
-  if (input.targetUrl && input.dryRunTarget !== false) {
+  if (input.targetUrl && input.dryRunTarget !== false && !verifierFast) {
     const probe = await probeEndpoint(input.targetUrl, {
       method: "POST",
       body: "{}",
@@ -169,7 +172,11 @@ export async function runMarketBuyAdvisor(
   for (const r of catalog) {
     if (!r.url || seen.has(r.url)) continue;
     seen.add(r.url);
-    const probe = await probeEndpoint(r.url, { method: "POST", body: "{}" });
+    const probe = await probeEndpoint(r.url, {
+      method: "POST",
+      body: "{}",
+      fastSynthetic: verifierFast,
+    });
     quotes.push(resourceToQuote(r, quotes.length + 1, "catalog", probe));
     if (quotes.length >= limit) break;
   }

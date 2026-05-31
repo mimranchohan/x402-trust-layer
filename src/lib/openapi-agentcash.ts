@@ -11,18 +11,20 @@ const MPP_SESSION_PROTOCOLS = [
   { mpp: { method: "POST", intent: "session", currency: "0x20c000000000000000000000b9537d11c60e8b50" } },
 ];
 
-const AGENT_GUIDANCE = `x402 Agent Suite Pro — paid infrastructure for AI agent fleets on Base and Solana via Dexter facilitator.
+const AGENT_GUIDANCE = `x402 Trust Layer — 31 paid agent payment infrastructure APIs on Base and Solana via Dexter facilitator.
 
 Typical flow:
 1. POST /api/guard/pre-x402 or POST /api/x402/proxy before any downstream x402 payment.
-2. POST /api/payment-intent/compile for multi-step plans; POST /api/pipeline/execute for one-shot orchestration.
-3. POST /api/mpp/session with action open|voucher|close for batch settlement savings.
-4. POST /api/attestation/issue then pass X-Suite-Attestation on partner calls; POST /api/attestation/verify to validate.
-5. POST /api/receipt-auditor/verify after external settlements.
+2. POST /api/merchant-trust/score for Know-Your-Merchant preflight on unknown hosts.
+3. POST /api/mandate/compile for AP2-style signed intent; POST /api/mandate/verify before spend.
+4. POST /api/payment-intent/compile or POST /api/pipeline/execute for multi-step orchestration.
+5. POST /api/mpp/session with action open|voucher|close for batch settlement savings.
+6. POST /api/attestation/issue then pass X-Suite-Attestation on partner calls.
+7. POST /api/receipt-auditor/verify after external settlements; POST /api/compliance/ledger for audit.
 
 Pay with x402 (USDC). Unpaid GET probes return 402; send Payment-Signature on POST for full JSON responses.
 
-Free (not in this catalog): GET /health — Railway/monitoring only, returns 200 without payment.`;
+Free (not in this catalog): GET /health — monitoring only, returns 200 without payment.`;
 
 type JsonSchema = Record<string, unknown>;
 
@@ -221,10 +223,10 @@ export function buildAgentCashOpenApi(): Record<string, unknown> {
       },
     },
     info: {
-      title: "x402 Agent Suite Pro",
+      title: "x402 Trust Layer",
       version: SUITE_VERSION,
       description:
-        "24 paid x402 infrastructure APIs for AI agent fleets: buy advisor, audition coach, guard, proxy, MPP, attestations, and pipeline orchestration.",
+        "31 paid x402 trust infrastructure APIs for AI agent fleets: guard, proxy, KYM merchant trust, AP2 mandates, cross-rail routing, compliance ledgers, disputes, quality escrow, and pipeline orchestration.",
       "x-guidance": AGENT_GUIDANCE,
     },
     "x-discovery": {
@@ -242,7 +244,7 @@ export function buildAgentCashOpenApi(): Record<string, unknown> {
     "x-x402scan": {
       discoveryMode: "openapi-first",
       paidRouteCount: listEndpoints().length,
-      note: "OpenAPI lists 24 paid /api/* operations only. Free routes documented under x-discovery.freeEndpoints.",
+      note: `OpenAPI lists ${listEndpoints().length} paid /api/* operations. Free routes documented under x-discovery.freeEndpoints.`,
     },
     servers: [{ url: config.publicBaseUrl }],
     paths,

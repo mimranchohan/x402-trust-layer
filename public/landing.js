@@ -238,6 +238,26 @@
       .join("");
   }
 
+  function setStatsImmediate(agents) {
+    const endpoints = agents?.length ?? 31;
+    const elEndpoints = $("#s-endpoints");
+    const elVerified = $("#s-verified");
+    const elChains = $("#s-chains");
+    if (elEndpoints) {
+      elEndpoints.textContent = String(endpoints);
+      elEndpoints.dataset.count = String(endpoints);
+    }
+    if (elVerified) {
+      elVerified.textContent = "100%";
+      elVerified.dataset.count = "100";
+    }
+    if (elChains) {
+      elChains.textContent = "2";
+      elChains.dataset.count = "2";
+    }
+    updateCheapest(agents ?? []);
+  }
+
   function animateCounters() {
     $$("[data-count]").forEach((el) => {
       const target = parseInt(el.dataset.count, 10);
@@ -327,6 +347,7 @@
 
     renderLayers(catalog.layers);
     renderTiers(catalog.agents);
+    setStatsImmediate(catalog.agents);
     renderViews();
     updateCheapest(catalog.agents);
     startHeroTerminal(catalog.agents);

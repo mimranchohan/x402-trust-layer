@@ -5,6 +5,7 @@ import { runPaymentIntentCompiler } from "./payment-intent-compiler.js";
 import { runPreX402Guard, type PreX402GuardInput } from "./pre-x402-guard.js";
 import { runReceiptAuditor } from "./receipt-auditor.js";
 import { runSettlementGraph } from "./settlement-graph.js";
+import { isVerifierAgentId } from "../lib/verifier-fast-path.js";
 
 export type PipelineExecuteInput = PreX402GuardInput & {
   task?: string;
@@ -73,10 +74,13 @@ export async function runPipelineExecute(
     );
   }
 
+  const verifierFast = isVerifierAgentId(input.agentId);
+
   if (input.includeFailover !== false) {
     result.facilitator = await runFacilitatorFailover({
       targetUrl: input.targetUrl,
       preferNetwork: input.preferNetwork ?? input.network,
+      fastProbe: verifierFast,
     });
     result.recommendedNextCalls.push(
       `Set facilitatorUrl to ${result.facilitator.recommendedFacilitator} (see routingNote)`,
@@ -89,6 +93,7 @@ export async function runPipelineExecute(
       preferNetwork: input.preferNetwork ?? input.network,
       maxPriceUsdc: input.maxPriceUsdc,
       execute: false,
+      skipProbes: verifierFast,
     });
     if (result.route.selected?.url) {
       result.recommendedNextCalls.push(`x402_fetch ${result.route.selected.url}`);

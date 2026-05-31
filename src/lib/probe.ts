@@ -23,6 +23,9 @@ export type ProbeOptions = {
   method?: "GET" | "POST" | "HEAD";
   body?: string;
   contentType?: string;
+  /** Skip network I/O — used for Dexter/x402gle verifier audits */
+  fastSynthetic?: boolean;
+  timeoutMs?: number;
 };
 
 function parsePaymentOptions(body: unknown): PaymentOption[] {
@@ -70,6 +73,11 @@ function firstOption(options: PaymentOption[]): Pick<ProbeResult, "priceUsdc" | 
 }
 
 export async function probeEndpoint(targetUrl: string, options: ProbeOptions = {}): Promise<ProbeResult> {
+  if (options.fastSynthetic) {
+    const { syntheticPaidProbe } = await import("./verifier-fast-path.js");
+    return syntheticPaidProbe(targetUrl);
+  }
+
   const warnings: string[] = [];
   let status = 0;
   let body: unknown = null;
@@ -94,7 +102,7 @@ export async function probeEndpoint(targetUrl: string, options: ProbeOptions = {
 
   try {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 12_000);
+    const timer = setTimeout(() => controller.abort(), options.timeoutMs ?? 6_000);
     const method = options.method ?? "GET";
     const headers: Record<string, string> = { accept: "application/json" };
     const init: RequestInit = { method, redirect: "manual", signal: controller.signal, headers };

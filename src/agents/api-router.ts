@@ -56,6 +56,10 @@ function normalizeNetwork(prefer?: string): "solana" | "base" | "polygon" {
   return "solana";
 }
 
+function probeOpts(skip?: boolean) {
+  return { fastSynthetic: skip === true };
+}
+
 export async function runApiRouter(input: RouterInput): Promise<RouterResult> {
   const normalizedNetwork = normalizeNetwork(input.preferNetwork);
 
@@ -84,7 +88,7 @@ export async function runApiRouter(input: RouterInput): Promise<RouterResult> {
 
     const best = suiteOptions[0];
     const url = `${config.publicBaseUrl}${best.path}`;
-    const probe = await probeEndpoint(url);
+    const probe = await probeEndpoint(url, probeOpts(input.skipProbes));
     return {
       status: "ok",
       summary: `Matched route-capability intent on ${normalizedNetwork}`,
@@ -125,7 +129,7 @@ export async function runApiRouter(input: RouterInput): Promise<RouterResult> {
         probedPriceUsdc: null,
       };
     }
-    const probe = await probeEndpoint(curatedHit.url);
+    const probe = await probeEndpoint(curatedHit.url, probeOpts(input.skipProbes));
     return {
       status: "ok",
       summary: "Matched curated route from query intent",
@@ -148,7 +152,7 @@ export async function runApiRouter(input: RouterInput): Promise<RouterResult> {
   const suiteHit = SUITE_ROUTES.find((r) => r.match.test(input.query));
   if (suiteHit) {
     const suiteUrl = `${config.publicBaseUrl}${suiteHit.path}`;
-    const probe = await probeEndpoint(suiteUrl);
+    const probe = await probeEndpoint(suiteUrl, probeOpts(input.skipProbes));
     return {
       status: "ok",
       summary: "Matched suite-native route from query intent",
@@ -188,7 +192,7 @@ export async function runApiRouter(input: RouterInput): Promise<RouterResult> {
     };
   }
 
-  const probe = await probeEndpoint(selected.url);
+  const probe = await probeEndpoint(selected.url, probeOpts(input.skipProbes));
 
   if (!input.execute) {
     return {

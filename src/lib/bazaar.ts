@@ -2,9 +2,9 @@ import { config } from "../config.js";
 import { listEndpoints } from "../routes.js";
 import { SUITE_VERSION } from "./version.js";
 
-const SERVICE_NAME = "x402 Agent Suite Pro";
+const SERVICE_NAME = "x402 Trust Layer";
 const SERVICE_DESCRIPTION =
-  "Paid x402 infrastructure for AI agent fleets: preflight guard, proxy, MPP sessions, attestations, spend policy, and pipeline orchestration.";
+  "31 paid x402 trust infrastructure APIs: preflight guard, KYM merchant trust, AP2 mandates, cross-rail routing, compliance, disputes, quality escrow, and settlement orchestration.";
 
 const ENDPOINT_META: Record<string, { summary: string; category: string; tags: string[] }> = {
   "/api/x402/proxy": {
@@ -116,6 +116,51 @@ const ENDPOINT_META: Record<string, { summary: string; category: string; tags: s
     summary: "Create, status, or release agent-to-agent USDC escrow",
     category: "Enterprise",
     tags: ["escrow", "agents"],
+  },
+  "/api/market/buy-advisor": {
+    summary: "x402 buy quote: rank paid APIs, policy, chain, MPP before you pay",
+    category: "Discovery",
+    tags: ["marketplace", "quote", "discovery"],
+  },
+  "/api/seller/audition-coach": {
+    summary: "Seller audition coach: OpenAPI, 402 probes, x402gle fixes before ingest",
+    category: "Quality",
+    tags: ["seller", "audition", "discovery", "quality"],
+  },
+  "/api/merchant-trust/score": {
+    summary: "Know-Your-Merchant trust + wash-trading score before payment",
+    category: "Trust",
+    tags: ["trust", "kym", "wash-trade", "preflight"],
+  },
+  "/api/mandate/compile": {
+    summary: "Compile signed AP2-style payment mandate from human intent",
+    category: "Trust",
+    tags: ["mandate", "ap2", "intent", "governance"],
+  },
+  "/api/mandate/verify": {
+    summary: "Verify mandate signature and scope a proposed payment",
+    category: "Trust",
+    tags: ["mandate", "verify", "governance"],
+  },
+  "/api/rail-optimizer/route": {
+    summary: "Choose best rail: Visa CLI, Stripe MPP, Circle, Base, Solana",
+    category: "Infrastructure",
+    tags: ["rail", "router", "visa-cli", "mpp"],
+  },
+  "/api/compliance/ledger": {
+    summary: "CFO/SOC2-grade spend reconciliation with tamper-evident hash",
+    category: "Enterprise",
+    tags: ["compliance", "audit", "cfo", "ledger"],
+  },
+  "/api/dispute/resolve": {
+    summary: "Visa chargeback dossier or on-chain refund claim builder",
+    category: "Trust",
+    tags: ["dispute", "chargeback", "visa", "refund"],
+  },
+  "/api/quality-escrow/settle": {
+    summary: "Quality-gated escrow with response verification and auto-refund",
+    category: "Trust",
+    tags: ["escrow", "quality", "refund", "trust"],
   },
 };
 

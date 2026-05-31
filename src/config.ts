@@ -8,8 +8,10 @@ function env(name: string): string {
   return (process.env[name] ?? "").trim();
 }
 
+const DEFAULT_CANONICAL_ORIGIN = "https://x402trustlayer.xyz";
+
 function resolvePublicBaseUrl(port: number): string {
-  const raw = env("PUBLIC_BASE_URL");
+  const raw = env("PUBLIC_BASE_URL") || env("CANONICAL_PUBLIC_URL");
   let url = "";
   if (raw) url = raw.replace(/\/$/, "");
   else if (process.env.RAILWAY_PUBLIC_DOMAIN) {
@@ -53,6 +55,7 @@ const chains = parseChainList(
 export const config = {
   port: Number(process.env.PORT ?? 3402),
   publicBaseUrl: resolvePublicBaseUrl(Number(process.env.PORT ?? 3402)),
+  canonicalOrigin: DEFAULT_CANONICAL_ORIGIN,
   payTo: env("PAY_TO_ADDRESS") || env("PAY_TO"),
   payToEvm: env("PAY_TO_EVM") || env("PAY_TO_ADDRESS_EVM") || "",
   chains,
@@ -103,6 +106,15 @@ export function assertConfig(): void {
   if (!config.payTo) {
     throw new Error(
       "Missing PAY_TO_ADDRESS. Set it in Railway/Render Variables (or .env locally) to your USDC receive wallet.",
+    );
+  }
+  if (
+    config.publicBaseUrl.includes("railway.app") &&
+    !env("PUBLIC_BASE_URL") &&
+    !env("CANONICAL_PUBLIC_URL")
+  ) {
+    console.warn(
+      `[config] PUBLIC_BASE_URL not set — discovery URLs use ${config.publicBaseUrl}. Set PUBLIC_BASE_URL=${DEFAULT_CANONICAL_ORIGIN} for x402trustlayer.xyz indexing.`,
     );
   }
 }

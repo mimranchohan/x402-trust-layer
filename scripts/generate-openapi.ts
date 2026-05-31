@@ -5,8 +5,7 @@ import { writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-process.env.PUBLIC_BASE_URL ??=
-  "https://x402-agent-suite-production.up.railway.app";
+process.env.PUBLIC_BASE_URL ??= "https://x402trustlayer.xyz";
 process.env.PAY_TO_ADDRESS ??= "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt";
 process.env.PAY_TO_EVM ??= "0xD56013Abd05E588f2d025193FCe90416816BDBBC";
 

@@ -4,6 +4,7 @@ import { probeEndpoint } from "../lib/probe.js";
 export type FailoverInput = {
   targetUrl: string;
   preferNetwork?: string;
+  fastProbe?: boolean;
 };
 
 export type FailoverResult = {
@@ -16,7 +17,9 @@ export type FailoverResult = {
 
 export async function runFacilitatorFailover(input: FailoverInput): Promise<FailoverResult> {
   const facilitators = await rankFacilitators(input.preferNetwork);
-  const targetProbe = await probeEndpoint(input.targetUrl);
+  const targetProbe = await probeEndpoint(input.targetUrl, {
+    fastSynthetic: input.fastProbe === true,
+  });
   const best = facilitators.find((f) => f.healthy) ?? facilitators[0];
 
   return {

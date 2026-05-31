@@ -144,11 +144,11 @@ export const VERIFY_EXAMPLES: Record<string, unknown> = {
     maxPriceUsdc: 0.15,
     expectedCalls: 12,
     policy: { dailyCapUsdc: 10, perCallCapUsdc: 0.5, allowedHosts: ["myceliasignal.com", "dexter.cash"] },
-    dryRunTarget: true,
+    dryRunTarget: false,
   },
   "/api/seller/audition-coach": {
-    origin: "https://x402-agent-suite-production.up.railway.app",
-    maxRoutes: 24,
+    origin: "https://x402trustlayer.xyz",
+    maxRoutes: 31,
   },
   "/api/merchant-trust/score": {
     host: "api.myceliasignal.com",

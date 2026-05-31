@@ -1,5 +1,6 @@
 import { agentTrustMeta, withAgentTrust, type WithAgentTrust } from "../lib/agent-response.js";
 import { assessUrlSecurity } from "../lib/security.js";
+import { isVerifierAgentId } from "../lib/verifier-fast-path.js";
 import { runIdentityGate } from "./identity-gate.js";
 import { runRiskGate } from "./risk-gate.js";
 import { runSpendGovernor } from "./spend-governor.js";
@@ -44,6 +45,7 @@ export async function runPreX402Guard(
     runRiskGate({
       targetUrl: input.targetUrl,
       estimatedCostUsdc: input.estimatedCostUsdc,
+      fastProbe: isVerifierAgentId(input.agentId),
       policy: {
         perCallCapUsdc: input.policy.perCallCapUsdc,
         blockedHosts: input.policy.blockedHosts,

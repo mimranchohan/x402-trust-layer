@@ -65,7 +65,7 @@ function asyncRoute(
 function healthPayload() {
   return {
     ok: true,
-    service: "x402-agent-suite-pro",
+    service: "x402-trust-layer",
     version: SUITE_VERSION,
     chains: config.chains,
     networks: config.networks,
@@ -78,7 +78,11 @@ function healthPayload() {
       config.payToEvm.length > 0,
     agenticHint: !config.payToEvm
       ? "Set PAY_TO_EVM + NETWORKS=base,solana on Railway for agentic.market"
-      : null,
+      : config.publicBaseUrl.includes("railway.app") &&
+          !process.env.PUBLIC_BASE_URL &&
+          !process.env.CANONICAL_PUBLIC_URL
+        ? `Set PUBLIC_BASE_URL=${config.canonicalOrigin} so discovery URLs match x402trustlayer.xyz`
+        : null,
     agentCashDiscovery: {
       openapi: `${config.publicBaseUrl}/openapi.json`,
       wellKnown: `${config.publicBaseUrl}/.well-known/x402`,
@@ -87,6 +91,15 @@ function healthPayload() {
     },
   };
 }
+
+app.get("/llms.txt", (_req, res) => {
+  try {
+    const txt = readFileSync(join(process.cwd(), "public", "llms.txt"), "utf8");
+    res.type("text/plain").send(txt);
+  } catch {
+    res.status(404).type("text/plain").send("llms.txt not found");
+  }
+});
 
 app.get("/health", (_req, res) => {
   res.json(healthPayload());

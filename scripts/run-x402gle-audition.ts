@@ -8,7 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const origin =
-  process.argv[2]?.trim() || "https://x402-agent-suite-production.up.railway.app";
+  process.argv[2]?.trim() || "https://x402trustlayer.xyz";
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outPath = path.join(root, "x402gle-audition-result.json");
 

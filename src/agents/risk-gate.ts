@@ -13,6 +13,7 @@ export type RiskGateResult = {
 };
 
 export async function runRiskGate(input: RiskGateInput): Promise<RiskGateResult> {
+  const probeOpts = { fastSynthetic: input.fastProbe === true };
   const reasons: string[] = [];
   let riskScore = 0;
 
@@ -23,7 +24,7 @@ export async function runRiskGate(input: RiskGateInput): Promise<RiskGateResult>
       riskScore: 100,
       securityGrade: "F",
       reasons: ["Invalid URL"],
-      probe: await probeEndpoint(input.targetUrl),
+      probe: await probeEndpoint(input.targetUrl, probeOpts),
       securityRecommendations: ["Use HTTPS public endpoints only"],
     };
   }
@@ -37,7 +38,7 @@ export async function runRiskGate(input: RiskGateInput): Promise<RiskGateResult>
       riskScore: 100,
       securityGrade: "F",
       reasons: [msg],
-      probe: await probeEndpoint(input.targetUrl),
+      probe: await probeEndpoint(input.targetUrl, probeOpts),
       securityRecommendations: ["Use public HTTPS endpoints only"],
     };
   }
@@ -47,7 +48,7 @@ export async function runRiskGate(input: RiskGateInput): Promise<RiskGateResult>
     riskScore += 80;
   }
 
-  const probe = await probeEndpoint(input.targetUrl);
+  const probe = await probeEndpoint(input.targetUrl, probeOpts);
 
   if (probe.status === 0) {
     reasons.push("Endpoint unreachable");

@@ -1,0 +1,43 @@
+# x402 Trust Layer
+
+> 31 paid x402 trust infrastructure APIs for AI agent fleets. Guard, attest, comply and audit every payment — before the money moves.
+
+- Website: https://x402trustlayer.xyz
+- OpenAPI: https://x402trustlayer.xyz/openapi.json
+- Discovery: https://x402trustlayer.xyz/.well-known/x402
+- Services manifest: https://x402trustlayer.xyz/x402/api/services.json
+- GitHub: https://github.com/mimranchohan/x402-agent-suite
+
+## Primary entry points
+
+| Method | Path | Price | Purpose |
+|--------|------|-------|---------|
+| POST | /api/x402/proxy | $0.08 | All-in-one preflight before any external x402 payment |
+| POST | /api/guard/pre-x402 | $0.05 | Spend + identity + risk gate bundle |
+| POST | /api/pipeline/execute | $0.25 | Full orchestration for multi-step agent tasks |
+
+## Tier-1 enterprise agents
+
+| Method | Path | Price | Purpose |
+|--------|------|-------|---------|
+| POST | /api/merchant-trust/score | $0.06 | Know-Your-Merchant trust score before payment |
+| POST | /api/mandate/compile | $0.08 | AP2-style signed payment mandate from intent |
+| POST | /api/mandate/verify | $0.02 | Verify mandate scope for a proposed payment |
+| POST | /api/rail-optimizer/route | $0.04 | Cross-rail routing (Visa CLI, MPP, Base, Solana) |
+| POST | /api/compliance/ledger | $0.12 | CFO/SOC2 spend reconciliation ledger |
+| POST | /api/dispute/resolve | $0.10 | Visa chargeback or on-chain refund dossier |
+| POST | /api/quality-escrow/settle | $0.10 | Quality-gated escrow with auto-refund |
+
+## Agentic Market validate URLs
+
+Paste each resource URL at https://agentic.market/ (Validate Endpoint):
+
+```
+GET https://x402trustlayer.xyz/api/agentic/validate-urls
+```
+
+Returns all 31 canonical paid resource URLs for one-click listing.
+
+## Networks
+
+Base (eip155:8453) and Solana — USDC via Dexter facilitator.

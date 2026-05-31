@@ -2,7 +2,7 @@
 
 [Agentic Market](https://agentic.market/) is Coinbase’s public directory of **x402-paid HTTP services**. Agents discover, pay, and call APIs without API keys.
 
-Your suite already runs on Railway with **24 paid endpoints** (3 primary buyer entry points + 2 seller killers + 19 advanced). Listing is **not automatic from Dexter alone** — Agentic indexes the **x402 Bazaar / CDP discovery** pipeline and validated x402 endpoints.
+Your suite runs on **x402trustlayer.xyz** with **31 paid endpoints** (3 primary buyer entry points + 2 seller killers + 26 advanced incl. 7 Tier-1 enterprise agents). Listing is **not automatic from Dexter alone** — Agentic indexes the **x402 Bazaar / CDP discovery** pipeline and validated x402 endpoints.
 
 ---
 
@@ -21,24 +21,25 @@ Your suite already runs on Railway with **24 paid endpoints** (3 primary buyer e
 
 ## URLs already on your deployment (after you push latest code)
 
-Replace `BASE` with your Railway URL:
+Replace `BASE` with **https://x402trustlayer.xyz** (set `PUBLIC_BASE_URL` on Railway to this domain):
 
 | URL | Purpose |
 |-----|---------|
 | `BASE/.well-known/x402.json` | Well-known x402 config |
 | `BASE/x402/api/services.json` | Bazaar-style manifest (`extensions.bazaar.discoverable`) |
-| `BASE/x402/api/discover` | Discovery catalog (all 24 resources) — **note `/api/` in path** |
+| `BASE/x402/api/discover` | Discovery catalog (all 31 resources) — **note `/api/` in path** |
 | `BASE/openapi.json` | OpenAPI 3.1 (v3, all paths) |
 
 Example:
 
 ```
-https://x402-agent-suite-production.up.railway.app/x402/api/services.json
+https://x402trustlayer.xyz/x402/api/services.json
+https://x402trustlayer.xyz/llms.txt
 ```
 
 ---
 
-## Step-by-step: list all 24 paid routes on Agentic Market
+## Step-by-step: list all 31 paid routes on Agentic Market
 
 ### Step 0 — Railway variables (required for Agentic simulate)
 
@@ -47,7 +48,7 @@ Agentic’s simulator expects **HTTPS resource URLs** and **Base USDC** (`eip155
 In **Railway → Variables** set:
 
 ```env
-PUBLIC_BASE_URL=https://x402-agent-suite-production.up.railway.app
+PUBLIC_BASE_URL=https://x402trustlayer.xyz
 NETWORKS=base,solana
 PAY_TO_ADDRESS=9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt
 PAY_TO_EVM=0xYourBaseWalletAddress
