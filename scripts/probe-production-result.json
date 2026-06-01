@@ -1,71 +1,44 @@
 {
-  "origin": "https://x402-agent-suite-production.up.railway.app",
-  "at": "2026-05-23T21:59:59.946Z",
-  "expectedPaidRoutes": 24,
+  "origin": "https://x402trustlayer.xyz",
+  "at": "2026-06-01T13:39:02.796Z",
+  "expectedPaidRoutes": 37,
   "checks": {
     "health": {
       "status": 200,
-      "endpointCount": 24,
-      "gitCommit": "214a3dd",
+      "endpointCount": 38,
+      "gitCommit": "c35cf2e",
       "agenticReady": true,
       "agentCashReady": true
     },
     "wellKnown": {
       "status": 200,
-      "resourceCount": 24,
+      "resourceCount": 38,
       "syncOk": true,
       "ownershipProofs": 2
     },
     "openapi": {
       "status": 200,
-      "pathCount": 24,
+      "pathCount": 38,
+      "postRouteCount": 37,
       "hasHealth": false,
       "hasGuidance": true
     }
   },
   "routes": [
     {
-      "path": "/api/market/buy-advisor",
+      "path": "/api/agent-escrow",
       "status": 402,
       "pass402": true,
       "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
+        "error"
       ]
     },
     {
-      "path": "/api/seller/audition-coach",
+      "path": "/api/agent/verify",
       "status": 402,
       "pass402": true,
       "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
-      ]
-    },
-    {
-      "path": "/api/x402/proxy",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
-      ]
-    },
-    {
-      "path": "/api/mpp/session",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
+        "error"
       ]
     },
     {
@@ -73,10 +46,7 @@
       "status": 402,
       "pass402": true,
       "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
+        "error"
       ]
     },
     {
@@ -84,142 +54,7 @@
       "status": 402,
       "pass402": true,
       "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
-      ]
-    },
-    {
-      "path": "/api/guard/pre-x402",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
-      ]
-    },
-    {
-      "path": "/api/pipeline/execute",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
-      ]
-    },
-    {
-      "path": "/api/payment-intent/compile",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
-      ]
-    },
-    {
-      "path": "/api/facilitator/failover",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
-      ]
-    },
-    {
-      "path": "/api/mpp/session-plan",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
-      ]
-    },
-    {
-      "path": "/api/spend-governor/check",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
-      ]
-    },
-    {
-      "path": "/api/identity-gate/check",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
-      ]
-    },
-    {
-      "path": "/api/risk-gate/scan",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
-      ]
-    },
-    {
-      "path": "/api/router/route",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
-      ]
-    },
-    {
-      "path": "/api/research/brief",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
-      ]
-    },
-    {
-      "path": "/api/receipt-auditor/verify",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
-      ]
-    },
-    {
-      "path": "/api/refund-arbiter/evaluate",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
+        "error"
       ]
     },
     {
@@ -227,32 +62,23 @@
       "status": 402,
       "pass402": true,
       "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
+        "error"
       ]
     },
     {
-      "path": "/api/settlement-graph/next",
+      "path": "/api/compliance/ledger",
       "status": 402,
       "pass402": true,
       "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
+        "error"
       ]
     },
     {
-      "path": "/api/quality-monitor/probe",
+      "path": "/api/dispute/resolve",
       "status": 402,
       "pass402": true,
       "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
+        "error"
       ]
     },
     {
@@ -260,33 +86,245 @@
       "status": 402,
       "pass402": true,
       "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
+        "error"
       ]
     },
     {
-      "path": "/api/agent-escrow",
+      "path": "/api/facilitator/failover",
       "status": 402,
       "pass402": true,
       "keys": [
-        "error",
-        "accepts",
-        "resource",
-        "extensions"
+        "error"
       ]
     },
     {
-      "path": "/api/attestation/registry",
+      "path": "/api/guard/pre-x402",
       "status": 402,
       "pass402": true,
-      "keys": []
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/identity-gate/check",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/mandate/compile",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/mandate/diff",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/mandate/verify",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/market/buy-advisor",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/merchant-trust/certify",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/merchant-trust/score",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/mpp/session",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/mpp/session-plan",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/payment-intent/compile",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/pipeline/execute",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/pipeline/trust-v2",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/quality-escrow/semantic-settle",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/quality-escrow/settle",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/quality-monitor/probe",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/rail-optimizer/route",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/receipt-auditor/verify",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/refund-arbiter/evaluate",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/research/brief",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/risk-gate/scan",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/router/route",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/seller/audition-coach",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/settlement-graph/next",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/spend-governor/check",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/trust-network/bond/slash",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/trust-network/buyer-gate",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/x402/proxy",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
     }
   ],
   "summary": {
-    "total": 24,
-    "pass402Count": 24,
+    "total": 37,
+    "pass402Count": 37,
     "fail402Paths": [],
     "discoveryInSync": true
   }

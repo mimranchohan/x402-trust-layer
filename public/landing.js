@@ -213,7 +213,7 @@
     nav.innerHTML = order
       .filter((t) => t === "all" || tiers.includes(t))
       .map((t) => {
-        const label = t === "all" ? "All 31" : labels[t] || t;
+        const label = t === "all" ? `All ${agents.length}` : labels[t] || t;
         const active = t === activeTier ? " active" : "";
         return `<button type="button" class="tier-pill${active}" data-tier="${t}">${esc(label)}</button>`;
       })
@@ -243,7 +243,7 @@
   }
 
   function setStatsImmediate(agents) {
-    const endpoints = agents?.length ?? 31;
+    const endpoints = agents?.length ?? 38;
     const elEndpoints = $("#s-endpoints");
     const elVerified = $("#s-verified");
     const elChains = $("#s-chains");

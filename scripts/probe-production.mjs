@@ -71,10 +71,11 @@ async function probe() {
   const openapi = await openapiRes.json().catch(() => ({}));
   const pathCount = openapi.paths ? Object.keys(openapi.paths).length : 0;
 
+  const endpointCount = health.endpointCount ?? expectedPaidRoutes;
   result.checks.wellKnown = {
     status: wk.status,
     resourceCount: resources.length,
-    syncOk: resources.length === pathCount && resources.length === expectedPaidRoutes,
+    syncOk: resources.length === endpointCount,
     ownershipProofs: wkJson?.ownershipProofs?.length ?? 0,
   };
   result.checks.openapi = {

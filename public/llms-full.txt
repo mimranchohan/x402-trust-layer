@@ -320,3 +320,63 @@
 - **Inputs:** action, amountUsdc, expectedProfile, actualResponse, releaseThreshold
 - **Outputs:** decision, qualityScore, status, reasons
 
+## 33. Semantic Delivery Escrow
+
+- **Route:** POST /api/quality-escrow/semantic-settle
+- **Price:** $0.12 USDC
+- **Tier:** Tier-1 Enterprise
+- **Summary:** Schema + intent rubric escrow with optional LLM judge and auto bond slash.
+- **Why:** Post-pay delivery guarantee beyond JSON schema — refunds on semantic failure.
+- **Inputs:** deliveryIntent, expectedProfile, actualResponse, amountUsdc
+- **Outputs:** decision, semanticScore, schemaScore, judgeMode, bondSlash
+
+## 34. Mandate Intent Diff
+
+- **Route:** POST /api/mandate/diff
+- **Price:** $0.04 USDC
+- **Tier:** Tier-1 Enterprise
+- **Summary:** Compare signed mandate scope to MCP tool trace before payment.
+- **Why:** Blocks prompt-injected routing and out-of-scope merchants before x402 pay.
+- **Inputs:** mandateId, toolCalls, task?
+- **Outputs:** allowed, liabilityTier, violations
+
+## 35. Certified Seller
+
+- **Route:** POST /api/merchant-trust/certify
+- **Price:** $0.15 USDC
+- **Tier:** Tier-1 Enterprise
+- **Summary:** Certify seller with KYM pass, badge, buyer policy, optional virtual bond.
+- **Why:** Two-sided trust network — sellers require attested buyers.
+- **Inputs:** host, policy, bondUsdc?, goodResponseProfile?
+- **Outputs:** certified, badgeId, policy, expiresAt
+
+## 36. Certified Buyer Gate
+
+- **Route:** POST /api/trust-network/buyer-gate
+- **Price:** $0.03 USDC
+- **Tier:** Tier-1 Enterprise
+- **Summary:** Verify buyer attestation and tier against certified seller policy.
+- **Why:** Premium APIs only accept attested agents with minimum TrustScore.
+- **Inputs:** sellerHost, walletAddress, attestationId?
+- **Outputs:** allowed, violations, requiredHeaders
+
+## 37. Pipeline Trust v2
+
+- **Route:** POST /api/pipeline/trust-v2
+- **Price:** $0.35 USDC
+- **Tier:** Tier-1 Enterprise
+- **Summary:** One-shot: mandate diff + KYM ingest + guard + certified buyer gate.
+- **Why:** Default pre-pay bundle for OpenDexter and fleet agents.
+- **Inputs:** agentId, walletAddress, targetUrl, policy, mandateId?, toolCalls?
+- **Outputs:** allowed, steps, recommendedNextCalls
+
+## 38. Seller Bond Slash
+
+- **Route:** POST /api/trust-network/bond/slash
+- **Price:** $0.03 USDC
+- **Tier:** Tier-1 Enterprise
+- **Summary:** Slash certified seller virtual bond after failed delivery.
+- **Why:** Economic accountability for certified sellers without on-chain contract yet.
+- **Inputs:** sellerHost, amountUsdc, reason
+- **Outputs:** slashed, bondRemainingUsdc
+

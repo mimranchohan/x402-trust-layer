@@ -19,14 +19,14 @@ function routeTable(filter) {
 
 const llmsTxt = `# x402 Trust Layer
 
-> 32 paid x402 trust infrastructure APIs for AI agent fleets. Guard, attest, comply and audit every payment — before the money moves.
+> ${agents.length} paid x402 trust infrastructure APIs for AI agent fleets. Guard, attest, comply and audit every payment — before the money moves.
 
 - Website: https://x402trustlayer.xyz
 - OpenAPI: https://x402trustlayer.xyz/openapi.json
 - Discovery: https://x402trustlayer.xyz/.well-known/x402
 - Skill (agents): https://x402trustlayer.xyz/skill.md
 - Full context: https://x402trustlayer.xyz/llms-full.txt
-- MCP: npx @mimranakb/trust-layer-mcp@1.2.0 (trust_agent_verify, trust_alchemy_preflight)
+- MCP: npx @mimranakb/trust-layer-mcp@2.0.0 (trust_before_x402_fetch, trust_mandate_diff, trust_semantic_settle)
 - npm: x402-agent-suite-preflight
 - GitHub: https://github.com/mimranchohan/x402-agent-suite
 
@@ -48,7 +48,7 @@ ${routeTable(byTier("entry"))}
 |--------|------|-------|---------|
 ${routeTable(byTier("tier1"))}
 
-## All 32 paid routes
+## All ${agents.length} paid routes
 
 | Method | Path | Price | Summary |
 |--------|------|-------|---------|
@@ -65,6 +65,8 @@ ${routeTable(agents)}
 | GET | /api/agentic/validate-urls | Agentic Market URL list |
 | POST | /api/webhooks/register | Fleet webhook registration (beta) |
 | GET | /api/agent/lookup/:wallet | Free ERC-8004 TrustScore lookup (30/hr/IP) |
+| GET | /api/merchant-trust/certified/:host | Certified seller badge lookup |
+| GET | /api/trust-network/catalog | Certified sellers catalog |
 | GET | /api/webhooks/list | List webhooks |
 
 ## Networks
@@ -84,7 +86,7 @@ const skillMd = `# x402 Trust Layer Skill
 
 ## Product Summary
 
-x402 Trust Layer is the **control plane** between AI agents and the open x402 marketplace. 32 paid HTTP APIs decide whether to pay, whom to trust, which rail to use, and how to audit or dispute settlements. No API keys — USDC micropayments on Base, Solana, and Polygon.
+x402 Trust Layer is the **control plane** between AI agents and the open x402 marketplace. ${agents.length} paid HTTP APIs decide whether to pay, whom to trust, which rail to use, and how to audit or dispute settlements. No API keys — USDC micropayments on Base, Solana, and Polygon.
 
 - **Base URL:** https://x402trustlayer.xyz
 - **OpenAPI:** https://x402trustlayer.xyz/openapi.json

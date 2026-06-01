@@ -1,13 +1,13 @@
 # x402 Trust Layer
 
-> 32 paid x402 trust infrastructure APIs for AI agent fleets. Guard, attest, comply and audit every payment — before the money moves.
+> 38 paid x402 trust infrastructure APIs for AI agent fleets. Guard, attest, comply and audit every payment — before the money moves.
 
 - Website: https://x402trustlayer.xyz
 - OpenAPI: https://x402trustlayer.xyz/openapi.json
 - Discovery: https://x402trustlayer.xyz/.well-known/x402
 - Skill (agents): https://x402trustlayer.xyz/skill.md
 - Full context: https://x402trustlayer.xyz/llms-full.txt
-- MCP: npx @mimranakb/trust-layer-mcp@1.2.0 (trust_agent_verify, trust_alchemy_preflight)
+- MCP: npx @mimranakb/trust-layer-mcp@2.0.0 (trust_before_x402_fetch, trust_mandate_diff, trust_semantic_settle)
 - npm: x402-agent-suite-preflight
 - GitHub: https://github.com/mimranchohan/x402-agent-suite
 
@@ -36,8 +36,14 @@
 | POST | /api/compliance/ledger | $0.12 | SOC2/tax-ready spend reconciliation with policy flags and tamper hash. |
 | POST | /api/dispute/resolve | $0.10 | Visa chargeback dossier or on-chain refund claim builder. |
 | POST | /api/quality-escrow/settle | $0.10 | Quality-gated escrow — release on pass, auto-refund on response mismatch. |
+| POST | /api/quality-escrow/semantic-settle | $0.12 | Schema + intent rubric escrow with optional LLM judge and auto bond slash. |
+| POST | /api/mandate/diff | $0.04 | Compare signed mandate scope to MCP tool trace before payment. |
+| POST | /api/merchant-trust/certify | $0.15 | Certify seller with KYM pass, badge, buyer policy, optional virtual bond. |
+| POST | /api/trust-network/buyer-gate | $0.03 | Verify buyer attestation and tier against certified seller policy. |
+| POST | /api/pipeline/trust-v2 | $0.35 | One-shot: mandate diff + KYM ingest + guard + certified buyer gate. |
+| POST | /api/trust-network/bond/slash | $0.03 | Slash certified seller virtual bond after failed delivery. |
 
-## All 32 paid routes
+## All 38 paid routes
 
 | Method | Path | Price | Summary |
 |--------|------|-------|---------|
@@ -73,6 +79,12 @@
 | POST | /api/compliance/ledger | $0.12 | SOC2/tax-ready spend reconciliation with policy flags and tamper hash. |
 | POST | /api/dispute/resolve | $0.10 | Visa chargeback dossier or on-chain refund claim builder. |
 | POST | /api/quality-escrow/settle | $0.10 | Quality-gated escrow — release on pass, auto-refund on response mismatch. |
+| POST | /api/quality-escrow/semantic-settle | $0.12 | Schema + intent rubric escrow with optional LLM judge and auto bond slash. |
+| POST | /api/mandate/diff | $0.04 | Compare signed mandate scope to MCP tool trace before payment. |
+| POST | /api/merchant-trust/certify | $0.15 | Certify seller with KYM pass, badge, buyer policy, optional virtual bond. |
+| POST | /api/trust-network/buyer-gate | $0.03 | Verify buyer attestation and tier against certified seller policy. |
+| POST | /api/pipeline/trust-v2 | $0.35 | One-shot: mandate diff + KYM ingest + guard + certified buyer gate. |
+| POST | /api/trust-network/bond/slash | $0.03 | Slash certified seller virtual bond after failed delivery. |
 
 ## Free endpoints (no x402 payment)
 
@@ -85,6 +97,8 @@
 | GET | /api/agentic/validate-urls | Agentic Market URL list |
 | POST | /api/webhooks/register | Fleet webhook registration (beta) |
 | GET | /api/agent/lookup/:wallet | Free ERC-8004 TrustScore lookup (30/hr/IP) |
+| GET | /api/merchant-trust/certified/:host | Certified seller badge lookup |
+| GET | /api/trust-network/catalog | Certified sellers catalog |
 | GET | /api/webhooks/list | List webhooks |
 
 ## Networks
