@@ -141,7 +141,7 @@ export function defaultOutputExample(path: string): Record<string, unknown> {
       allowed: true,
       hostScoreEstimate: 78,
       summary: "3 routes audited; ~78 avg score; 0 need fixes before Dexter/x402gle pass (75+).",
-      discovery: { openapiOk: true, wellKnownOk: true, resourceCount: 31, openapiPathCount: 31 },
+      discovery: { openapiOk: true, wellKnownOk: true, resourceCount: 38, openapiPathCount: 38 },
       routes: [
         {
           url: "https://x402trustlayer.xyz/api/guard/pre-x402",
@@ -165,6 +165,49 @@ export function defaultOutputExample(path: string): Record<string, unknown> {
       coaching: { hostScoreEstimate: 78, failCount: 0, passCount: 3, warnCount: 0, topFixes: [] },
       confidence: 0.88,
       checks_passed: ["openapi_checked", "well_known_checked", "routes_audited"],
+    };
+  }
+  if (path.includes("semantic-settle")) {
+    return {
+      status: "ok",
+      ok: true,
+      allowed: true,
+      mode: "semantic",
+      summary: "Semantic+schema score 88 ≥ 72 — release approved",
+      semanticScore: 92,
+      schemaScore: 100,
+      qualityScore: 88,
+      escrowStatus: "released",
+      decision: "release-to-merchant",
+    };
+  }
+  if (path.includes("mandate/diff")) {
+    return {
+      ok: true,
+      allowed: true,
+      liabilityTier: "allow",
+      mandateValid: true,
+      withinMandateScope: true,
+      violations: [],
+      summary: "Tool trace within mandate scope — proceed to x402 payment",
+    };
+  }
+  if (path.includes("merchant-trust/certify")) {
+    return {
+      ok: true,
+      certified: true,
+      badgeId: "cert_example",
+      host: "api.myceliasignal.com",
+      policy: { requireAttestation: true, minAgentTier: "SILVER", minTrustScore: 50, minSecurityGrade: "C" },
+    };
+  }
+  if (path.includes("buyer-gate")) {
+    return {
+      ok: true,
+      allowed: true,
+      certifiedSeller: true,
+      summary: "Buyer passes certified seller gate — proceed to x402 payment",
+      violations: [],
     };
   }
   if (path.includes("quality-escrow")) {

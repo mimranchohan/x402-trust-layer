@@ -40,8 +40,45 @@ const policySchema = z.object({
 
 const server = new McpServer({
   name: "x402-trust-layer",
-  version: "1.2.0",
+  version: "2.0.0",
 });
+
+server.tool(
+  "trust_before_x402_fetch",
+  "Full pre-pay flow: pipeline/trust-v2 (mandate diff + KYM + guard + buyer gate) — use before x402_fetch ($0.35)",
+  {
+    agentId: z.string(),
+    walletAddress: z.string(),
+    targetUrl: z.string().url(),
+    estimatedCostUsdc: z.number(),
+    policy: policySchema,
+    mandateId: z.string().optional(),
+    toolCalls: z
+      .array(
+        z.object({
+          name: z.string(),
+          url: z.string().optional(),
+          amountUsdc: z.number().optional(),
+          merchant: z.string().optional(),
+          rail: z.string().optional(),
+        }),
+      )
+      .optional(),
+    task: z.string().optional(),
+    sellerHost: z.string().optional(),
+    attestationId: z.string().optional(),
+    useProxy: z.boolean().optional(),
+  },
+  async (args) => {
+    const data = await paidPost("/api/pipeline/trust-v2", {
+      ...args,
+      kymBeforePay: true,
+      useProxy: args.useProxy ?? false,
+      issueAttestation: !args.attestationId,
+    });
+    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+  },
+);
 
 server.tool(
   "trust_agent_verify",
@@ -52,33 +89,6 @@ server.tool(
   },
   async (args) => {
     const data = await paidPost("/api/agent/verify", args);
-    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
-  },
-);
-
-server.tool(
-  "trust_alchemy_preflight",
-  "Preflight guard tuned for x402.alchemy.com ($0.05)",
-  {
-    agentId: z.string(),
-    walletAddress: z.string(),
-    estimatedCostUsdc: z.number().optional(),
-    dailyCapUsdc: z.number().optional(),
-    perCallCapUsdc: z.number().optional(),
-  },
-  async (args) => {
-    const data = await paidPost("/api/guard/pre-x402", {
-      agentId: args.agentId,
-      walletAddress: args.walletAddress,
-      targetUrl: "https://x402.alchemy.com/base-mainnet/v2",
-      estimatedCostUsdc: args.estimatedCostUsdc ?? 1,
-      network: "eip155:8453",
-      policy: {
-        dailyCapUsdc: args.dailyCapUsdc ?? 20,
-        perCallCapUsdc: args.perCallCapUsdc ?? 2,
-        allowedHosts: ["x402.alchemy.com"],
-      },
-    });
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   },
 );
@@ -104,53 +114,83 @@ server.tool(
 );
 
 server.tool(
-  "trust_guard_preflight",
-  "Lightweight spend + identity + risk gate ($0.05)",
+  "trust_mandate_diff",
+  "Mandate vs MCP tool trace before payment ($0.04)",
   {
-    agentId: z.string(),
-    walletAddress: z.string(),
-    targetUrl: z.string().url(),
-    estimatedCostUsdc: z.number(),
-    network: z.string().optional(),
-    policy: policySchema.extend({ allowedHosts: z.array(z.string()) }),
+    mandateId: z.string(),
+    toolCalls: z.array(
+      z.object({
+        name: z.string(),
+        url: z.string().optional(),
+        amountUsdc: z.number().optional(),
+        merchant: z.string().optional(),
+        rail: z.string().optional(),
+      }),
+    ),
+    task: z.string().optional(),
   },
   async (args) => {
-    const data = await paidPost("/api/guard/pre-x402", args);
+    const data = await paidPost("/api/mandate/diff", args);
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   },
 );
 
 server.tool(
   "trust_merchant_score",
-  "Know-Your-Merchant trust score before payment ($0.06)",
+  "KYM score with x402watch auto-ingest ($0.06)",
   {
     host: z.string(),
     targetUrl: z.string().url().optional(),
-    washTradePct: z.number().optional(),
-    verifiedResources: z.number().optional(),
-    totalResources: z.number().optional(),
     probe: z.boolean().optional(),
   },
   async (args) => {
-    const data = await paidPost("/api/merchant-trust/score", args);
+    const data = await paidPost("/api/merchant-trust/score", { ...args, autoIngest: true });
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   },
 );
 
 server.tool(
-  "trust_mandate_verify",
-  "Verify a proposed payment against a signed mandate ($0.02)",
+  "trust_buyer_gate",
+  "Certified seller buyer gate — attestation + tier ($0.03)",
   {
-    mandateId: z.string(),
-    proposed: z.object({
-      amountUsdc: z.number(),
-      merchant: z.string(),
-      category: z.string(),
-      rail: z.string(),
-    }),
+    sellerHost: z.string(),
+    walletAddress: z.string().optional(),
+    attestationId: z.string().optional(),
+    agentTier: z.enum(["BRONZE", "SILVER", "GOLD", "PLATINUM"]).optional(),
+    trustScore: z.number().optional(),
   },
   async (args) => {
-    const data = await paidPost("/api/mandate/verify", args);
+    const data = await paidPost("/api/trust-network/buyer-gate", args);
+    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+  },
+);
+
+server.tool(
+  "trust_semantic_settle",
+  "Post-pay semantic escrow — release or auto-refund ($0.12)",
+  {
+    deliveryIntent: z.string(),
+    payeeMerchant: z.string(),
+    amountUsdc: z.number(),
+    actualResponse: z.object({
+      fields: z.record(z.unknown()).optional(),
+      sample: z.string().optional(),
+      bodyKeys: z.array(z.string()).optional(),
+      byteLength: z.number().optional(),
+      empty: z.boolean().optional(),
+    }),
+    expectedProfile: z
+      .object({
+        requiredKeys: z.array(z.string()).optional(),
+        forbidEmpty: z.boolean().optional(),
+      })
+      .optional(),
+  },
+  async (args) => {
+    const data = await paidPost("/api/quality-escrow/semantic-settle", {
+      action: "settle",
+      ...args,
+    });
     return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
   },
 );
@@ -162,12 +202,6 @@ server.tool(
     network: z.string(),
     expectedAmountUsdc: z.number(),
     transactionHash: z.string(),
-    settlement: z.object({
-      transaction: z.string(),
-      amountUsdc: z.number(),
-      network: z.string(),
-      payer: z.string(),
-    }),
   },
   async (args) => {
     const data = await paidPost("/api/receipt-auditor/verify", args);
@@ -178,7 +212,7 @@ server.tool(
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("[x402-trust-layer-mcp] ready — base=" + BASE);
+  console.error("[x402-trust-layer-mcp] v2 ready — base=" + BASE);
 }
 
 main().catch((err) => {

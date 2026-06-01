@@ -29,6 +29,10 @@ import { runRailOptimizer } from "./agents/rail-optimizer.js";
 import { runComplianceLedger } from "./agents/compliance-ledger.js";
 import { runDisputeResolve } from "./agents/dispute-resolver.js";
 import { runQualityEscrow } from "./agents/quality-escrow.js";
+import { runSemanticQualityEscrow } from "./agents/quality-escrow-semantic.js";
+import { runMandateDiff } from "./agents/mandate-diff.js";
+import { runSellerCertify, runBuyerGate, runBondSlash } from "./agents/trust-network.js";
+import { runPipelineTrustV2 } from "./agents/pipeline-trust-v2.js";
 import { config, pricing } from "./config.js";
 import { SUITE_PRICES } from "./lib/suite-catalog.js";
 import { VERIFY_EXAMPLES } from "./lib/verify-examples.js";
@@ -83,6 +87,12 @@ export function listEndpoints() {
     { path: "POST /api/compliance/ledger", price: `$${pricing.complianceLedger}`, tier: "tier1" },
     { path: "POST /api/dispute/resolve", price: `$${pricing.disputeResolve}`, tier: "tier1" },
     { path: "POST /api/quality-escrow/settle", price: `$${pricing.qualityEscrow}`, tier: "tier1" },
+    { path: "POST /api/quality-escrow/semantic-settle", price: `$${pricing.qualityEscrowSemantic}`, tier: "tier1" },
+    { path: "POST /api/mandate/diff", price: `$${pricing.mandateDiff}`, tier: "tier1" },
+    { path: "POST /api/merchant-trust/certify", price: `$${pricing.merchantCertify}`, tier: "tier1" },
+    { path: "POST /api/trust-network/buyer-gate", price: `$${pricing.buyerGate}`, tier: "tier1" },
+    { path: "POST /api/pipeline/trust-v2", price: `$${pricing.pipelineTrustV2}`, tier: "tier1" },
+    { path: "POST /api/trust-network/bond/slash", price: `$${pricing.bondSlash}`, tier: "tier1" },
   ];
 }
 
@@ -1103,6 +1113,7 @@ export function registerRoutes(
           avgTxUsdc: z.coerce.number().nonnegative().optional(),
           p50LatencyMs: z.coerce.number().nonnegative().optional(),
           probe: z.coerce.boolean().optional(),
+          autoIngest: z.coerce.boolean().optional(),
         })
         .refine((d) => d.host || d.targetUrl, { message: "host or targetUrl required" })
         .safeParse(req.body);
@@ -1338,6 +1349,202 @@ export function registerRoutes(
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(runQualityEscrow({ ...parsed.data, action: parsed.data.action ?? "settle" }));
+    },
+  );
+
+  post(
+    "/api/quality-escrow/semantic-settle",
+    pricing.qualityEscrowSemantic,
+    "Semantic delivery escrow: schema + intent rubric before release or auto-refund",
+    async (req, res) => {
+      const parsed = z
+        .object({
+          action: z.enum(["hold", "settle", "refund"]).optional(),
+          escrowId: z.string().optional(),
+          payerAgentId: z.string().optional(),
+          payeeMerchant: z.string().optional(),
+          amountUsdc: z.coerce.number().positive().optional(),
+          releaseThreshold: z.coerce.number().min(0).max(100).optional(),
+          deliveryIntent: z.string().min(3),
+          expectedProfile: z
+            .object({
+              requiredKeys: z.array(z.string()).optional(),
+              minLengthBytes: z.coerce.number().nonnegative().optional(),
+              mustMatchRegex: z.string().optional(),
+              forbidEmpty: z.coerce.boolean().optional(),
+            })
+            .optional(),
+          actualResponse: z
+            .object({
+              bodyKeys: z.array(z.string()).optional(),
+              byteLength: z.coerce.number().nonnegative().optional(),
+              sample: z.string().optional(),
+              empty: z.coerce.boolean().optional(),
+              fields: z.record(z.unknown()).optional(),
+            })
+            .optional(),
+        })
+        .safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(
+        await runSemanticQualityEscrow({
+          ...parsed.data,
+          action: parsed.data.action ?? "settle",
+        }),
+      );
+    },
+  );
+
+  post(
+    "/api/mandate/diff",
+    pricing.mandateDiff,
+    "Compare signed mandate scope to MCP tool trace before x402 payment",
+    async (req, res) => {
+      const parsed = z
+        .object({
+          mandateId: z.string().min(8),
+          toolCalls: z
+            .array(
+              z.object({
+                name: z.string().min(1),
+                url: z.string().url().optional(),
+                amountUsdc: z.coerce.number().nonnegative().optional(),
+                merchant: z.string().optional(),
+                category: z.string().optional(),
+                rail: z.string().optional(),
+                argsSummary: z.string().optional(),
+              }),
+            )
+            .min(1),
+          proposed: z
+            .object({
+              amountUsdc: z.coerce.number().nonnegative(),
+              merchant: z.string().optional(),
+              category: z.string().optional(),
+              rail: z.string().optional(),
+            })
+            .optional(),
+          task: z.string().optional(),
+        })
+        .safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(await runMandateDiff(parsed.data));
+    },
+  );
+
+  post(
+    "/api/merchant-trust/certify",
+    pricing.merchantCertify,
+    "Certify x402 seller: KYM pass, signed badge, buyer access policy for premium APIs",
+    async (req, res) => {
+      const parsed = z
+        .object({
+          host: z.string().min(1).optional(),
+          targetUrl: z.string().url().optional(),
+          ttlDays: z.coerce.number().int().min(1).max(365).optional(),
+          washTradePct: z.coerce.number().min(0).max(100).optional(),
+          verifiedResources: z.coerce.number().nonnegative().optional(),
+          totalResources: z.coerce.number().nonnegative().optional(),
+          observedTxns: z.coerce.number().nonnegative().optional(),
+          observedVolumeUsdc: z.coerce.number().nonnegative().optional(),
+          p50LatencyMs: z.coerce.number().nonnegative().optional(),
+          probe: z.coerce.boolean().optional(),
+          minTrustScoreToCertify: z.coerce.number().min(0).max(100).optional(),
+          policy: z
+            .object({
+              requireAttestation: z.coerce.boolean().optional(),
+              minAgentTier: z.enum(["BRONZE", "SILVER", "GOLD", "PLATINUM"]).optional(),
+              minTrustScore: z.coerce.number().min(0).max(100).optional(),
+              minSecurityGrade: z.enum(["A", "B", "C", "D"]).optional(),
+            })
+            .optional(),
+          goodResponseProfile: z
+            .object({
+              requiredKeys: z.array(z.string()).optional(),
+              minLengthBytes: z.coerce.number().nonnegative().optional(),
+              forbidEmpty: z.coerce.boolean().optional(),
+            })
+            .optional(),
+          bondUsdc: z.coerce.number().nonnegative().optional(),
+        })
+        .refine((d) => d.host || d.targetUrl, { message: "host or targetUrl required" })
+        .safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(await runSellerCertify(parsed.data));
+    },
+  );
+
+  post(
+    "/api/trust-network/buyer-gate",
+    pricing.buyerGate,
+    "Certified seller buyer gate: attestation + TrustScore tier before x402 pay",
+    async (req, res) => {
+      const parsed = z
+        .object({
+          sellerHost: z.string().min(1),
+          walletAddress: z.string().min(16).optional(),
+          attestationId: z.string().min(8).optional(),
+          agentTier: z.enum(["BRONZE", "SILVER", "GOLD", "PLATINUM"]).optional(),
+          trustScore: z.coerce.number().min(0).max(100).optional(),
+          securityGrade: z.string().optional(),
+        })
+        .safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(await runBuyerGate(parsed.data));
+    },
+  );
+
+  post(
+    "/api/pipeline/trust-v2",
+    pricing.pipelineTrustV2,
+    "One-shot Trust v2: mandate diff + KYM ingest + guard/proxy + certified buyer gate",
+    async (req, res) => {
+      const parsed = guardBodySchema
+        .extend({
+          mandateId: z.string().min(8).optional(),
+          toolCalls: z
+            .array(
+              z.object({
+                name: z.string().min(1),
+                url: z.string().url().optional(),
+                amountUsdc: z.coerce.number().nonnegative().optional(),
+                merchant: z.string().optional(),
+                category: z.string().optional(),
+                rail: z.string().optional(),
+                argsSummary: z.string().optional(),
+              }),
+            )
+            .optional(),
+          task: z.string().optional(),
+          sellerHost: z.string().optional(),
+          attestationId: z.string().min(8).optional(),
+          agentTier: z.enum(["BRONZE", "SILVER", "GOLD", "PLATINUM"]).optional(),
+          trustScore: z.coerce.number().min(0).max(100).optional(),
+          kymBeforePay: z.coerce.boolean().optional(),
+          useProxy: z.coerce.boolean().optional(),
+          issueAttestation: z.coerce.boolean().optional(),
+        })
+        .safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(await runPipelineTrustV2(parsed.data));
+    },
+  );
+
+  post(
+    "/api/trust-network/bond/slash",
+    pricing.bondSlash,
+    "Slash certified seller virtual bond after failed semantic delivery",
+    async (req, res) => {
+      const parsed = z
+        .object({
+          sellerHost: z.string().min(1),
+          amountUsdc: z.coerce.number().positive(),
+          reason: z.string().min(3),
+          qualityScore: z.coerce.number().min(0).max(100).optional(),
+        })
+        .safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(await runBondSlash(parsed.data));
     },
   );
 

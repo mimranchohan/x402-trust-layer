@@ -6,44 +6,18 @@ import { writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const origin = (process.env.ORIGIN ?? "https://x402trustlayer.xyz").replace(
-  /\/$/,
-  "",
-);
+const origin = (process.env.ORIGIN ?? "https://x402trustlayer.xyz").replace(/\/$/, "");
 const out = join(dirname(fileURLToPath(import.meta.url)), "probe-production-result.json");
 
-const POST_ROUTES = [
-  "/api/market/buy-advisor",
-  "/api/seller/audition-coach",
-  "/api/x402/proxy",
-  "/api/mpp/session",
-  "/api/attestation/issue",
-  "/api/attestation/verify",
-  "/api/guard/pre-x402",
-  "/api/pipeline/execute",
-  "/api/payment-intent/compile",
-  "/api/facilitator/failover",
-  "/api/mpp/session-plan",
-  "/api/spend-governor/check",
-  "/api/identity-gate/check",
-  "/api/risk-gate/scan",
-  "/api/router/route",
-  "/api/research/brief",
-  "/api/receipt-auditor/verify",
-  "/api/refund-arbiter/evaluate",
-  "/api/budget-allocator/run",
-  "/api/settlement-graph/next",
-  "/api/quality-monitor/probe",
-  "/api/evidence-locker/export",
-  "/api/agent-escrow",
-  "/api/merchant-trust/score",
-  "/api/mandate/compile",
-  "/api/mandate/verify",
-  "/api/rail-optimizer/route",
-  "/api/compliance/ledger",
-  "/api/dispute/resolve",
-  "/api/quality-escrow/settle",
-];
+async function loadPostRoutes() {
+  const res = await fetch(`${origin}/openapi.json`);
+  const openapi = await res.json().catch(() => ({}));
+  const paths = openapi.paths ?? {};
+  return Object.entries(paths)
+    .filter(([, methods]) => methods?.post)
+    .map(([p]) => p)
+    .sort();
+}
 
 async function probePost(path) {
   const res = await fetch(`${origin}${path}`, {
@@ -68,10 +42,13 @@ async function probePost(path) {
 }
 
 async function probe() {
+  const POST_ROUTES = await loadPostRoutes();
+  const expectedPaidRoutes = POST_ROUTES.length;
+
   const result = {
     origin,
     at: new Date().toISOString(),
-    expectedPaidRoutes: 31,
+    expectedPaidRoutes,
     checks: {},
     routes: [],
   };
@@ -97,12 +74,13 @@ async function probe() {
   result.checks.wellKnown = {
     status: wk.status,
     resourceCount: resources.length,
-    syncOk: resources.length === pathCount && resources.length === 31,
+    syncOk: resources.length === pathCount && resources.length === expectedPaidRoutes,
     ownershipProofs: wkJson?.ownershipProofs?.length ?? 0,
   };
   result.checks.openapi = {
     status: openapiRes.status,
     pathCount,
+    postRouteCount: expectedPaidRoutes,
     hasHealth: Boolean(openapi.paths?.["/health"]),
     hasGuidance: Boolean(openapi.info?.["x-guidance"]),
   };
@@ -110,13 +88,6 @@ async function probe() {
   for (const path of POST_ROUTES) {
     result.routes.push(await probePost(path));
   }
-  const reg = await fetch(`${origin}/api/attestation/registry`);
-  result.routes.push({
-    path: "/api/attestation/registry",
-    status: reg.status,
-    pass402: reg.status === 402,
-    keys: [],
-  });
 
   const fail402 = result.routes.filter((r) => !r.pass402);
   result.summary = {

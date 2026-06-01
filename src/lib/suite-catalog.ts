@@ -80,6 +80,12 @@ export const SUITE_PRICES = {
   complianceLedger: 0.12,
   disputeResolve: 0.1,
   qualityEscrow: 0.1,
+  mandateDiff: 0.04,
+  qualityEscrowSemantic: 0.12,
+  merchantCertify: 0.15,
+  buyerGate: 0.03,
+  pipelineTrustV2: 0.35,
+  bondSlash: 0.03,
 } as const;
 
 export function suiteUrl(path: string): string {

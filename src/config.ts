@@ -133,6 +133,12 @@ export const pricing = {
   disputeResolve: "0.10",
   qualityEscrow: "0.10",
   agentVerify: "0.04",
+  mandateDiff: "0.04",
+  qualityEscrowSemantic: "0.12",
+  merchantCertify: "0.15",
+  buyerGate: "0.03",
+  pipelineTrustV2: "0.35",
+  bondSlash: "0.03",
 } as const;
 
 export function assertConfig(): void {

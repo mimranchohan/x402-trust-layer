@@ -1,6 +1,7 @@
 import { hostOf, probeEndpoint } from "../lib/probe.js";
 import { assessUrlSecurity } from "../lib/security.js";
 import { agentTrustMeta, withAgentTrust, type WithAgentTrust } from "../lib/agent-response.js";
+import { fetchHostTelemetry } from "../lib/ecosystem-telemetry.js";
 
 export type MerchantTrustInput = {
   host: string;
@@ -13,6 +14,8 @@ export type MerchantTrustInput = {
   avgTxUsdc?: number;
   p50LatencyMs?: number;
   probe?: boolean;
+  /** Pull wash/volume hints from x402watch when fields omitted (default true) */
+  autoIngest?: boolean;
 };
 
 export type MerchantTrustResult = WithAgentTrust<{
@@ -43,7 +46,23 @@ function gradeFor(score: number): MerchantTrustResult["grade"] {
  * (x402gle surfaces raw wash %, but does not synthesize a pay/avoid decision).
  */
 export async function runMerchantTrust(input: MerchantTrustInput): Promise<MerchantTrustResult> {
-  const host = (input.host || hostOf(input.targetUrl ?? "") || "").toLowerCase();
+  let enriched = { ...input };
+  const hostPre = (input.host || hostOf(input.targetUrl ?? "") || "").toLowerCase();
+  if (input.autoIngest !== false && hostPre) {
+    const telemetry = await fetchHostTelemetry(hostPre, input.targetUrl);
+    if (telemetry?.washTradePct != null || telemetry?.observedTxns != null) {
+      enriched = {
+        ...enriched,
+        washTradePct: enriched.washTradePct ?? telemetry.washTradePct,
+        observedTxns: enriched.observedTxns ?? telemetry.observedTxns,
+        observedVolumeUsdc: enriched.observedVolumeUsdc ?? telemetry.observedVolumeUsdc,
+        verifiedResources: enriched.verifiedResources ?? telemetry.verifiedResources,
+        totalResources: enriched.totalResources ?? telemetry.totalResources,
+      };
+    }
+  }
+
+  const host = (enriched.host || hostOf(enriched.targetUrl ?? "") || "").toLowerCase();
   const signals: string[] = [];
   const penalties: { reason: string; points: number }[] = [];
   let score = 80;
@@ -66,7 +85,7 @@ export async function runMerchantTrust(input: MerchantTrustInput): Promise<Merch
   }
 
   // Wash-trading penalty (x402gle reports ~17% baseline; treat >25% as serious).
-  const wash = typeof input.washTradePct === "number" ? input.washTradePct : null;
+  const wash = typeof enriched.washTradePct === "number" ? enriched.washTradePct : null;
   let washTradeRisk: MerchantTrustResult["washTradeRisk"] = "low";
   if (wash != null) {
     if (wash >= 40) {
@@ -87,11 +106,11 @@ export async function runMerchantTrust(input: MerchantTrustInput): Promise<Merch
   // Verification ratio (verified resources / total resources).
   let verifiedRatio: number | null = null;
   if (
-    typeof input.verifiedResources === "number" &&
-    typeof input.totalResources === "number" &&
-    input.totalResources > 0
+    typeof enriched.verifiedResources === "number" &&
+    typeof enriched.totalResources === "number" &&
+    enriched.totalResources > 0
   ) {
-    verifiedRatio = input.verifiedResources / input.totalResources;
+    verifiedRatio = enriched.verifiedResources / enriched.totalResources;
     if (verifiedRatio >= 0.5) {
       score += 8;
       signals.push(`${Math.round(verifiedRatio * 100)}% of resources verified`);
@@ -105,9 +124,9 @@ export async function runMerchantTrust(input: MerchantTrustInput): Promise<Merch
   }
 
   // Volume realism: extremely high txns with near-zero volume signals spam/wash.
-  if (typeof input.observedTxns === "number" && typeof input.observedVolumeUsdc === "number") {
-    const perTx = input.observedTxns > 0 ? input.observedVolumeUsdc / input.observedTxns : 0;
-    if (input.observedTxns > 50_000 && perTx < 0.011) {
+  if (typeof enriched.observedTxns === "number" && typeof enriched.observedVolumeUsdc === "number") {
+    const perTx = enriched.observedTxns > 0 ? enriched.observedVolumeUsdc / enriched.observedTxns : 0;
+    if (enriched.observedTxns > 50_000 && perTx < 0.011) {
       penalties.push({ reason: "Very high txn count with sub-cent average — spam/wash pattern", points: 20 });
       score -= 20;
       if (washTradeRisk === "low") washTradeRisk = "medium";
@@ -117,21 +136,21 @@ export async function runMerchantTrust(input: MerchantTrustInput): Promise<Merch
   }
 
   // Latency band (p50).
-  if (typeof input.p50LatencyMs === "number") {
-    if (input.p50LatencyMs > 4000) {
-      penalties.push({ reason: `Slow p50 latency ${input.p50LatencyMs}ms`, points: 10 });
+  if (typeof enriched.p50LatencyMs === "number") {
+    if (enriched.p50LatencyMs > 4000) {
+      penalties.push({ reason: `Slow p50 latency ${enriched.p50LatencyMs}ms`, points: 10 });
       score -= 10;
-    } else if (input.p50LatencyMs <= 1500) {
+    } else if (enriched.p50LatencyMs <= 1500) {
       score += 4;
-      signals.push(`Fast p50 latency ${input.p50LatencyMs}ms`);
+      signals.push(`Fast p50 latency ${enriched.p50LatencyMs}ms`);
     }
   }
 
   // Optional live probe.
   let liveProbe: Awaited<ReturnType<typeof probeEndpoint>> | null = null;
-  if (input.probe && input.targetUrl) {
+  if (enriched.probe && enriched.targetUrl) {
     try {
-      liveProbe = await probeEndpoint(input.targetUrl);
+      liveProbe = await probeEndpoint(enriched.targetUrl);
       if (liveProbe.status === 0) {
         penalties.push({ reason: "Live endpoint unreachable", points: 25 });
         score -= 25;
@@ -142,7 +161,7 @@ export async function runMerchantTrust(input: MerchantTrustInput): Promise<Merch
         penalties.push({ reason: "Endpoint is open (not x402-protected) — unexpected for paid host", points: 6 });
         score -= 6;
       }
-      const sec = assessUrlSecurity(input.targetUrl);
+      const sec = assessUrlSecurity(enriched.targetUrl);
       if (sec.grade === "F") {
         penalties.push({ reason: "URL security grade F", points: 20 });
         score -= 20;
@@ -170,9 +189,15 @@ export async function runMerchantTrust(input: MerchantTrustInput): Promise<Merch
       liveProbe,
     },
     agentTrustMeta(
-      ["wash_trade_check", "verification_ratio", "volume_realism", input.probe ? "live_probe" : "telemetry_only"],
+      [
+        "wash_trade_check",
+        "verification_ratio",
+        "volume_realism",
+        enriched.probe ? "live_probe" : "telemetry_only",
+        input.autoIngest !== false ? "x402watch_ingest" : "manual_telemetry",
+      ],
       {
-        confidence: input.probe ? 0.85 : 0.7,
+        confidence: enriched.probe ? 0.85 : 0.7,
         sources: ["merchant-trust-oracle", "x402gle-signals"],
         accuracy_note:
           "KYM trust is a pre-payment heuristic from supplied telemetry and optional live probe; not a guarantee of settlement quality.",

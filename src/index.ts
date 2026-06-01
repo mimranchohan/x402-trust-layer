@@ -20,6 +20,7 @@ import { ensureVerifierProbeMandate } from "./lib/mandate.js";
 import { SUITE_VERSION } from "./lib/version.js";
 import { rateLimitPerMinute, rateLimitUnpaidProbes, rateLimitAgentLookup } from "./lib/rate-limit.js";
 import { handleAgentLookup } from "./agents/agent-verify.js";
+import { runCertifiedLookup, runCertifiedCatalog } from "./agents/trust-network.js";
 
 assertConfig();
 
@@ -196,7 +197,7 @@ app.get("/", (req, res) => {
   res.json({
     name: "x402 Trust Layer — Agent Suite",
     description:
-      "32 paid x402 infrastructure APIs — start with 3 entry points; 27 advanced routes incl. 8 Tier-1 enterprise agents",
+      "36 paid x402 infrastructure APIs — guard, semantic escrow, mandate diff, certified seller network",
     docs: `${config.publicBaseUrl}/openapi.json`,
     discovery: `${config.publicBaseUrl}/x402/api/discover`,
     bazaar: `${config.publicBaseUrl}/x402/api/services.json`,
@@ -222,6 +223,30 @@ app.get(
   "/api/agent/lookup/:wallet",
   rateLimitAgentLookup(Number(process.env.RATE_LIMIT_AGENT_LOOKUP_PER_HOUR ?? 30)),
   asyncRoute(handleAgentLookup),
+);
+
+/** Free certified seller lookup — rate limited */
+app.get(
+  "/api/merchant-trust/certified/:host",
+  rateLimitAgentLookup(Number(process.env.RATE_LIMIT_AGENT_LOOKUP_PER_HOUR ?? 60)),
+  asyncRoute(async (req, res) => {
+    const host = String(req.params.host ?? "").trim();
+    if (!host) {
+      res.status(400).json({ error: "host required" });
+      return;
+    }
+    res.json(await runCertifiedLookup(host));
+  }),
+);
+
+app.get(
+  "/api/trust-network/catalog",
+  rateLimitAgentLookup(Number(process.env.RATE_LIMIT_AGENT_LOOKUP_PER_HOUR ?? 60)),
+  asyncRoute(async (req, res) => {
+    const limit =
+      typeof req.query.limit === "string" ? Math.min(100, Math.max(1, Number(req.query.limit) || 50)) : 50;
+    res.json(await runCertifiedCatalog(limit));
+  }),
 );
 
 registerAgenticProbes(app, paid, postHandlers);

@@ -4,7 +4,7 @@ import { SUITE_VERSION } from "./version.js";
 
 const SERVICE_NAME = "x402 Trust Layer";
 const SERVICE_DESCRIPTION =
-  "32 paid x402 trust infrastructure APIs: preflight guard, KYM merchant trust, ERC-8004 agent verify, AP2 mandates, cross-rail routing, compliance, disputes, quality escrow, and settlement orchestration.";
+  "36 paid x402 trust infrastructure APIs: guard, semantic escrow, mandate diff, certified seller network, KYM, ERC-8004, mandates, compliance, and settlement orchestration.";
 
 const ENDPOINT_META: Record<string, { summary: string; category: string; tags: string[] }> = {
   "/api/x402/proxy": {
@@ -166,6 +166,36 @@ const ENDPOINT_META: Record<string, { summary: string; category: string; tags: s
     summary: "Quality-gated escrow with response verification and auto-refund",
     category: "Trust",
     tags: ["escrow", "quality", "refund", "trust"],
+  },
+  "/api/quality-escrow/semantic-settle": {
+    summary: "Semantic delivery escrow: intent rubric + schema match before release/refund",
+    category: "Trust",
+    tags: ["escrow", "semantic", "delivery", "trust"],
+  },
+  "/api/mandate/diff": {
+    summary: "Intent diff: mandate scope vs MCP tool trace before payment",
+    category: "Trust",
+    tags: ["mandate", "intent", "diff", "governance"],
+  },
+  "/api/merchant-trust/certify": {
+    summary: "Certify x402 seller with badge and buyer access policy",
+    category: "Trust",
+    tags: ["certification", "seller", "kym", "trust-network"],
+  },
+  "/api/trust-network/buyer-gate": {
+    summary: "Buyer gate for certified sellers: attestation + tier check",
+    category: "Trust",
+    tags: ["trust-network", "attestation", "buyer", "gate"],
+  },
+  "/api/pipeline/trust-v2": {
+    summary: "One-shot: mandate diff + KYM ingest + guard + certified buyer gate",
+    category: "Orchestration",
+    tags: ["pipeline", "trust-v2", "orchestration"],
+  },
+  "/api/trust-network/bond/slash": {
+    summary: "Slash certified seller virtual bond after failed delivery",
+    category: "Trust",
+    tags: ["bond", "slash", "seller", "trust-network"],
   },
 };
 

@@ -22,12 +22,15 @@ Paid x402 trust infrastructure for AI agents. **No API keys** — pay per call i
 - When user asks: guard, preflight, trust score, mandate, compliance, dispute, escrow
 - Enterprise flows: AP2 intent, Visa chargeback, SOC2 ledger
 
-## Default buyer flow (3 steps)
+## Default buyer flow (v2 — certified + semantic)
 
 ```text
-1. POST /api/x402/proxy  (or /api/guard/pre-x402) — preflight
-2. x402_check → x402_fetch on external URL
-3. POST /api/receipt-auditor/verify — settlement proof
+1. POST /api/mandate/compile → POST /api/mandate/diff (tool trace vs mandate)
+2. POST /api/x402/proxy  (or /api/guard/pre-x402) — preflight
+3. POST /api/trust-network/buyer-gate — if seller is certified
+4. x402_check → x402_fetch on external URL
+5. POST /api/quality-escrow/semantic-settle — delivery verify / auto-refund
+6. POST /api/receipt-auditor/verify — settlement proof
 ```
 
 ## Primary entry points
@@ -48,7 +51,13 @@ Paid x402 trust infrastructure for AI agents. **No API keys** — pay per call i
 | `POST /api/rail-optimizer/route` | $0.04 | Visa CLI vs MPP vs Base/Solana x402 |
 | `POST /api/compliance/ledger` | $0.12 | CFO/SOC2 reconciliation + ledgerHash |
 | `POST /api/dispute/resolve` | $0.10 | Chargeback dossier or refund claim |
-| `POST /api/quality-escrow/settle` | $0.10 | Pay-on-delivery verify + auto-refund |
+| `POST /api/quality-escrow/settle` | $0.10 | Schema-only escrow release/refund |
+| `POST /api/quality-escrow/semantic-settle` | $0.12 | Intent rubric + schema escrow |
+| `POST /api/mandate/diff` | $0.04 | Mandate vs MCP tool trace (pre-pay) |
+| `POST /api/merchant-trust/certify` | $0.15 | Seller certification + buyer policy |
+| `POST /api/trust-network/buyer-gate` | $0.03 | Buyer check for certified sellers |
+
+**Free:** `GET /api/merchant-trust/certified/:host`, `GET /api/trust-network/catalog`
 
 ## How to call (OpenDexter MCP)
 

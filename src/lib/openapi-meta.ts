@@ -128,4 +128,28 @@ export const ENDPOINT_META: Record<string, { summary: string; tags: string[] }> 
     summary: "Quality-gated escrow with response verification and auto-refund",
     tags: ["escrow", "quality", "refund", "trust"],
   },
+  "/api/quality-escrow/semantic-settle": {
+    summary: "Semantic delivery escrow: intent rubric + schema before release/refund",
+    tags: ["escrow", "semantic", "delivery"],
+  },
+  "/api/mandate/diff": {
+    summary: "Compare mandate scope to MCP tool trace before x402 payment",
+    tags: ["mandate", "intent", "diff"],
+  },
+  "/api/merchant-trust/certify": {
+    summary: "Certify seller: KYM pass, signed badge, buyer policy",
+    tags: ["certification", "seller", "trust-network"],
+  },
+  "/api/trust-network/buyer-gate": {
+    summary: "Certified seller buyer gate before payment",
+    tags: ["trust-network", "attestation", "gate"],
+  },
+  "/api/pipeline/trust-v2": {
+    summary: "Trust v2 bundle: mandate diff + KYM + guard + buyer gate",
+    tags: ["pipeline", "trust-v2", "orchestration"],
+  },
+  "/api/trust-network/bond/slash": {
+    summary: "Slash seller virtual bond after failed delivery",
+    tags: ["bond", "slash", "trust-network"],
+  },
 };

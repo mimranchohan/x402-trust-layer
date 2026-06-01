@@ -13,8 +13,8 @@
   "info": {
     "title": "x402 Trust Layer",
     "version": "3.1.0",
-    "description": "31 paid x402 trust infrastructure APIs for AI agent fleets: guard, proxy, KYM merchant trust, AP2 mandates, cross-rail routing, compliance ledgers, disputes, quality escrow, and pipeline orchestration.",
-    "x-guidance": "x402 Trust Layer — 31 paid agent payment infrastructure APIs on Base and Solana via Dexter facilitator.\n\nTypical flow:\n1. POST /api/guard/pre-x402 or POST /api/x402/proxy before any downstream x402 payment.\n2. POST /api/merchant-trust/score for Know-Your-Merchant preflight on unknown hosts.\n3. POST /api/mandate/compile for AP2-style signed intent; POST /api/mandate/verify before spend.\n4. POST /api/payment-intent/compile or POST /api/pipeline/execute for multi-step orchestration.\n5. POST /api/mpp/session with action open|voucher|close for batch settlement savings.\n6. POST /api/attestation/issue then pass X-Suite-Attestation on partner calls.\n7. POST /api/receipt-auditor/verify after external settlements; POST /api/compliance/ledger for audit.\n\nPay with x402 (USDC). Unpaid GET probes return 402; send Payment-Signature on POST for full JSON responses.\n\nFree (not in this catalog): GET /health — monitoring only, returns 200 without payment."
+    "description": "36 paid x402 trust infrastructure APIs: guard, semantic escrow, mandate diff, certified seller network, KYM, mandates, compliance, disputes, and orchestration.",
+    "x-guidance": "x402 Trust Layer — 36 paid agent payment infrastructure APIs on Base and Solana via Dexter facilitator.\n\nTypical flow:\n1. POST /api/guard/pre-x402 or POST /api/x402/proxy before any downstream x402 payment.\n2. POST /api/merchant-trust/score for Know-Your-Merchant preflight on unknown hosts.\n3. POST /api/mandate/compile for AP2-style signed intent; POST /api/mandate/diff + /api/mandate/verify before spend.\n4. POST /api/trust-network/buyer-gate when paying certified sellers; POST /api/merchant-trust/certify to join network.\n5. POST /api/quality-escrow/semantic-settle after delivery for auto-refund on bad responses.\n6. POST /api/payment-intent/compile or POST /api/pipeline/execute for multi-step orchestration.\n7. POST /api/mpp/session with action open|voucher|close for batch settlement savings.\n8. POST /api/attestation/issue then pass X-Suite-Attestation on partner calls.\n9. POST /api/receipt-auditor/verify after external settlements; POST /api/compliance/ledger for audit.\n\nPay with x402 (USDC). Unpaid GET probes return 402; send Payment-Signature on POST for full JSON responses.\n\nFree (not in this catalog): GET /health — monitoring only, returns 200 without payment."
   },
   "x-discovery": {
     "ownershipProofs": [
@@ -40,8 +40,8 @@
   },
   "x-x402scan": {
     "discoveryMode": "openapi-first",
-    "paidRouteCount": 31,
-    "note": "OpenAPI lists 31 paid /api/* operations. Free routes documented under x-discovery.freeEndpoints."
+    "paidRouteCount": 38,
+    "note": "OpenAPI lists 38 paid /api/* operations. Free routes documented under x-discovery.freeEndpoints."
   },
   "servers": [
     {
@@ -305,8 +305,8 @@
                   "discovery": {
                     "openapiOk": true,
                     "wellKnownOk": true,
-                    "resourceCount": 31,
-                    "openapiPathCount": 31
+                    "resourceCount": 38,
+                    "openapiPathCount": 38
                   },
                   "routes": [
                     {
@@ -1189,6 +1189,112 @@
                     "myceliasignal.com"
                   ]
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/verify": {
+      "post": {
+        "operationId": "post_agent_verify",
+        "summary": "ERC-8004 TrustScore on Base mainnet",
+        "description": "ERC-8004 TrustScore on Base mainnet — $0.04 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "tags": [
+          "identity",
+          "erc-8004",
+          "identity",
+          "trust-score"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.040000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response after x402 settlement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Successful response after x402 settlement",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "allowed": {
+                      "type": "boolean"
+                    },
+                    "summary": {
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "type": "number"
+                    },
+                    "checks_passed": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": true
+                },
+                "example": {
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment Required (x402 v2). Unpaid requests must receive HTTP 402 with Payment-Required header and non-empty accepts.",
+            "headers": {
+              "Payment-Required": {
+                "description": "Base64-encoded x402 payment requirements (v2)",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "walletAddress": {
+                    "type": "string"
+                  },
+                  "agentId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "walletAddress",
+                  "agentId"
+                ]
+              },
+              "example": {
+                "walletAddress": "0x0000000000000000000000000000000000000001",
+                "agentId": "1"
               }
             }
           }
@@ -3090,7 +3196,7 @@
                     "endpoint": "/api/spend-governor/check",
                     "amountUsdc": 0.03,
                     "network": "solana",
-                    "timestamp": "2026-05-31T12:32:20.825Z"
+                    "timestamp": "2026-06-01T13:35:43.283Z"
                   }
                 ]
               }
@@ -3960,7 +4066,7 @@
                     "category": "oracle",
                     "agentId": "dexter-verifier-probe",
                     "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
-                    "timestamp": "2026-05-31T12:32:20.826Z"
+                    "timestamp": "2026-06-01T13:35:43.291Z"
                   }
                 ],
                 "policy": {
@@ -4301,6 +4407,1040 @@
                   "byteLength": 64,
                   "empty": false
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/quality-escrow/semantic-settle": {
+      "post": {
+        "operationId": "post_quality_escrow_semantic_settle",
+        "summary": "Semantic delivery escrow: intent rubric + schema before release/refund",
+        "description": "Semantic delivery escrow: intent rubric + schema before release/refund — $0.12 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "tags": [
+          "tier1",
+          "escrow",
+          "semantic",
+          "delivery"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.120000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response after x402 settlement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Successful response after x402 settlement",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "allowed": {
+                      "type": "boolean"
+                    },
+                    "summary": {
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "type": "number"
+                    },
+                    "checks_passed": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok",
+                  "ok": true,
+                  "allowed": true,
+                  "mode": "semantic",
+                  "summary": "Semantic+schema score 88 ≥ 72 — release approved",
+                  "semanticScore": 92,
+                  "schemaScore": 100,
+                  "qualityScore": 88,
+                  "escrowStatus": "released",
+                  "decision": "release-to-merchant"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment Required (x402 v2). Unpaid requests must receive HTTP 402 with Payment-Required header and non-empty accepts.",
+            "headers": {
+              "Payment-Required": {
+                "description": "Base64-encoded x402 payment requirements (v2)",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string"
+                  },
+                  "deliveryIntent": {
+                    "type": "string"
+                  },
+                  "payerAgentId": {
+                    "type": "string"
+                  },
+                  "payeeMerchant": {
+                    "type": "string"
+                  },
+                  "amountUsdc": {
+                    "type": "number"
+                  },
+                  "releaseThreshold": {
+                    "type": "number"
+                  },
+                  "expectedProfile": {
+                    "type": "object",
+                    "properties": {
+                      "requiredKeys": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "forbidEmpty": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "requiredKeys",
+                      "forbidEmpty"
+                    ]
+                  },
+                  "actualResponse": {
+                    "type": "object",
+                    "properties": {
+                      "bodyKeys": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "byteLength": {
+                        "type": "number"
+                      },
+                      "empty": {
+                        "type": "boolean"
+                      },
+                      "fields": {
+                        "type": "object",
+                        "properties": {
+                          "price": {
+                            "type": "number"
+                          },
+                          "symbol": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "price",
+                          "symbol"
+                        ]
+                      },
+                      "sample": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "bodyKeys",
+                      "byteLength",
+                      "empty",
+                      "fields",
+                      "sample"
+                    ]
+                  }
+                },
+                "required": [
+                  "action",
+                  "deliveryIntent",
+                  "payerAgentId",
+                  "payeeMerchant",
+                  "amountUsdc",
+                  "releaseThreshold",
+                  "expectedProfile",
+                  "actualResponse"
+                ]
+              },
+              "example": {
+                "action": "settle",
+                "deliveryIntent": "ETH/USD spot oracle price with symbol",
+                "payerAgentId": "dexter-verifier-probe",
+                "payeeMerchant": "api.myceliasignal.com",
+                "amountUsdc": 0.05,
+                "releaseThreshold": 72,
+                "expectedProfile": {
+                  "requiredKeys": [
+                    "price",
+                    "symbol"
+                  ],
+                  "forbidEmpty": true
+                },
+                "actualResponse": {
+                  "bodyKeys": [
+                    "price",
+                    "symbol"
+                  ],
+                  "byteLength": 48,
+                  "empty": false,
+                  "fields": {
+                    "price": 3450.12,
+                    "symbol": "ETH"
+                  },
+                  "sample": "{\"price\":3450.12,\"symbol\":\"ETH\"}"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mandate/diff": {
+      "post": {
+        "operationId": "post_mandate_diff",
+        "summary": "Compare mandate scope to MCP tool trace before x402 payment",
+        "description": "Compare mandate scope to MCP tool trace before x402 payment — $0.04 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "tags": [
+          "tier1",
+          "mandate",
+          "intent",
+          "diff"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.040000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response after x402 settlement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Successful response after x402 settlement",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "allowed": {
+                      "type": "boolean"
+                    },
+                    "summary": {
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "type": "number"
+                    },
+                    "checks_passed": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": true
+                },
+                "example": {
+                  "ok": true,
+                  "allowed": true,
+                  "liabilityTier": "allow",
+                  "mandateValid": true,
+                  "withinMandateScope": true,
+                  "violations": [],
+                  "summary": "Tool trace within mandate scope — proceed to x402 payment"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment Required (x402 v2). Unpaid requests must receive HTTP 402 with Payment-Required header and non-empty accepts.",
+            "headers": {
+              "Payment-Required": {
+                "description": "Base64-encoded x402 payment requirements (v2)",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mandateId": {
+                    "type": "string"
+                  },
+                  "task": {
+                    "type": "string"
+                  },
+                  "toolCalls": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "url": {
+                          "type": "string"
+                        },
+                        "amountUsdc": {
+                          "type": "number"
+                        },
+                        "merchant": {
+                          "type": "string"
+                        },
+                        "category": {
+                          "type": "string"
+                        },
+                        "rail": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "url",
+                        "amountUsdc",
+                        "merchant",
+                        "category",
+                        "rail"
+                      ]
+                    }
+                  },
+                  "proposed": {
+                    "type": "object",
+                    "properties": {
+                      "amountUsdc": {
+                        "type": "number"
+                      },
+                      "merchant": {
+                        "type": "string"
+                      },
+                      "category": {
+                        "type": "string"
+                      },
+                      "rail": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "amountUsdc",
+                      "merchant",
+                      "category",
+                      "rail"
+                    ]
+                  }
+                },
+                "required": [
+                  "mandateId",
+                  "task",
+                  "toolCalls",
+                  "proposed"
+                ]
+              },
+              "example": {
+                "mandateId": "mdt_verifier_probe_example",
+                "task": "Buy ETH/USD oracle data for trading bot",
+                "toolCalls": [
+                  {
+                    "name": "x402_fetch",
+                    "url": "https://api.myceliasignal.com/oracle/price/eth/usd",
+                    "amountUsdc": 0.05,
+                    "merchant": "api.myceliasignal.com",
+                    "category": "oracle",
+                    "rail": "base-x402"
+                  }
+                ],
+                "proposed": {
+                  "amountUsdc": 0.05,
+                  "merchant": "api.myceliasignal.com",
+                  "category": "oracle",
+                  "rail": "base-x402"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/merchant-trust/certify": {
+      "post": {
+        "operationId": "post_merchant_trust_certify",
+        "summary": "Certify seller: KYM pass, signed badge, buyer policy",
+        "description": "Certify seller: KYM pass, signed badge, buyer policy — $0.15 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "tags": [
+          "tier1",
+          "certification",
+          "seller",
+          "trust-network"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.150000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response after x402 settlement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Successful response after x402 settlement",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "allowed": {
+                      "type": "boolean"
+                    },
+                    "summary": {
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "type": "number"
+                    },
+                    "checks_passed": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": true
+                },
+                "example": {
+                  "ok": true,
+                  "certified": true,
+                  "badgeId": "cert_example",
+                  "host": "api.myceliasignal.com",
+                  "policy": {
+                    "requireAttestation": true,
+                    "minAgentTier": "SILVER",
+                    "minTrustScore": 50,
+                    "minSecurityGrade": "C"
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment Required (x402 v2). Unpaid requests must receive HTTP 402 with Payment-Required header and non-empty accepts.",
+            "headers": {
+              "Payment-Required": {
+                "description": "Base64-encoded x402 payment requirements (v2)",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "host": {
+                    "type": "string"
+                  },
+                  "targetUrl": {
+                    "type": "string"
+                  },
+                  "washTradePct": {
+                    "type": "number"
+                  },
+                  "verifiedResources": {
+                    "type": "number"
+                  },
+                  "totalResources": {
+                    "type": "number"
+                  },
+                  "probe": {
+                    "type": "boolean"
+                  },
+                  "ttlDays": {
+                    "type": "number"
+                  },
+                  "policy": {
+                    "type": "object",
+                    "properties": {
+                      "requireAttestation": {
+                        "type": "boolean"
+                      },
+                      "minAgentTier": {
+                        "type": "string"
+                      },
+                      "minTrustScore": {
+                        "type": "number"
+                      },
+                      "minSecurityGrade": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "requireAttestation",
+                      "minAgentTier",
+                      "minTrustScore",
+                      "minSecurityGrade"
+                    ]
+                  },
+                  "goodResponseProfile": {
+                    "type": "object",
+                    "properties": {
+                      "requiredKeys": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "forbidEmpty": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "requiredKeys",
+                      "forbidEmpty"
+                    ]
+                  }
+                },
+                "required": [
+                  "host",
+                  "targetUrl",
+                  "washTradePct",
+                  "verifiedResources",
+                  "totalResources",
+                  "probe",
+                  "ttlDays",
+                  "policy",
+                  "goodResponseProfile"
+                ]
+              },
+              "example": {
+                "host": "api.myceliasignal.com",
+                "targetUrl": "https://api.myceliasignal.com/oracle/price/eth/usd",
+                "washTradePct": 12,
+                "verifiedResources": 44,
+                "totalResources": 91,
+                "probe": false,
+                "ttlDays": 30,
+                "policy": {
+                  "requireAttestation": true,
+                  "minAgentTier": "SILVER",
+                  "minTrustScore": 50,
+                  "minSecurityGrade": "C"
+                },
+                "goodResponseProfile": {
+                  "requiredKeys": [
+                    "price",
+                    "symbol"
+                  ],
+                  "forbidEmpty": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trust-network/buyer-gate": {
+      "post": {
+        "operationId": "post_trust_network_buyer_gate",
+        "summary": "Certified seller buyer gate before payment",
+        "description": "Certified seller buyer gate before payment — $0.03 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "tags": [
+          "tier1",
+          "trust-network",
+          "attestation",
+          "gate"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.030000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response after x402 settlement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Successful response after x402 settlement",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "allowed": {
+                      "type": "boolean"
+                    },
+                    "summary": {
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "type": "number"
+                    },
+                    "checks_passed": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": true
+                },
+                "example": {
+                  "ok": true,
+                  "allowed": true,
+                  "certifiedSeller": true,
+                  "summary": "Buyer passes certified seller gate — proceed to x402 payment",
+                  "violations": []
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment Required (x402 v2). Unpaid requests must receive HTTP 402 with Payment-Required header and non-empty accepts.",
+            "headers": {
+              "Payment-Required": {
+                "description": "Base64-encoded x402 payment requirements (v2)",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sellerHost": {
+                    "type": "string"
+                  },
+                  "walletAddress": {
+                    "type": "string"
+                  },
+                  "attestationId": {
+                    "type": "string"
+                  },
+                  "agentTier": {
+                    "type": "string"
+                  },
+                  "trustScore": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "sellerHost",
+                  "walletAddress",
+                  "attestationId",
+                  "agentTier",
+                  "trustScore"
+                ]
+              },
+              "example": {
+                "sellerHost": "api.myceliasignal.com",
+                "walletAddress": "0x0000000000000000000000000000000000000001",
+                "attestationId": "att_verifier_probe_example",
+                "agentTier": "GOLD",
+                "trustScore": 75
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pipeline/trust-v2": {
+      "post": {
+        "operationId": "post_pipeline_trust_v2",
+        "summary": "Trust v2 bundle: mandate diff + KYM + guard + buyer gate",
+        "description": "Trust v2 bundle: mandate diff + KYM + guard + buyer gate — $0.35 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "tags": [
+          "tier1",
+          "pipeline",
+          "trust-v2",
+          "orchestration"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.350000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response after x402 settlement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Successful response after x402 settlement",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "allowed": {
+                      "type": "boolean"
+                    },
+                    "summary": {
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "type": "number"
+                    },
+                    "checks_passed": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": true
+                },
+                "example": {
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment Required (x402 v2). Unpaid requests must receive HTTP 402 with Payment-Required header and non-empty accepts.",
+            "headers": {
+              "Payment-Required": {
+                "description": "Base64-encoded x402 payment requirements (v2)",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "agentId": {
+                    "type": "string"
+                  },
+                  "walletAddress": {
+                    "type": "string"
+                  },
+                  "targetUrl": {
+                    "type": "string"
+                  },
+                  "estimatedCostUsdc": {
+                    "type": "number"
+                  },
+                  "policy": {
+                    "type": "object",
+                    "properties": {
+                      "dailyCapUsdc": {
+                        "type": "number"
+                      },
+                      "perCallCapUsdc": {
+                        "type": "number"
+                      },
+                      "allowedHosts": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "dailyCapUsdc",
+                      "perCallCapUsdc",
+                      "allowedHosts"
+                    ]
+                  },
+                  "mandateId": {
+                    "type": "string"
+                  },
+                  "toolCalls": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "url": {
+                          "type": "string"
+                        },
+                        "amountUsdc": {
+                          "type": "number"
+                        },
+                        "merchant": {
+                          "type": "string"
+                        },
+                        "rail": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "url",
+                        "amountUsdc",
+                        "merchant",
+                        "rail"
+                      ]
+                    }
+                  },
+                  "sellerHost": {
+                    "type": "string"
+                  },
+                  "kymBeforePay": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "agentId",
+                  "walletAddress",
+                  "targetUrl",
+                  "estimatedCostUsdc",
+                  "policy",
+                  "mandateId",
+                  "toolCalls",
+                  "sellerHost",
+                  "kymBeforePay"
+                ]
+              },
+              "example": {
+                "agentId": "dexter-verifier-probe",
+                "walletAddress": "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
+                "targetUrl": "https://api.myceliasignal.com/oracle/price/eth/usd",
+                "estimatedCostUsdc": 0.05,
+                "policy": {
+                  "dailyCapUsdc": 10,
+                  "perCallCapUsdc": 0.5,
+                  "allowedHosts": [
+                    "myceliasignal.com"
+                  ]
+                },
+                "mandateId": "mdt_verifier_probe_example",
+                "toolCalls": [
+                  {
+                    "name": "x402_fetch",
+                    "url": "https://api.myceliasignal.com/oracle/price/eth/usd",
+                    "amountUsdc": 0.05,
+                    "merchant": "api.myceliasignal.com",
+                    "rail": "base-x402"
+                  }
+                ],
+                "sellerHost": "api.myceliasignal.com",
+                "kymBeforePay": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trust-network/bond/slash": {
+      "post": {
+        "operationId": "post_trust_network_bond_slash",
+        "summary": "Slash seller virtual bond after failed delivery",
+        "description": "Slash seller virtual bond after failed delivery — $0.03 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "tags": [
+          "tier1",
+          "bond",
+          "slash",
+          "trust-network"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.030000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response after x402 settlement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Successful response after x402 settlement",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "allowed": {
+                      "type": "boolean"
+                    },
+                    "summary": {
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "type": "number"
+                    },
+                    "checks_passed": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": true
+                },
+                "example": {
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment Required (x402 v2). Unpaid requests must receive HTTP 402 with Payment-Required header and non-empty accepts.",
+            "headers": {
+              "Payment-Required": {
+                "description": "Base64-encoded x402 payment requirements (v2)",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sellerHost": {
+                    "type": "string"
+                  },
+                  "amountUsdc": {
+                    "type": "number"
+                  },
+                  "reason": {
+                    "type": "string"
+                  },
+                  "qualityScore": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "sellerHost",
+                  "amountUsdc",
+                  "reason",
+                  "qualityScore"
+                ]
+              },
+              "example": {
+                "sellerHost": "api.myceliasignal.com",
+                "amountUsdc": 0.02,
+                "reason": "semantic_delivery_fail",
+                "qualityScore": 42
               }
             }
           }
