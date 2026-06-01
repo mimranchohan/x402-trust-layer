@@ -41,7 +41,7 @@ export async function runX402Proxy(
 ): Promise<WithAgentTrust<X402ProxyResult>> {
   const urlSec = assessUrlSecurity(input.targetUrl);
   const guard = await runPreX402Guard(input);
-  const identity = runIdentityGate({
+  const identity = await runIdentityGate({
     walletAddress: input.walletAddress,
     maxTierSpendUsdc: input.policy.perCallCapUsdc * 20,
   });

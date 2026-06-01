@@ -18,7 +18,8 @@ import { listEndpoints, registerRoutes } from "./routes.js";
 import { registerX402gleHostVerification } from "./lib/x402gle-host-verify.js";
 import { ensureVerifierProbeMandate } from "./lib/mandate.js";
 import { SUITE_VERSION } from "./lib/version.js";
-import { rateLimitPerMinute, rateLimitUnpaidProbes } from "./lib/rate-limit.js";
+import { rateLimitPerMinute, rateLimitUnpaidProbes, rateLimitAgentLookup } from "./lib/rate-limit.js";
+import { handleAgentLookup } from "./agents/agent-verify.js";
 
 assertConfig();
 
@@ -195,7 +196,7 @@ app.get("/", (req, res) => {
   res.json({
     name: "x402 Trust Layer — Agent Suite",
     description:
-      "31 paid x402 infrastructure APIs — start with 3 entry points; 26 advanced routes incl. 7 Tier-1 enterprise agents",
+      "32 paid x402 infrastructure APIs — start with 3 entry points; 27 advanced routes incl. 8 Tier-1 enterprise agents",
     docs: `${config.publicBaseUrl}/openapi.json`,
     discovery: `${config.publicBaseUrl}/x402/api/discover`,
     bazaar: `${config.publicBaseUrl}/x402/api/services.json`,
@@ -215,6 +216,14 @@ app.get("/", (req, res) => {
 
 const postHandlers = registerRoutes(app, paid, asyncRoute);
 registerWebhookRoutes(app);
+
+/** Free ERC-8004 lookup — rate limited ~30/hr per IP */
+app.get(
+  "/api/agent/lookup/:wallet",
+  rateLimitAgentLookup(Number(process.env.RATE_LIMIT_AGENT_LOOKUP_PER_HOUR ?? 30)),
+  asyncRoute(handleAgentLookup),
+);
+
 registerAgenticProbes(app, paid, postHandlers);
 
 /** Copy-paste URLs for Agentic Validate Endpoint (free) */

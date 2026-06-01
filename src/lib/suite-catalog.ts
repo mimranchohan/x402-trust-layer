@@ -72,6 +72,7 @@ export const SUITE_PRICES = {
   trustRegistry: 0.02,
   marketBuyAdvisor: 0.08,
   auditionCoach: 0.06,
+  agentVerify: 0.04,
   merchantTrust: 0.06,
   mandateCompile: 0.08,
   mandateVerify: 0.02,

@@ -1,7 +1,7 @@
 {
   "name": "x402-agent-suite",
   "version": "3.1.0",
-  "description": "31 paid x402 infrastructure APIs for AI agent fleets — guard, proxy, MPP, attestations, trust/KYM, AP2 mandates, cross-rail routing, compliance, disputes, multi-chain USDC",
+  "description": "32 paid x402 infrastructure APIs for AI agent fleets — guard, ERC-8004 verify, proxy, MPP, attestations, trust/KYM, AP2 mandates, cross-rail routing, compliance, disputes, multi-chain USDC",
   "type": "module",
   "author": "Mimran Chohan",
   "license": "MIT",
@@ -59,6 +59,7 @@
     "@x402/fetch": "^2.14.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "viem": "^2.52.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {

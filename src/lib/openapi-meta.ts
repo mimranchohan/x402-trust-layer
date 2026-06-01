@@ -24,6 +24,10 @@ export const ENDPOINT_META: Record<string, { summary: string; tags: string[] }> 
     summary: "Pre-x402 guard: spend + identity + risk in one call",
     tags: ["guard", "preflight", "policy"],
   },
+  "/api/agent/verify": {
+    summary: "ERC-8004 TrustScore on Base mainnet",
+    tags: ["erc-8004", "identity", "trust-score"],
+  },
   "/api/pipeline/execute": {
     summary: "One-shot pipeline: guard, plan, facilitator, marketplace routing",
     tags: ["pipeline", "orchestration"],

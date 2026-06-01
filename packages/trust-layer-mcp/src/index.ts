@@ -40,8 +40,21 @@ const policySchema = z.object({
 
 const server = new McpServer({
   name: "x402-trust-layer",
-  version: "1.0.0",
+  version: "1.2.0",
 });
+
+server.tool(
+  "trust_agent_verify",
+  "ERC-8004 TrustScore on Base mainnet ($0.04)",
+  {
+    walletAddress: z.string(),
+    agentId: z.union([z.string(), z.number()]).optional(),
+  },
+  async (args) => {
+    const data = await paidPost("/api/agent/verify", args);
+    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+  },
+);
 
 server.tool(
   "trust_alchemy_preflight",

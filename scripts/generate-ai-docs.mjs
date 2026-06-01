@@ -19,14 +19,14 @@ function routeTable(filter) {
 
 const llmsTxt = `# x402 Trust Layer
 
-> 31 paid x402 trust infrastructure APIs for AI agent fleets. Guard, attest, comply and audit every payment — before the money moves.
+> 32 paid x402 trust infrastructure APIs for AI agent fleets. Guard, attest, comply and audit every payment — before the money moves.
 
 - Website: https://x402trustlayer.xyz
 - OpenAPI: https://x402trustlayer.xyz/openapi.json
 - Discovery: https://x402trustlayer.xyz/.well-known/x402
 - Skill (agents): https://x402trustlayer.xyz/skill.md
 - Full context: https://x402trustlayer.xyz/llms-full.txt
-- MCP: npx @mimranakb/trust-layer-mcp@1.1.0 (trust_alchemy_preflight for x402.alchemy.com)
+- MCP: npx @mimranakb/trust-layer-mcp@1.2.0 (trust_agent_verify, trust_alchemy_preflight)
 - npm: x402-agent-suite-preflight
 - GitHub: https://github.com/mimranchohan/x402-agent-suite
 
@@ -48,7 +48,7 @@ ${routeTable(byTier("entry"))}
 |--------|------|-------|---------|
 ${routeTable(byTier("tier1"))}
 
-## All 31 paid routes
+## All 32 paid routes
 
 | Method | Path | Price | Summary |
 |--------|------|-------|---------|
@@ -64,6 +64,7 @@ ${routeTable(agents)}
 | GET | /skill.md | Agent skill file |
 | GET | /api/agentic/validate-urls | Agentic Market URL list |
 | POST | /api/webhooks/register | Fleet webhook registration (beta) |
+| GET | /api/agent/lookup/:wallet | Free ERC-8004 TrustScore lookup (30/hr/IP) |
 | GET | /api/webhooks/list | List webhooks |
 
 ## Networks
@@ -83,7 +84,7 @@ const skillMd = `# x402 Trust Layer Skill
 
 ## Product Summary
 
-x402 Trust Layer is the **control plane** between AI agents and the open x402 marketplace. 31 paid HTTP APIs decide whether to pay, whom to trust, which rail to use, and how to audit or dispute settlements. No API keys — USDC micropayments on Base, Solana, and Polygon.
+x402 Trust Layer is the **control plane** between AI agents and the open x402 marketplace. 32 paid HTTP APIs decide whether to pay, whom to trust, which rail to use, and how to audit or dispute settlements. No API keys — USDC micropayments on Base, Solana, and Polygon.
 
 - **Base URL:** https://x402trustlayer.xyz
 - **OpenAPI:** https://x402trustlayer.xyz/openapi.json
@@ -129,8 +130,18 @@ x402 Trust Layer is the **control plane** between AI agents and the open x402 ma
 | POST /api/compliance/ledger | $0.12 | CFO/SOC2 reconciliation |
 | POST /api/dispute/resolve | $0.10 | Chargeback dossier / refund claim |
 | POST /api/quality-escrow/settle | $0.10 | Pay-on-delivery + auto-refund |
+| POST /api/agent/verify | $0.04 | ERC-8004 TrustScore (Base mainnet) |
 
-## Workflow: safe autonomous purchase
+## ERC-8004 Agent Verify
+
+\`\`\`text
+POST /api/agent/verify  { walletAddress, agentId?, chain? }  → trustScore, tier, breakdown
+GET  /api/agent/lookup/:wallet?agentId=1                     → free (30/hr/IP)
+\`\`\`
+
+Tiers: PLATINUM ≥85 | GOLD ≥70 | SILVER ≥50 | BRONZE ≥30 | UNVERIFIED <30
+
+Pair with guard: \`POST /api/guard/pre-x402\` + \`minAgentTier: "SILVER"\`
 
 1. \`POST /api/mandate/compile\` — human intent → signed scope
 2. \`POST /api/merchant-trust/score\` — KYM on target host
@@ -165,10 +176,11 @@ Spend limits: configure in Agentic Wallet UI; enforce policy in Trust Layer \`po
 Demo: \`npm run demo:alchemy\` (~$1.10) | \`npm run demo:alchemy:enterprise\` (~$1.32)  
 Alchemy skill: \`npx skills add alchemyplatform/skills --yes\`
 
-## MCP tools (@mimranakb/trust-layer-mcp v1.1.0)
+## MCP tools (@mimranakb/trust-layer-mcp v1.2.0)
 
 | Tool | Maps to |
 |------|---------|
+| trust_agent_verify | POST /api/agent/verify |
 | trust_alchemy_preflight | POST /api/guard/pre-x402 (Alchemy preset) |
 | trust_preflight_proxy | POST /api/x402/proxy |
 | trust_guard_preflight | POST /api/guard/pre-x402 |
@@ -176,7 +188,7 @@ Alchemy skill: \`npx skills add alchemyplatform/skills --yes\`
 | trust_mandate_verify | POST /api/mandate/verify |
 | trust_receipt_verify | POST /api/receipt-auditor/verify |
 
-Setup: \`EVM_PRIVATE_KEY\` or \`SOLANA_PRIVATE_KEY\` in env. Run: \`npx @mimranakb/trust-layer-mcp@1.1.0\`
+Setup: \`EVM_PRIVATE_KEY\` or \`SOLANA_PRIVATE_KEY\` in env. Run: \`npx @mimranakb/trust-layer-mcp@1.2.0\`
 
 ## npm helper
 

@@ -33,6 +33,10 @@ export const VERIFY_EXAMPLES: Record<string, unknown> = {
     network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
     policy: { dailyCapUsdc: 10, perCallCapUsdc: 0.5, allowedHosts: ["myceliasignal.com"] },
   },
+  "/api/agent/verify": {
+    walletAddress: "0x0000000000000000000000000000000000000001",
+    agentId: "1",
+  },
   "/api/guard/pre-x402-alchemy": {
     agentId: "alchemy-live-demo-1",
     walletAddress: "0x0000000000000000000000000000000000000001",

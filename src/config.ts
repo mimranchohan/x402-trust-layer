@@ -88,6 +88,12 @@ export const config = {
     env("USE_CDP_FACILITATOR") === "1" ||
     env("AGENTIC_CDP") === "1",
   baseRpcUrl: env("BASE_RPC_URL") || "https://mainnet.base.org",
+  alchemyApiKey: env("ALCHEMY_API_KEY"),
+  erc8004IdentityRegistry:
+    env("ERC8004_IDENTITY_REGISTRY") || "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+  erc8004ReputationRegistry:
+    env("ERC8004_REPUTATION_REGISTRY") || "0x8004BAa17C55a88189AE136b182e5fdA19dE9b63",
+  trustScoreCacheTtlSec: Number(env("TRUSTSCORE_CACHE_TTL_SEC") || "120"),
   network: (chains[0] ?? "solana") as ChainKey,
   attestationHmacSecret: resolveAttestationHmacSecret(),
   testnetMode: env("X402_TESTNET") === "1" || env("TESTNET") === "1",
@@ -126,6 +132,7 @@ export const pricing = {
   complianceLedger: "0.12",
   disputeResolve: "0.10",
   qualityEscrow: "0.10",
+  agentVerify: "0.04",
 } as const;
 
 export function assertConfig(): void {

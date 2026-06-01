@@ -1,5 +1,6 @@
 import type { Express, Request, Response, NextFunction, RequestHandler } from "express";
 import { z } from "zod";
+import { runAgentVerify } from "./agents/agent-verify.js";
 import { runAgentEscrow } from "./agents/agent-escrow.js";
 import { runApiRouter } from "./agents/api-router.js";
 import { runBudgetAllocator } from "./agents/budget-allocator.js";
@@ -58,6 +59,7 @@ export function listEndpoints() {
     { path: "POST /api/attestation/verify", price: `$${pricing.attestationVerify}`, tier: "killer" },
     { path: "GET /api/attestation/registry", price: `$${pricing.trustRegistry}`, tier: "killer" },
     { path: "POST /api/guard/pre-x402", price: `$${pricing.preX402Guard}`, tier: "bundle" },
+    { path: "POST /api/agent/verify", price: `$${pricing.agentVerify}`, tier: "identity" },
     { path: "POST /api/pipeline/execute", price: `$${pricing.pipelineExecute}`, tier: "bundle" },
     { path: "POST /api/payment-intent/compile", price: `$${pricing.paymentCompiler}`, tier: "orchestration" },
     { path: "POST /api/facilitator/failover", price: `$${pricing.facilitatorFailover}`, tier: "orchestration" },
@@ -94,6 +96,8 @@ const guardBodySchema = z.object({
   network: z.string().optional(),
   policy: policySchema,
   maxTierSpendUsdc: z.number().optional(),
+  minAgentTier: z.enum(["BRONZE", "SILVER", "GOLD", "PLATINUM"]).optional(),
+  minTrustScore: z.number().min(0).max(100).optional(),
 });
 
 export function registerRoutes(
@@ -118,6 +122,23 @@ export function registerRoutes(
     if (!ex || typeof ex !== "object" || Array.isArray(ex)) return null;
     return ex as Record<string, unknown>;
   };
+
+  post(
+    "/api/agent/verify",
+    pricing.agentVerify,
+    "ERC-8004 TrustScore on Base mainnet — agent identity, reputation, wallet binding, agent card",
+    async (req, res) => {
+      const parsed = z
+        .object({
+          walletAddress: z.string().min(16),
+          agentId: z.union([z.string(), z.number()]).optional(),
+          skipCache: z.boolean().optional(),
+        })
+        .safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(await runAgentVerify(parsed.data));
+    },
+  );
 
   post(
     "/api/guard/pre-x402",
@@ -545,7 +566,7 @@ export function registerRoutes(
         }
       }
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
-      res.json(runIdentityGate(parsed.data));
+      res.json(await runIdentityGate(parsed.data));
     },
   );
 

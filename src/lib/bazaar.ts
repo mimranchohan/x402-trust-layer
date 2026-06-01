@@ -4,7 +4,7 @@ import { SUITE_VERSION } from "./version.js";
 
 const SERVICE_NAME = "x402 Trust Layer";
 const SERVICE_DESCRIPTION =
-  "31 paid x402 trust infrastructure APIs: preflight guard, KYM merchant trust, AP2 mandates, cross-rail routing, compliance, disputes, quality escrow, and settlement orchestration.";
+  "32 paid x402 trust infrastructure APIs: preflight guard, KYM merchant trust, ERC-8004 agent verify, AP2 mandates, cross-rail routing, compliance, disputes, quality escrow, and settlement orchestration.";
 
 const ENDPOINT_META: Record<string, { summary: string; category: string; tags: string[] }> = {
   "/api/x402/proxy": {
@@ -36,6 +36,11 @@ const ENDPOINT_META: Record<string, { summary: string; category: string; tags: s
     summary: "Spend + identity + risk + security grade before any x402 pay",
     category: "Infrastructure",
     tags: ["guard", "preflight", "policy"],
+  },
+  "/api/agent/verify": {
+    summary: "ERC-8004 TrustScore on Base mainnet — agent identity and reputation",
+    category: "Trust",
+    tags: ["erc-8004", "identity", "trust-score", "agent"],
   },
   "/api/pipeline/execute": {
     summary: "Full agent pipeline: guard, plan, facilitator, routing in one call",

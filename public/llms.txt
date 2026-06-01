@@ -1,13 +1,13 @@
 # x402 Trust Layer
 
-> 31 paid x402 trust infrastructure APIs for AI agent fleets. Guard, attest, comply and audit every payment — before the money moves.
+> 32 paid x402 trust infrastructure APIs for AI agent fleets. Guard, attest, comply and audit every payment — before the money moves.
 
 - Website: https://x402trustlayer.xyz
 - OpenAPI: https://x402trustlayer.xyz/openapi.json
 - Discovery: https://x402trustlayer.xyz/.well-known/x402
 - Skill (agents): https://x402trustlayer.xyz/skill.md
 - Full context: https://x402trustlayer.xyz/llms-full.txt
-- MCP: npx @mimranakb/trust-layer-mcp@1.1.0 (trust_alchemy_preflight for x402.alchemy.com)
+- MCP: npx @mimranakb/trust-layer-mcp@1.2.0 (trust_agent_verify, trust_alchemy_preflight)
 - npm: x402-agent-suite-preflight
 - GitHub: https://github.com/mimranchohan/x402-agent-suite
 
@@ -37,12 +37,13 @@
 | POST | /api/dispute/resolve | $0.10 | Visa chargeback dossier or on-chain refund claim builder. |
 | POST | /api/quality-escrow/settle | $0.10 | Quality-gated escrow — release on pass, auto-refund on response mismatch. |
 
-## All 31 paid routes
+## All 32 paid routes
 
 | Method | Path | Price | Summary |
 |--------|------|-------|---------|
 | POST | /api/x402/proxy | $0.08 | All-in-one preflight before any external x402 payment — policy, identity, risk, security grade and optional attestation. |
 | POST | /api/guard/pre-x402 | $0.05 | Spend governor + identity gate + risk gate in one lightweight call. |
+| POST | /api/agent/verify | $0.04 | ERC-8004 TrustScore on Base mainnet — registration, reputation, wallet binding, agent card, domain. |
 | POST | /api/pipeline/execute | $0.25 | One-shot orchestration: guard, NL plan, facilitator routing and marketplace pick. |
 | POST | /api/market/buy-advisor | $0.08 | Jupiter-style buy quote — ranks paid APIs for an intent with policy and MPP advice. |
 | POST | /api/seller/audition-coach | $0.06 | Pre-listing QA: audits OpenAPI, discovery manifests and 402 probes. |
@@ -83,6 +84,7 @@
 | GET | /skill.md | Agent skill file |
 | GET | /api/agentic/validate-urls | Agentic Market URL list |
 | POST | /api/webhooks/register | Fleet webhook registration (beta) |
+| GET | /api/agent/lookup/:wallet | Free ERC-8004 TrustScore lookup (30/hr/IP) |
 | GET | /api/webhooks/list | List webhooks |
 
 ## Networks

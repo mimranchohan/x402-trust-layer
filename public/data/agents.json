@@ -35,9 +35,24 @@
       "price": 0.05,
       "summary": "Spend governor + identity gate + risk gate in one lightweight call.",
       "why": "Cheapest allow/deny decision for high-frequency payment loops.",
-      "inputs": ["agentId", "walletAddress", "targetUrl", "estimatedCostUsdc", "policy"],
-      "outputs": ["allowed", "securityGrade", "spend", "identity", "risk"],
+      "inputs": ["agentId", "walletAddress", "targetUrl", "estimatedCostUsdc", "policy", "minAgentTier?", "minTrustScore?"],
+      "outputs": ["allowed", "securityGrade", "spend", "identity", "risk", "agentTrust?"],
       "tags": ["guard", "policy"]
+    },
+    {
+      "id": "agent-verify",
+      "name": "Agent Verify (ERC-8004)",
+      "tier": "identity",
+      "tierLabel": "Identity (ERC-8004)",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/agent/verify",
+      "price": 0.04,
+      "summary": "ERC-8004 TrustScore on Base mainnet — registration, reputation, wallet binding, agent card, domain.",
+      "why": "On-chain agent identity before high-value x402 spend or fleet onboarding.",
+      "inputs": ["walletAddress", "agentId?"],
+      "outputs": ["trustScore", "tier", "breakdown", "registered", "recommendation"],
+      "tags": ["erc-8004", "identity", "trust-score"]
     },
     {
       "id": "pipeline-execute",
