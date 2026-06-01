@@ -2,30 +2,35 @@
 
 ### Short bio (paste in seller intro)
 
-x402 Trust Layer is enterprise payment infrastructure for AI agents using HTTP 402 + USDC on Base + Solana.  
-31 paid routes: preflight guard, KYM merchant trust, AP2 mandates, compliance ledger, disputes, quality escrow, and pipeline orchestration.
+x402 Trust Layer — **38 paid routes** for AI agent payment safety on Base + Solana (Dexter facilitator).  
+Preflight guard, **Trust v2 pipeline**, semantic delivery escrow, mandate diff, certified seller network, KYM, AP2 mandates, compliance, disputes.
 
 ### Full description
 
-x402 Trust Layer provides **31 paid APIs** for enterprise agent payment safety and orchestration on Solana + Base (Dexter facilitator).
+x402 Trust Layer provides **38 paid APIs** for enterprise agent payment safety and orchestration on Solana + Base (Dexter facilitator).
 
 **Four layers:**
-1. **Guard** — spend caps, identity, risk scan, KYM merchant trust, pre-x402 proxy  
-2. **Attestation** — issue/verify/registry + AP2 mandate compile/verify  
-3. **Compliance** — receipt audit, refund arbiter, evidence export, disputes, quality escrow  
-4. **Settlement Ops** — pipeline execute, payment compile, rail optimizer, MPP sessions, agent escrow  
+1. **Guard** — spend caps, identity, risk scan, KYM merchant trust, pre-x402 proxy, **pipeline/trust-v2**
+2. **Attestation** — issue/verify/registry + AP2 mandate compile/verify/**diff**
+3. **Compliance** — receipt audit, refund arbiter, evidence export, disputes, quality + **semantic escrow**
+4. **Settlement Ops** — pipeline execute, payment compile, rail optimizer, MPP sessions, agent escrow, **certified sellers + buyer gate**
 
-**Tier-1 enterprise agents:** merchant-trust, mandate compile/verify, rail-optimizer, compliance-ledger, dispute/resolve, quality-escrow.
+**Trust v2 flagship (new):**
+- `POST /api/pipeline/trust-v2` ($0.35) — mandate diff + KYM + guard + buyer gate in one call
+- `POST /api/quality-escrow/semantic-settle` ($0.12) — intent + schema delivery guarantee
+- `POST /api/mandate/diff` ($0.04) — block out-of-scope MCP tool routing before pay
+- `POST /api/merchant-trust/certify` ($0.15) — seller badge + buyer policy + virtual bond
 
 **Why buyers use it:**
-- Reduce bad downstream paid calls with fleet spend/identity/risk/KYM checks  
-- Govern payments with signed mandates and attestation headers  
-- Produce CFO/SOC2-grade audit trails and dispute dossiers  
-- Structured JSON outputs for autonomous agent workflows  
+- One-shot pre-pay with `pipeline/trust-v2` before any OpenDexter `x402_fetch`
+- Semantic refunds when paid APIs return wrong/empty/scam data
+- Signed mandates compared to actual tool traces (prompt-injection defense)
+- CFO/SOC2-grade audit trails and dispute dossiers
 
 Production: `https://x402trustlayer.xyz`  
 OpenAPI: `https://x402trustlayer.xyz/openapi.json`  
-x402gle: `https://x402gle.com/servers/x402trustlayer.xyz`
+x402gle: `https://x402gle.com/servers/x402trustlayer.xyz`  
+MCP: `npx @mimranakb/trust-layer-mcp@2.0.0`
 
 ### Proof links (x402gle — custom domain)
 
@@ -38,6 +43,8 @@ x402gle: `https://x402gle.com/servers/x402trustlayer.xyz`
 - Pipeline Execute — 86  
   https://x402gle.com/resources/a59d06e0-ea89-4643-ae2f-b1122734bafa
 
+Run v2 auditions: `npm run audition:x402gle:v2` → `x402gle-v2-audition-result.json`
+
 ### One-line CTA
 
-Integrate one endpoint first: `POST /api/x402/proxy` ($0.08), then expand to Tier-1 enterprise agents and `POST /api/pipeline/execute` ($0.25).
+**Start here:** `POST /api/pipeline/trust-v2` ($0.35) before external pays — or `POST /api/x402/proxy` ($0.08) for lightweight guard only.

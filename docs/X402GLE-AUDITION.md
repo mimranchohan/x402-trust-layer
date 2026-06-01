@@ -6,10 +6,11 @@ Origin: `https://x402trustlayer.xyz`
 
 ```powershell
 cd C:\Users\mimra\x402-agent-suite
-npm run audition:x402gle
+npm run audition:x402gle          # full origin (may cooldown)
+npm run audition:x402gle:v2       # 3 Trust v2 routes only (~$0.51 USDC if all pay)
 ```
 
-Saves `x402gle-audition-result.json`.
+Saves `x402gle-audition-result.json` or `x402gle-v2-audition-result.json`.
 
 ## Cooldown
 

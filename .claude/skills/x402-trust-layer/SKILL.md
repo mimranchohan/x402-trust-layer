@@ -22,98 +22,56 @@ Paid x402 trust infrastructure for AI agents. **No API keys** — pay per call i
 - When user asks: guard, preflight, trust score, mandate, compliance, dispute, escrow
 - Enterprise flows: AP2 intent, Visa chargeback, SOC2 ledger
 
-## Default buyer flow (3 steps)
+## Default buyer flow (v2 — certified + semantic)
 
 ```text
-1. POST /api/x402/proxy  (or /api/guard/pre-x402) — preflight
-2. x402_check → x402_fetch on external URL
-3. POST /api/receipt-auditor/verify — settlement proof
+1. POST /api/mandate/compile → POST /api/mandate/diff (tool trace vs mandate)
+2. POST /api/pipeline/trust-v2 ($0.35) OR proxy + buyer-gate separately
+3. x402_check → x402_fetch on external URL
+4. POST /api/quality-escrow/semantic-settle — delivery verify / auto-refund
+5. POST /api/receipt-auditor/verify — settlement proof
 ```
 
 ## Primary entry points
 
 | Path | Price | Use when |
 |------|-------|----------|
-| `POST /api/x402/proxy` | $0.08 | Default — guard + probe + optional attestation |
+| `POST /api/pipeline/trust-v2` | $0.35 | **Best** — mandate diff + KYM + guard + buyer gate |
+| `POST /api/x402/proxy` | $0.08 | Guard + probe + optional attestation |
 | `POST /api/guard/pre-x402` | $0.05 | Lightweight allow/deny only |
-| `POST /api/pipeline/execute` | $0.25 | NL task + marketplace routing in one call |
+| `POST /api/pipeline/execute` | $0.25 | NL task + marketplace routing |
 
 ## Tier-1 enterprise (finance / risk)
 
 | Path | Price | Purpose |
 |------|-------|---------|
-| `POST /api/merchant-trust/score` | $0.06 | KYM — pay / caution / avoid |
+| `POST /api/merchant-trust/score` | $0.06 | KYM — auto x402watch ingest |
 | `POST /api/mandate/compile` | $0.08 | Signed AP2-style payment mandate |
 | `POST /api/mandate/verify` | $0.02 | Check payment within mandate scope |
-| `POST /api/rail-optimizer/route` | $0.04 | Visa CLI vs MPP vs Base/Solana x402 |
-| `POST /api/compliance/ledger` | $0.12 | CFO/SOC2 reconciliation + ledgerHash |
-| `POST /api/dispute/resolve` | $0.10 | Chargeback dossier or refund claim |
-| `POST /api/quality-escrow/settle` | $0.10 | Pay-on-delivery verify + auto-refund |
+| `POST /api/mandate/diff` | $0.04 | Mandate vs MCP tool trace (pre-pay) |
+| `POST /api/quality-escrow/semantic-settle` | $0.12 | Intent rubric + schema escrow |
+| `POST /api/merchant-trust/certify` | $0.15 | Seller certification + buyer policy |
+| `POST /api/trust-network/buyer-gate` | $0.03 | Buyer check for certified sellers |
+| `POST /api/trust-network/bond/slash` | $0.03 | Slash seller virtual bond |
 
-## How to call (OpenDexter MCP)
+**Free:** `GET /api/merchant-trust/certified/:host`, `GET /api/trust-network/catalog`
 
-If OpenDexter MCP is available:
+## OpenDexter MCP workflow
 
-1. `x402_search` — query: `"x402 trust guard pre-x402"` or specific endpoint intent
-2. `x402_check` — confirm price on chosen URL
-3. `x402_fetch` — pays USDC and returns JSON
-
-Direct URL pattern: `https://x402trustlayer.xyz/api/guard/pre-x402`
-
-## Example: preflight before external pay
-
-```json
-POST /api/guard/pre-x402
-{
-  "agentId": "my-agent-1",
-  "walletAddress": "<payer-wallet>",
-  "targetUrl": "https://api.example.com/paid-endpoint",
-  "estimatedCostUsdc": 0.05,
-  "policy": {
-    "dailyCapUsdc": 50,
-    "perCallCapUsdc": 1,
-    "allowedHosts": ["api.example.com"]
-  }
-}
-```
-
-Expect: `allowed`, `securityGrade`, `confidence`, `checks_passed`. If `allowed` is false, do not pay downstream.
-
-## Example: merchant trust (KYM)
-
-```json
-POST /api/merchant-trust/score
-{
-  "host": "api.example.com",
-  "washTradePct": 17,
-  "verifiedResources": 44,
-  "totalResources": 200,
-  "p50LatencyMs": 1200
-}
-```
-
-Expect: `trustScore`, `grade`, `recommendation` (`pay` | `caution` | `avoid`).
+1. `x402_check` on Trust Layer endpoint URL
+2. `x402_fetch` — or use **trust-layer-mcp** tool `trust_before_x402_fetch`
+3. After external pay: `trust_semantic_settle` + `trust_receipt_verify`
 
 ## Payment protocol
 
 - Unpaid request → **HTTP 402** + payment requirements
 - Retry with **Payment-Signature** (x402 v2) after USDC settles
-- GET probes on POST paths also return 402 when unpaid (Agentic/x402gle compatible)
-
-## Seller / listing helpers
-
-| Path | Price | Purpose |
-|------|-------|---------|
-| `POST /api/seller/audition-coach` | $0.06 | Fix OpenAPI/402 before x402gle ingest |
-| `POST /api/market/buy-advisor` | $0.08 | Rank marketplace APIs before spend |
 
 ## Do not
 
 - Register `/health` as a paid x402 resource
 - Skip preflight on high-value or unknown hosts
-- Assume 200 without payment on `/api/*` routes
 
 ## More docs
 
-- Repo: `docs/INTEGRATE.md`, `docs/AGENT-CATALOG.md`
-- x402gle skills (after audition): `https://x402gle.com/servers/x402trustlayer.xyz/SKILL.md`
+- `docs/TRUST-LAYER-V2-THREE-PILLARS.md`, `docs/AGENT-CATALOG.md`

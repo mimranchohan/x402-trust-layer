@@ -6,7 +6,8 @@ live deployment. There are three ways to do it, from "no wallet, no spend" to
 
 - **Unpaid probe** — confirm every route is alive and correctly returns `402`. No wallet, no cost.
 - **Paid call (one endpoint)** — pay a single endpoint and read the real response.
-- **Full paid pass** — walk all 31 endpoints with real settlement (what we run before a release).
+- **Full paid pass** — walk all 38 endpoints with real settlement (what we run before a release).
+- **Trust v2 smoke** — `pipeline/trust-v2` → external fetch → `semantic-settle` → `receipt-auditor/verify`.
 
 Base URL used throughout:
 
@@ -28,10 +29,13 @@ The fastest sanity check. A healthy paid route answers an unpaid request with `4
 npm run probe:production
 
 # Or hit discovery surfaces directly
-curl -s $BASE/health | jq             # endpointCount should be 31
+curl -s $BASE/health | jq             # endpointCount should be 38
 curl -s $BASE/api/agents | jq         # every route + price + tier
 curl -s $BASE/openapi.json | jq '.paths | keys'
-curl -s $BASE/.well-known/x402 | jq   # 31 payable resource URLs
+curl -s $BASE/.well-known/x402 | jq   # payable resource URLs
+
+# Golden tests (local, no network)
+npm run test:golden
 
 # Probe a single route unpaid — expect HTTP 402
 curl -i -X POST $BASE/api/merchant-trust/score
@@ -81,7 +85,7 @@ x402 fetch  $BASE/api/rail-optimizer/route \
 
 ---
 
-## 3. Full paid pass — all 31 endpoints
+## 3. Full paid pass — all 38 endpoints
 
 The recommended order, with ready-to-send request bodies. Stateful endpoints
 (mandate, attestation, MPP session, escrow) return an id you feed into the next call.
@@ -173,6 +177,18 @@ example bodies above.
 
 ## Budget for a full pass
 
-A complete one-pass run of all 31 endpoints costs roughly **$2.30 USDC** on Base.
+A complete one-pass run of all 38 endpoints costs roughly **$2.80 USDC** on Base.
+
+### Trust v2 smoke (recommended)
+
+```bash
+# After mandate/compile (paid), run pre-pay bundle:
+# POST /api/pipeline/trust-v2  (~$0.35)
+# Then x402_fetch external API
+# POST /api/quality-escrow/semantic-settle  (~$0.12)
+# POST /api/receipt-auditor/verify  (~$0.05)
+
+npm run audition:x402gle:v2   # x402gle paid score for 3 flagship routes (may cooldown)
+```
 Stateful endpoints (MPP, escrow, mandate, attestation) add a few extra calls because
 each action is billed separately. Keep ~$3 on the wallet to run a full pass comfortably.

@@ -1,6 +1,6 @@
 # x402 Agent Suite Pro — Enterprise Agent Catalog
 
-> Complete reference for all **31 paid x402 infrastructure agents** in this repo: the original **24** plus **7 new Tier-1 enterprise agents**. For every agent: what it does, why it matters, how it works internally, endpoint + price, request/response schema, and an example call.
+> Complete reference for all **38 paid x402 infrastructure agents** in this repo. For every agent: what it does, why it matters, how it works internally, endpoint + price, request/response schema, and an example call.
 
 - **Live:** https://x402trustlayer.xyz
 - **Settlement:** USDC via the [Dexter facilitator](https://x402.dexter.cash), multi-chain (Base + Solana, Polygon-aware)
@@ -108,7 +108,7 @@ sequenceDiagram
 | Trust | refund-arbiter | $0.08 |
 | Intelligence | settlement-graph, quality-monitor | $0.02 – $0.03 |
 | Enterprise | budget-allocator, evidence-locker, agent-escrow | $0.03 – $0.12 |
-| **Tier-1 (NEW)** | **merchant-trust, mandate compile/verify, rail-optimizer, compliance/ledger, dispute/resolve, quality-escrow** | **$0.02 – $0.12** |
+| **Tier-1** | **merchant-trust, mandate compile/verify/diff, rail-optimizer, compliance/ledger, dispute/resolve, quality-escrow, semantic-escrow, certify, buyer-gate, pipeline/trust-v2** | **$0.02 – $0.35** |
 
 All agents return a standard trust envelope (`confidence`, `checks_passed`, `sources`, `accuracy_note`) via `lib/agent-response.ts`.
 
@@ -421,6 +421,77 @@ curl -X POST $BASE/api/quality-escrow/settle -H 'content-type: application/json'
   "actualResponse":{"bodyKeys":["price","symbol","ts"],"byteLength":64} }'
 ```
 
+### 6.7 Semantic Delivery Escrow
+- **What:** Post-pay escrow that scores delivery against both JSON schema and a natural-language **delivery intent** (optional OpenAI judge when `OPENAI_API_KEY` is set).
+- **Why it matters:** Schema-only escrow misses wrong-but-valid JSON (empty prices, scam text, intent drift). This is the v2 settlement guarantee for agent buyers.
+- **How it works** (`src/agents/quality-escrow-semantic.ts` + `src/lib/semantic-judge.ts`): combines schema score (45%) + semantic score (55%); releases when `combinedScore >= releaseThreshold` (default 72). Auto **virtual bond slash** on certified sellers when refunding.
+- **Endpoint:** `POST /api/quality-escrow/semantic-settle` — **$0.12**
+- **Request:** `{ action(hold|settle|refund)?, escrowId?, payerAgentId?, payeeMerchant?, amountUsdc?, releaseThreshold?, deliveryIntent, expectedProfile?, actualResponse?{ bodyKeys?, byteLength?, sample?, empty?, fields? } }`
+- **Response:** `{ decision(release|refund), combinedScore, semanticScore, schemaScore, judgeMode, reasons[], bondSlash? }`
+
+```bash
+curl -X POST $BASE/api/quality-escrow/semantic-settle -H 'content-type: application/json' -d '{
+  "action":"settle","deliveryIntent":"ETH/USD spot oracle price with symbol",
+  "releaseThreshold":72,
+  "expectedProfile":{"requiredKeys":["price","symbol"],"forbidEmpty":true},
+  "actualResponse":{"fields":{"price":3450.12,"symbol":"ETH"},"sample":"{\"price\":3450.12,\"symbol\":\"ETH\"}","byteLength":48,"empty":false}
+}'
+```
+
+### 6.8 Mandate Intent Diff
+- **What:** Compares a signed AP2-style mandate to the agent's **MCP tool trace** before any x402 payment.
+- **Why it matters:** Blocks prompt-injected routing (affiliate URLs, disallowed merchants/categories/rails, spend over mandate cap).
+- **How it works** (`src/agents/mandate-diff.ts`): verifies mandate HMAC + scope; walks `toolCalls[]` for host/category/rail/amount violations; returns `liabilityTier` (`allow` | `step_up` | `block`).
+- **Endpoint:** `POST /api/mandate/diff` — **$0.04**
+- **Request:** `{ mandateId, toolCalls[{ name, url?, amountUsdc?, merchant?, category?, rail? }], proposed?, task? }`
+- **Response:** `{ allowed, liabilityTier, violations[{ code, severity, message }], mandateValid, withinMandateScope }`
+
+```bash
+curl -X POST $BASE/api/mandate/diff -H 'content-type: application/json' -d '{
+  "mandateId":"mdt_...","task":"ETH oracle for trading bot",
+  "toolCalls":[{"name":"x402_fetch","url":"https://api.myceliasignal.com/oracle/price/eth/usd","amountUsdc":0.05,"merchant":"api.myceliasignal.com","category":"oracle","rail":"base-x402"}],
+  "proposed":{"amountUsdc":0.05,"merchant":"api.myceliasignal.com","category":"oracle","rail":"base-x402"}
+}'
+```
+
+### 6.9 Certified Seller (Merchant Certify)
+- **What:** Onboards a seller into the **Certified Seller Network** with KYM pass, badge, buyer policy, and optional virtual USDC bond.
+- **Why it matters:** Two-sided trust — premium APIs can require attested buyers with minimum tier/TrustScore.
+- **How it works** (`src/agents/trust-network.ts` + `src/lib/certified-sellers.ts`): persists badge + policy + `bondUsdc` ledger in `data/certified-sellers.json`; optional x402watch ingest on certify.
+- **Endpoint:** `POST /api/merchant-trust/certify` — **$0.15**
+- **Free lookup:** `GET /api/merchant-trust/certified/:host`
+- **Request:** `{ host, targetUrl?, policy{ requireAttestation?, minAgentTier?, minTrustScore?, minSecurityGrade? }, bondUsdc?, goodResponseProfile?, ttlDays? }`
+- **Response:** `{ certified, badgeId, policy, expiresAt, bondUsdc }`
+
+### 6.10 Certified Buyer Gate
+- **What:** Verifies a buyer wallet/attestation against a certified seller's policy before payment.
+- **Endpoint:** `POST /api/trust-network/buyer-gate` — **$0.03**
+- **Request:** `{ sellerHost, walletAddress, attestationId?, agentTier?, trustScore? }`
+- **Response:** `{ allowed, violations[], requiredHeaders? }`
+
+### 6.11 Pipeline Trust v2 (one-shot pre-pay)
+- **What:** Single call: mandate diff → KYM (x402watch ingest) → guard or proxy → certified buyer gate.
+- **Why it matters:** Default OpenDexter / fleet integration — replaces 3–4 separate preflight calls.
+- **How it works** (`src/agents/pipeline-trust-v2.ts`): sequential steps with `steps[]` audit trail; `recommendedNextCalls` when blocked.
+- **Endpoint:** `POST /api/pipeline/trust-v2` — **$0.35**
+- **Request:** `{ agentId, walletAddress, targetUrl, estimatedCostUsdc, policy, mandateId?, toolCalls?, sellerHost?, attestationId?, kymBeforePay?, useProxy?, issueAttestation? }`
+- **Response:** `{ allowed, steps[], guard?, recommendedNextCalls? }`
+
+```bash
+curl -X POST $BASE/api/pipeline/trust-v2 -H 'content-type: application/json' -d '{
+  "agentId":"fleet-1","walletAddress":"9c7t...","targetUrl":"https://api.myceliasignal.com/oracle/price/eth/usd",
+  "estimatedCostUsdc":0.05,"policy":{"dailyCapUsdc":10,"perCallCapUsdc":0.5,"allowedHosts":["myceliasignal.com"]},
+  "mandateId":"mdt_...","sellerHost":"api.myceliasignal.com","kymBeforePay":true
+}'
+```
+
+### 6.12 Seller Bond Slash
+- **What:** Deducts from a certified seller's **virtual bond** after failed delivery (or manual compliance action).
+- **Endpoint:** `POST /api/trust-network/bond/slash` — **$0.03**
+- **Request:** `{ sellerHost, amountUsdc, reason, qualityScore? }`
+- **Response:** `{ slashed, bondRemainingUsdc, ledgerEntry? }`
+- **Free catalog:** `GET /api/trust-network/catalog`
+
 ---
 
 # 7. Security & compliance posture
@@ -498,7 +569,9 @@ flowchart LR
 | `src/routes.ts` | imports, Zod schemas, handlers, `listEndpoints()` |
 | `src/lib/openapi-meta.ts` | OpenAPI summaries/tags for new routes |
 | `src/lib/verify-examples.ts` | canonical verifier bodies (marketplace probes) |
-| `src/index.ts`, `package.json` | endpoint count 24 → 31 |
-| `README.md`, `docs/ARCHITECTURE.md`, `docs/AGENT-CATALOG.md` | docs |
+| `src/agents/quality-escrow-semantic.ts`, `mandate-diff.ts`, `pipeline-trust-v2.ts`, `trust-network.ts` | **v2** — semantic escrow, mandate diff, certify, buyer gate, bond |
+| `src/lib/semantic-judge.ts`, `certified-sellers.ts`, `ecosystem-telemetry.ts` | v2 libs |
+| `src/index.ts`, `package.json` | endpoint count → **38** |
+| `README.md`, `docs/TRUST-LAYER-V2-THREE-PILLARS.md`, `docs/AGENT-CATALOG.md` | docs |
 
 MIT

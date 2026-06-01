@@ -10,7 +10,8 @@ export type SemanticJudgeResult = {
   mode: "heuristic" | "llm";
 };
 
-function heuristicJudge(input: SemanticJudgeInput): SemanticJudgeResult {
+/** Rules-only judge (used in production fallback and golden tests). */
+export function heuristicJudge(input: SemanticJudgeInput): SemanticJudgeResult {
   const reasons: string[] = [];
   let score = 100;
   const sample = input.sample.toLowerCase();

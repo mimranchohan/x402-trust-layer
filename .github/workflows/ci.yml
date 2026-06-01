@@ -30,6 +30,10 @@ jobs:
 
       - run: npm run openapi:generate
 
+      - run: npm run build
+
+      - run: npm run test:golden
+
   probe-production:
     name: Production 402 probe
     runs-on: ubuntu-latest
