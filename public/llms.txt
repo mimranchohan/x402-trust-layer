@@ -1,13 +1,14 @@
 # x402 Trust Layer
 
-> 38 paid x402 trust infrastructure APIs for AI agent fleets. Guard, attest, comply and audit every payment — before the money moves.
+> 55 paid x402 trust infrastructure APIs + Agent Trust Protocol v4. Guard, attest, comply, audit, identity passport, fraud graph, PoE, escrow FSM, credit bureau.
 
 - Website: https://x402trustlayer.xyz
 - OpenAPI: https://x402trustlayer.xyz/openapi.json
 - Discovery: https://x402trustlayer.xyz/.well-known/x402
 - Skill (agents): https://x402trustlayer.xyz/skill.md
 - Full context: https://x402trustlayer.xyz/llms-full.txt
-- MCP: npx @mimranakb/trust-layer-mcp@2.0.0 (trust_before_x402_fetch, trust_mandate_diff, trust_semantic_settle)
+- MCP: npx @mimranakb/trust-layer-mcp@3.0.0 (trust_protocol_full_pipeline, trust_before_x402_fetch, trust_semantic_settle)
+- Protocol v4: GET https://x402trustlayer.xyz/api/protocol/architecture
 - npm: x402-agent-suite-preflight
 - GitHub: https://github.com/mimranchohan/x402-agent-suite
 

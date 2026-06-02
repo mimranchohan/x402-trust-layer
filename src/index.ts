@@ -11,6 +11,7 @@ import {
 import { buildAgentCashOpenApi, buildWellKnownX402Resources } from "./lib/openapi-agentcash.js";
 import { renderDiscoveryPage } from "./lib/discovery-page.js";
 import { applyVerifierExampleBody } from "./lib/apply-verifier-body.js";
+import { replayBindingMiddleware } from "./lib/replay-middleware.js";
 import { registerAgenticProbes, stripTrailingSlash } from "./lib/agentic-probes.js";
 import { registerWebhookRoutes } from "./lib/webhook-routes.js";
 import { KILLER_SELLER_ENDPOINTS, PRIMARY_ENTRYPOINTS } from "./lib/suite-catalog.js";
@@ -43,6 +44,7 @@ app.use("/api", (req, _res, next) => {
   applyVerifierExampleBody(req);
   next();
 });
+app.use("/api", replayBindingMiddleware);
 
 /** Trust Layer brand landing page — served to browsers at `/`; machines still get JSON. */
 let LANDING_HTML = "";
@@ -75,6 +77,8 @@ function healthPayload() {
     ok: true,
     service: "x402-trust-layer",
     version: SUITE_VERSION,
+    protocol: "agent-trust-protocol-v4",
+    protocolArchitecture: `${config.publicBaseUrl}/api/protocol/architecture`,
     chains: config.chains,
     networks: config.networks,
     endpointCount: listEndpoints().length,

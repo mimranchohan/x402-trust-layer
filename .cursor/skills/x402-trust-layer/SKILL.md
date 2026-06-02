@@ -22,15 +22,29 @@ Paid x402 trust infrastructure for AI agents. **No API keys** — pay per call i
 - When user asks: guard, preflight, trust score, mandate, compliance, dispute, escrow
 - Enterprise flows: AP2 intent, Visa chargeback, SOC2 ledger
 
-## Default buyer flow (v2 — certified + semantic)
+## Default buyer flow (v4 — full trust protocol)
 
 ```text
-1. POST /api/mandate/compile → POST /api/mandate/diff (tool trace vs mandate)
-2. POST /api/pipeline/trust-v2 ($0.35) OR proxy + buyer-gate separately
-3. x402_check → x402_fetch on external URL
+1. POST /api/protocol/pipeline/full-trust ($0.45) — passport, trust v2, fraud, oracle, credit, guard, replay bind
+2. x402_check → x402_fetch with header X-Trust-Replay-Binding from step 1
+3. POST /api/protocol/execution/issue — Proof of Execution receipt
 4. POST /api/quality-escrow/semantic-settle — delivery verify / auto-refund
 5. POST /api/receipt-auditor/verify — settlement proof
 ```
+
+Legacy v2 bundle: `POST /api/pipeline/trust-v2` ($0.35) still available.
+
+## Protocol v4 entry points
+
+| Path | Price | Purpose |
+|------|-------|---------|
+| `POST /api/protocol/pipeline/full-trust` | $0.45 | **Best** — full protocol before pay |
+| `POST /api/protocol/trust-score/v2` | $0.08 | Tamper-resistant trust + HMAC proof |
+| `POST /api/protocol/fraud/scan` | $0.10 | Sybil / wash / circular payment graph |
+| `POST /api/protocol/execution/issue` | $0.05 | Proof of Execution receipt |
+| `POST /api/protocol/credit/score` | $0.06 | Credit bureau 300–900 |
+
+**Free:** `GET /api/protocol/architecture`, `threat-model`, `security/audit`
 
 ## Primary entry points
 
@@ -59,8 +73,8 @@ Paid x402 trust infrastructure for AI agents. **No API keys** — pay per call i
 ## OpenDexter MCP workflow
 
 1. `x402_check` on Trust Layer endpoint URL
-2. `x402_fetch` — or use **trust-layer-mcp** tool `trust_before_x402_fetch`
-3. After external pay: `trust_semantic_settle` + `trust_receipt_verify`
+2. `x402_fetch` — or MCP `trust_protocol_full_pipeline` then pay with replay header
+3. After external pay: `trust_protocol_execution_receipt` + `trust_semantic_settle` + `trust_receipt_verify`
 
 ## Payment protocol
 

@@ -314,4 +314,47 @@ export const VERIFY_EXAMPLES: Record<string, unknown> = {
     reason: "semantic_delivery_fail",
     qualityScore: 42,
   },
+  "/api/protocol/pipeline/full-trust": {
+    agentId: "dexter-verifier-probe",
+    walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
+    targetUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
+    estimatedCostUsdc: 0.05,
+    organizationId: "verifier-org",
+    policy: { dailyCapUsdc: 10, perCallCapUsdc: 0.5, allowedHosts: ["myceliasignal.com"] },
+  },
+  "/api/protocol/passport/issue": {
+    agentId: "dexter-verifier-probe",
+    walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
+    capabilities: ["x402.pay", "tool.invoke"],
+  },
+  "/api/protocol/trust-score/v2": {
+    agentId: "dexter-verifier-probe",
+    walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
+    uptimePct: 99,
+    deliveryQualityScore: 85,
+  },
+  "/api/protocol/fraud/scan": {
+    agentId: "dexter-verifier-probe",
+    walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
+    merchantHost: "api.myceliasignal.com",
+    amountUsdc: 0.05,
+  },
+  "/api/protocol/execution/issue": {
+    agentId: "dexter-verifier-probe",
+    targetUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
+    toolTrace: [{ name: "x402_fetch", url: "https://api.myceliasignal.com/oracle/price/eth/usd", amountUsdc: 0.05 }],
+    decisionTrace: ["guard_pass", "payment_settled"],
+    responseSummary: '{"price":3450,"symbol":"ETH"}',
+  },
+  "/api/protocol/replay/bind": {
+    agentId: "dexter-verifier-probe",
+    resourceUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
+    requestBody: { estimatedCostUsdc: 0.05 },
+  },
+  "/api/protocol/credit/score": {
+    agentId: "dexter-verifier-probe",
+    walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
+    settlementCount: 12,
+    disputeCount: 0,
+  },
 };

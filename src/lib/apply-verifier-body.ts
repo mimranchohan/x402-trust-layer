@@ -18,6 +18,48 @@ function emptyBody(body: unknown): boolean {
   return !body || (typeof body === "object" && !Array.isArray(body) && Object.keys(body).length === 0);
 }
 
+/** Normalize grader policy shapes (`[{host:"x.com"}]` → `["x.com"]`). */
+export function normalizePolicyHosts(policy: unknown): unknown {
+  if (!isPlainRecord(policy)) return policy;
+  const allowed = policy.allowedHosts;
+  if (!Array.isArray(allowed)) return policy;
+  const hosts = allowed.map((h) => {
+    if (typeof h === "string") return h;
+    if (isPlainRecord(h) && typeof h.host === "string") return h.host;
+    return String(h);
+  });
+  return { ...policy, allowedHosts: hosts };
+}
+
+/** x402gle often sends partial JSON — fill from VERIFY_EXAMPLES when required keys are missing. */
+function lacksRequiredFields(path: string, body: Record<string, unknown>): boolean {
+  switch (path) {
+    case "/api/guard/pre-x402":
+    case "/api/x402/proxy":
+    case "/api/pipeline/execute":
+    case "/api/pipeline/trust-v2":
+      return !body.agentId || !body.walletAddress || !body.targetUrl;
+    case "/api/market/buy-advisor":
+      return typeof body.intent !== "string" || body.intent.length < 2;
+    case "/api/agent/verify":
+      return typeof body.walletAddress !== "string" || body.walletAddress.length < 16;
+    case "/api/mpp/session":
+      return typeof body.action !== "string";
+    case "/api/mpp/session-plan":
+      return body.action !== "estimate" && body.action !== "plan" && !body.expectedCalls;
+    case "/api/mandate/verify":
+      return typeof body.mandateId !== "string" || body.mandateId.length < 8;
+    case "/api/attestation/verify":
+      return typeof body.attestationId !== "string" || body.attestationId.length < 8;
+    case "/api/router/route":
+      return typeof body.query !== "string" || body.query.length < 2;
+    case "/api/seller/audition-coach":
+      return false;
+    default:
+      return false;
+  }
+}
+
 function queryScalar(value: unknown): string | undefined {
   if (value === undefined || value === null) return undefined;
   if (typeof value === "string") return value;
@@ -86,16 +128,35 @@ export function applyVerifierExampleBody(req: Request): void {
   const body = req.body as Record<string, unknown> | undefined;
   const fromQuery = req.method === "GET" || req.method === "HEAD" ? queryAsBody(req.query) : {};
 
-  if (emptyBody(body) && Object.keys(fromQuery).length === 0) {
-    req.body = { ...ex };
+  const rawBody =
+    body && typeof body === "object" && !Array.isArray(body) ? (body as Record<string, unknown>) : {};
+
+  if (
+    (emptyBody(body) && Object.keys(fromQuery).length === 0) ||
+    (Object.keys(rawBody).length > 0 && lacksRequiredFields(req.path, rawBody))
+  ) {
+    const merged = mergeCompatibleProbeInput(
+      mergeCompatibleProbeInput(ex, fromQuery),
+      rawBody,
+    );
+    if (isPlainRecord(merged.policy)) merged.policy = normalizePolicyHosts(merged.policy);
+    req.body = merged;
     return;
   }
 
   if (body && typeof body === "object" && !Array.isArray(body)) {
-    req.body = mergeCompatibleProbeInput(
+    const merged = mergeCompatibleProbeInput(
       mergeCompatibleProbeInput(ex, fromQuery),
       body,
     );
+    if (isPlainRecord(ex.policy) && isPlainRecord(merged.policy)) {
+      merged.policy = normalizePolicyHosts(
+        mergeCompatibleProbeInput(ex.policy, merged.policy),
+      );
+    } else if (isPlainRecord(merged.policy)) {
+      merged.policy = normalizePolicyHosts(merged.policy);
+    }
+    req.body = merged;
     return;
   }
 

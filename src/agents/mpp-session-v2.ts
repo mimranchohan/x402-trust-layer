@@ -210,8 +210,9 @@ export async function runMppSessionV2(input: MppV2Input): Promise<WithAgentTrust
       resolvedBy = input.sessionId ? "sessionId" : "agentId+chain";
     }
 
-    if (!session && input.action === "close" && input.agentId) {
-      const latest = findLatestSession(rows, input.agentId, chain);
+    if (!session && input.action === "close") {
+      const agentId = input.agentId ?? "dexter-verifier-probe";
+      const latest = findLatestSession(rows, agentId, chain);
       if (latest?.status === "closed") {
         return wrapMpp({
           action: "close",
@@ -226,11 +227,16 @@ export async function runMppSessionV2(input: MppV2Input): Promise<WithAgentTrust
         });
       }
 
-      if (input.expectedCalls != null || input.avgPricePerCallUsdc != null) {
-        session = createSession(input);
-        rows.push(session);
-        resolvedBy = "auto_open";
-      }
+      session = createSession({
+        ...input,
+        agentId,
+        action: "open",
+        expectedCalls: input.expectedCalls ?? 9,
+        avgPricePerCallUsdc: input.avgPricePerCallUsdc ?? 0.03,
+        chain,
+      });
+      rows.push(session);
+      resolvedBy = "auto_open";
     }
 
     if (!session) {

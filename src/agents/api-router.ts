@@ -65,7 +65,10 @@ export async function runApiRouter(input: RouterInput): Promise<RouterResult> {
 
   // Route-capability intent (bridge/erc20/usdc route lookup) should return
   // suite route options filtered by network/price, not unrelated oracle picks.
-  const routeIntent = /route|routing|erc-?20|evm|usdc.*(source|destination)|bridge|path/i.test(input.query);
+  const routeIntent =
+    /\broute\b|routing|from\s+.+\s+to\b|bridge|swap path|usdc.*(source|destination)|erc-?20 transfer|arbitrum.*ethereum|ethereum.*arbitrum|dexter.*usdc/i.test(
+      input.query,
+    );
   if (routeIntent) {
     const suiteOptions = [
       { name: "x402 Proxy", path: "/api/x402/proxy", priceUsdc: 0.08 },

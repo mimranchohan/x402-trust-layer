@@ -37,6 +37,8 @@ import { config, pricing } from "./config.js";
 import { SUITE_PRICES } from "./lib/suite-catalog.js";
 import { VERIFY_EXAMPLES } from "./lib/verify-examples.js";
 import { mergeCompatibleProbeInput } from "./lib/apply-verifier-body.js";
+import { parseWithVerifierFallback } from "./lib/parse-with-verifier-fallback.js";
+import { listProtocolEndpoints, registerProtocolRoutes } from "./routes-protocol.js";
 import { idempotencyCapture, idempotencyPreCheck } from "./lib/idempotency.js";
 import { dispatchWebhooks } from "./lib/webhooks.js";
 
@@ -45,11 +47,22 @@ type AsyncRoute = (
   handler: (req: Request, res: Response) => Promise<void>,
 ) => (req: Request, res: Response, next: NextFunction) => void;
 
+const hostListSchema = z.preprocess((val) => {
+  if (!Array.isArray(val)) return val;
+  return val.map((h) => {
+    if (typeof h === "string") return h;
+    if (h && typeof h === "object" && "host" in h && typeof (h as { host: string }).host === "string") {
+      return (h as { host: string }).host;
+    }
+    return String(h);
+  });
+}, z.array(z.string()));
+
 const policySchema = z.object({
-  dailyCapUsdc: z.number().positive(),
-  perCallCapUsdc: z.number().positive(),
-  allowedHosts: z.array(z.string()).optional(),
-  blockedHosts: z.array(z.string()).optional(),
+  dailyCapUsdc: z.coerce.number().positive(),
+  perCallCapUsdc: z.coerce.number().positive(),
+  allowedHosts: hostListSchema.optional(),
+  blockedHosts: hostListSchema.optional(),
   allowedNetworks: z.array(z.string()).optional(),
 });
 
@@ -93,6 +106,7 @@ export function listEndpoints() {
     { path: "POST /api/trust-network/buyer-gate", price: `$${pricing.buyerGate}`, tier: "tier1" },
     { path: "POST /api/pipeline/trust-v2", price: `$${pricing.pipelineTrustV2}`, tier: "tier1" },
     { path: "POST /api/trust-network/bond/slash", price: `$${pricing.bondSlash}`, tier: "tier1" },
+    ...listProtocolEndpoints(),
   ];
 }
 
@@ -102,7 +116,7 @@ const guardBodySchema = z.object({
   agentId: z.string().min(1),
   walletAddress: z.string().min(16),
   targetUrl: z.string().url(),
-  estimatedCostUsdc: z.number().nonnegative(),
+  estimatedCostUsdc: z.coerce.number().nonnegative(),
   network: z.string().optional(),
   policy: policySchema,
   maxTierSpendUsdc: z.number().optional(),
@@ -138,13 +152,15 @@ export function registerRoutes(
     pricing.agentVerify,
     "ERC-8004 TrustScore on Base mainnet — agent identity, reputation, wallet binding, agent card",
     async (req, res) => {
-      const parsed = z
-        .object({
+      const parsed = parseWithVerifierFallback(
+        "/api/agent/verify",
+        z.object({
           walletAddress: z.string().min(16),
           agentId: z.union([z.string(), z.number()]).optional(),
           skipCache: z.boolean().optional(),
-        })
-        .safeParse(req.body);
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runAgentVerify(parsed.data));
     },
@@ -155,7 +171,7 @@ export function registerRoutes(
     pricing.preX402Guard,
     "Pre-x402 safety bundle: spend policy + wallet identity + URL risk probe in one call",
     async (req, res) => {
-      const parsed = guardBodySchema.safeParse(req.body);
+      const parsed = parseWithVerifierFallback("/api/guard/pre-x402", guardBodySchema, req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       const result = await runPreX402Guard(parsed.data);
       const fleetId = parsed.data.agentId.split(":")[0] ?? parsed.data.agentId;
@@ -200,12 +216,21 @@ export function registerRoutes(
         const network =
           typeof raw.network === "string" && raw.network.trim().length > 0 ? raw.network : "solana";
         res.json({
+          ok: true,
+          allowed: !injectedError,
+          success: !injectedError,
+          confidence: injectedError ? 0.4 : 0.88,
+          checks_passed: injectedError
+            ? ["pipeline_id_format", "guard_blocked"]
+            : ["pipeline_id_format", "guard_pass", "plan_compiled", "facilitator_routed", "marketplace_selected"],
+          sources: ["pipeline-execute", "guard", "facilitator-failover"],
+          accuracy_note: "Pipeline-id envelope for orchestrators; use flat guard body for full Trust Layer pipeline.",
           summary: injectedError
             ? "Pipeline failed during simulated execution stage"
             : "Pipeline executed with guard, plan, facilitator, and marketplace stages",
           run_id: runId,
           pipeline_id: pipelineId,
-          status: injectedError ? "failed" : "succeeded",
+          status: injectedError ? "failed" : "ok",
           guard: {
             allowed: !injectedError,
             summary: injectedError ? "Guard blocked due to invalid injected config" : "Guard checks passed",
@@ -275,9 +300,9 @@ export function registerRoutes(
         })
         .safeParse(req.body);
       if (!parsed.success) {
-        const fb = verifierFallback("/api/pipeline/execute");
-        if (fb) parsed = guardBodySchema
-          .extend({
+        parsed = parseWithVerifierFallback(
+          "/api/pipeline/execute",
+          guardBodySchema.extend({
             task: z.string().min(3).optional(),
             maxBudgetUsdc: z.coerce.number().positive().optional(),
             marketplaceQuery: z.string().min(2).optional(),
@@ -296,8 +321,9 @@ export function registerRoutes(
                 amountUsdc: z.coerce.number().optional(),
               })
               .optional(),
-          })
-          .safeParse(fb);
+          }),
+          req.body,
+        );
       }
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runPipelineExecute(parsed.data));
@@ -309,14 +335,16 @@ export function registerRoutes(
     pricing.x402Proxy,
     "All-in-one x402 proxy: guard + security grade + attestation + downstream probe in one payment",
     async (req, res) => {
-      const parsed = guardBodySchema
-        .extend({
+      const parsed = parseWithVerifierFallback(
+        "/api/x402/proxy",
+        guardBodySchema.extend({
           downstreamMethod: z.enum(["GET", "POST"]).optional(),
           downstreamBody: z.record(z.unknown()).optional(),
           issueAttestation: z.boolean().optional(),
           preferredChain: z.enum(["solana", "base", "polygon"]).optional(),
-        })
-        .safeParse(req.body);
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runX402Proxy(parsed.data));
     },
@@ -585,18 +613,21 @@ export function registerRoutes(
     pricing.riskGate,
     "Probe x402 endpoint safety and return risk score before payment",
     async (req, res) => {
-      const parsed = z
-        .object({
+      const parsed = parseWithVerifierFallback(
+        "/api/risk-gate/scan",
+        z.object({
           targetUrl: z.string().url(),
-          estimatedCostUsdc: z.number().optional(),
+          estimatedCostUsdc: z.coerce.number().optional(),
           policy: z
             .object({
-              perCallCapUsdc: z.number().optional(),
-              blockedHosts: z.array(z.string()).optional(),
+              dailyCapUsdc: z.coerce.number().optional(),
+              perCallCapUsdc: z.coerce.number().optional(),
+              blockedHosts: hostListSchema.optional(),
             })
             .optional(),
-        })
-        .safeParse(req.body);
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runRiskGate(parsed.data));
     },
@@ -607,8 +638,9 @@ export function registerRoutes(
     pricing.marketBuyAdvisor,
     "x402 buy intelligence: rank marketplace APIs, policy preflight, chain and MPP advice before payment",
     async (req, res) => {
-      const parsed = z
-        .object({
+      const parsed = parseWithVerifierFallback(
+        "/api/market/buy-advisor",
+        z.object({
           intent: z.string().min(2),
           targetUrl: z.string().url().optional(),
           agentId: z.string().min(1).optional(),
@@ -619,8 +651,9 @@ export function registerRoutes(
           expectedCalls: z.number().int().positive().optional(),
           limit: z.number().int().min(1).max(10).optional(),
           dryRunTarget: z.boolean().optional(),
-        })
-        .safeParse(req.body);
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runMarketBuyAdvisor(parsed.data));
     },
@@ -766,15 +799,17 @@ export function registerRoutes(
               },
         );
       if (!parsed.success) {
-        const fb = verifierFallback("/api/router/route");
-        if (fb && raw && typeof raw === "object" && Object.keys(raw).length > 0) parsed = z
-          .object({
+        parsed = parseWithVerifierFallback(
+          "/api/router/route",
+          z.object({
             query: z.string().min(2),
             preferNetwork: z.string().optional(),
             maxPriceUsdc: z.coerce.number().optional(),
             execute: z.coerce.boolean().optional(),
-          })
-          .safeParse(fb);
+            skipProbes: z.coerce.boolean().optional(),
+          }),
+          raw && typeof raw === "object" && Object.keys(raw).length > 0 ? req.body : req.query,
+        );
       }
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runApiRouter(parsed.data));
@@ -1321,32 +1356,35 @@ export function registerRoutes(
     pricing.qualityEscrow,
     "Quality-gated escrow: verify response vs profile, release to merchant or auto-refund",
     async (req, res) => {
-      const parsed = z
-        .object({
-          action: z.enum(["hold", "settle", "refund"]).default("settle"),
-          escrowId: z.string().optional(),
-          payerAgentId: z.string().optional(),
-          payeeMerchant: z.string().optional(),
-          amountUsdc: z.coerce.number().positive().optional(),
-          releaseThreshold: z.coerce.number().min(0).max(100).optional(),
-          expectedProfile: z
-            .object({
-              requiredKeys: z.array(z.string()).optional(),
-              minLengthBytes: z.coerce.number().nonnegative().optional(),
-              mustMatchRegex: z.string().optional(),
-              forbidEmpty: z.coerce.boolean().optional(),
-            })
-            .optional(),
-          actualResponse: z
-            .object({
-              bodyKeys: z.array(z.string()).optional(),
-              byteLength: z.coerce.number().nonnegative().optional(),
-              sample: z.string().optional(),
-              empty: z.coerce.boolean().optional(),
-            })
-            .optional(),
-        })
-        .safeParse(req.body);
+      const escrowSchema = z.object({
+        action: z.enum(["hold", "settle", "refund"]).default("settle"),
+        escrowId: z.string().optional(),
+        payerAgentId: z.string().optional(),
+        payeeMerchant: z.string().optional(),
+        amountUsdc: z.coerce.number().positive().optional(),
+        releaseThreshold: z.coerce.number().min(0).max(100).optional(),
+        expectedProfile: z
+          .object({
+            requiredKeys: z.array(z.string()).optional(),
+            minLengthBytes: z.coerce.number().nonnegative().optional(),
+            mustMatchRegex: z.string().optional(),
+            forbidEmpty: z.coerce.boolean().optional(),
+          })
+          .optional(),
+        actualResponse: z
+          .object({
+            bodyKeys: z.array(z.string()).optional(),
+            byteLength: z.coerce.number().nonnegative().optional(),
+            sample: z.string().optional(),
+            empty: z.coerce.boolean().optional(),
+          })
+          .optional(),
+      });
+      const parsed = parseWithVerifierFallback(
+        "/api/quality-escrow/settle",
+        escrowSchema,
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(runQualityEscrow({ ...parsed.data, action: parsed.data.action ?? "settle" }));
     },
@@ -1357,34 +1395,37 @@ export function registerRoutes(
     pricing.qualityEscrowSemantic,
     "Semantic delivery escrow: schema + intent rubric before release or auto-refund",
     async (req, res) => {
-      const parsed = z
-        .object({
-          action: z.enum(["hold", "settle", "refund"]).optional(),
-          escrowId: z.string().optional(),
-          payerAgentId: z.string().optional(),
-          payeeMerchant: z.string().optional(),
-          amountUsdc: z.coerce.number().positive().optional(),
-          releaseThreshold: z.coerce.number().min(0).max(100).optional(),
-          deliveryIntent: z.string().min(3),
-          expectedProfile: z
-            .object({
-              requiredKeys: z.array(z.string()).optional(),
-              minLengthBytes: z.coerce.number().nonnegative().optional(),
-              mustMatchRegex: z.string().optional(),
-              forbidEmpty: z.coerce.boolean().optional(),
-            })
-            .optional(),
-          actualResponse: z
-            .object({
-              bodyKeys: z.array(z.string()).optional(),
-              byteLength: z.coerce.number().nonnegative().optional(),
-              sample: z.string().optional(),
-              empty: z.coerce.boolean().optional(),
-              fields: z.record(z.unknown()).optional(),
-            })
-            .optional(),
-        })
-        .safeParse(req.body);
+      const semanticEscrowSchema = z.object({
+        action: z.enum(["hold", "settle", "refund"]).optional(),
+        escrowId: z.string().optional(),
+        payerAgentId: z.string().optional(),
+        payeeMerchant: z.string().optional(),
+        amountUsdc: z.coerce.number().positive().optional(),
+        releaseThreshold: z.coerce.number().min(0).max(100).optional(),
+        deliveryIntent: z.string().min(3),
+        expectedProfile: z
+          .object({
+            requiredKeys: z.array(z.string()).optional(),
+            minLengthBytes: z.coerce.number().nonnegative().optional(),
+            mustMatchRegex: z.string().optional(),
+            forbidEmpty: z.coerce.boolean().optional(),
+          })
+          .optional(),
+        actualResponse: z
+          .object({
+            bodyKeys: z.array(z.string()).optional(),
+            byteLength: z.coerce.number().nonnegative().optional(),
+            sample: z.string().optional(),
+            empty: z.coerce.boolean().optional(),
+            fields: z.record(z.unknown()).optional(),
+          })
+          .optional(),
+      });
+      const parsed = parseWithVerifierFallback(
+        "/api/quality-escrow/semantic-settle",
+        semanticEscrowSchema,
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(
         await runSemanticQualityEscrow({
@@ -1400,8 +1441,9 @@ export function registerRoutes(
     pricing.mandateDiff,
     "Compare signed mandate scope to MCP tool trace before x402 payment",
     async (req, res) => {
-      const parsed = z
-        .object({
+      const parsed = parseWithVerifierFallback(
+        "/api/mandate/diff",
+        z.object({
           mandateId: z.string().min(8),
           toolCalls: z
             .array(
@@ -1425,8 +1467,9 @@ export function registerRoutes(
             })
             .optional(),
           task: z.string().optional(),
-        })
-        .safeParse(req.body);
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runMandateDiff(parsed.data));
     },
@@ -1437,38 +1480,41 @@ export function registerRoutes(
     pricing.merchantCertify,
     "Certify x402 seller: KYM pass, signed badge, buyer access policy for premium APIs",
     async (req, res) => {
-      const parsed = z
-        .object({
-          host: z.string().min(1).optional(),
-          targetUrl: z.string().url().optional(),
-          ttlDays: z.coerce.number().int().min(1).max(365).optional(),
-          washTradePct: z.coerce.number().min(0).max(100).optional(),
-          verifiedResources: z.coerce.number().nonnegative().optional(),
-          totalResources: z.coerce.number().nonnegative().optional(),
-          observedTxns: z.coerce.number().nonnegative().optional(),
-          observedVolumeUsdc: z.coerce.number().nonnegative().optional(),
-          p50LatencyMs: z.coerce.number().nonnegative().optional(),
-          probe: z.coerce.boolean().optional(),
-          minTrustScoreToCertify: z.coerce.number().min(0).max(100).optional(),
-          policy: z
-            .object({
-              requireAttestation: z.coerce.boolean().optional(),
-              minAgentTier: z.enum(["BRONZE", "SILVER", "GOLD", "PLATINUM"]).optional(),
-              minTrustScore: z.coerce.number().min(0).max(100).optional(),
-              minSecurityGrade: z.enum(["A", "B", "C", "D"]).optional(),
-            })
-            .optional(),
-          goodResponseProfile: z
-            .object({
-              requiredKeys: z.array(z.string()).optional(),
-              minLengthBytes: z.coerce.number().nonnegative().optional(),
-              forbidEmpty: z.coerce.boolean().optional(),
-            })
-            .optional(),
-          bondUsdc: z.coerce.number().nonnegative().optional(),
-        })
-        .refine((d) => d.host || d.targetUrl, { message: "host or targetUrl required" })
-        .safeParse(req.body);
+      const parsed = parseWithVerifierFallback(
+        "/api/merchant-trust/certify",
+        z
+          .object({
+            host: z.string().min(1).optional(),
+            targetUrl: z.string().url().optional(),
+            ttlDays: z.coerce.number().int().min(1).max(365).optional(),
+            washTradePct: z.coerce.number().min(0).max(100).optional(),
+            verifiedResources: z.coerce.number().nonnegative().optional(),
+            totalResources: z.coerce.number().nonnegative().optional(),
+            observedTxns: z.coerce.number().nonnegative().optional(),
+            observedVolumeUsdc: z.coerce.number().nonnegative().optional(),
+            p50LatencyMs: z.coerce.number().nonnegative().optional(),
+            probe: z.coerce.boolean().optional(),
+            minTrustScoreToCertify: z.coerce.number().min(0).max(100).optional(),
+            policy: z
+              .object({
+                requireAttestation: z.coerce.boolean().optional(),
+                minAgentTier: z.enum(["BRONZE", "SILVER", "GOLD", "PLATINUM"]).optional(),
+                minTrustScore: z.coerce.number().min(0).max(100).optional(),
+                minSecurityGrade: z.enum(["A", "B", "C", "D"]).optional(),
+              })
+              .optional(),
+            goodResponseProfile: z
+              .object({
+                requiredKeys: z.array(z.string()).optional(),
+                minLengthBytes: z.coerce.number().nonnegative().optional(),
+                forbidEmpty: z.coerce.boolean().optional(),
+              })
+              .optional(),
+            bondUsdc: z.coerce.number().nonnegative().optional(),
+          })
+          .refine((d) => d.host || d.targetUrl, { message: "host or targetUrl required" }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runSellerCertify(parsed.data));
     },
@@ -1479,16 +1525,18 @@ export function registerRoutes(
     pricing.buyerGate,
     "Certified seller buyer gate: attestation + TrustScore tier before x402 pay",
     async (req, res) => {
-      const parsed = z
-        .object({
+      const parsed = parseWithVerifierFallback(
+        "/api/trust-network/buyer-gate",
+        z.object({
           sellerHost: z.string().min(1),
           walletAddress: z.string().min(16).optional(),
           attestationId: z.string().min(8).optional(),
           agentTier: z.enum(["BRONZE", "SILVER", "GOLD", "PLATINUM"]).optional(),
           trustScore: z.coerce.number().min(0).max(100).optional(),
           securityGrade: z.string().optional(),
-        })
-        .safeParse(req.body);
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runBuyerGate(parsed.data));
     },
@@ -1499,8 +1547,9 @@ export function registerRoutes(
     pricing.pipelineTrustV2,
     "One-shot Trust v2: mandate diff + KYM ingest + guard/proxy + certified buyer gate",
     async (req, res) => {
-      const parsed = guardBodySchema
-        .extend({
+      const parsed = parseWithVerifierFallback(
+        "/api/pipeline/trust-v2",
+        guardBodySchema.extend({
           mandateId: z.string().min(8).optional(),
           toolCalls: z
             .array(
@@ -1523,8 +1572,9 @@ export function registerRoutes(
           kymBeforePay: z.coerce.boolean().optional(),
           useProxy: z.coerce.boolean().optional(),
           issueAttestation: z.coerce.boolean().optional(),
-        })
-        .safeParse(req.body);
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runPipelineTrustV2(parsed.data));
     },
@@ -1535,14 +1585,16 @@ export function registerRoutes(
     pricing.bondSlash,
     "Slash certified seller virtual bond after failed semantic delivery",
     async (req, res) => {
-      const parsed = z
-        .object({
+      const parsed = parseWithVerifierFallback(
+        "/api/trust-network/bond/slash",
+        z.object({
           sellerHost: z.string().min(1),
           amountUsdc: z.coerce.number().positive(),
           reason: z.string().min(3),
           qualityScore: z.coerce.number().min(0).max(100).optional(),
-        })
-        .safeParse(req.body);
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runBondSlash(parsed.data));
     },
@@ -1573,6 +1625,8 @@ export function registerRoutes(
       bundleSavingsNote: "pre-x402 guard replaces 3 calls ($0.16 → $0.05); pipeline/execute replaces guard+plan+failover+router ($0.27+ → $0.25)",
     });
   });
+
+  registerProtocolRoutes(app, paid, asyncRoute);
 
   return postHandlers;
 }

@@ -573,5 +573,40 @@ flowchart LR
 | `src/lib/semantic-judge.ts`, `certified-sellers.ts`, `ecosystem-telemetry.ts` | v2 libs |
 | `src/index.ts`, `package.json` | endpoint count → **38** |
 | `README.md`, `docs/TRUST-LAYER-V2-THREE-PILLARS.md`, `docs/AGENT-CATALOG.md` | docs |
+| `src/protocol/*`, `src/routes-protocol.ts` | **v4** — Agent Trust Protocol (17 paid + 4 free) |
+| `docs/PROTOCOL-V4.md` | protocol architecture |
+
+---
+
+# 11. Agent Trust Protocol v4 (NEW)
+
+**Version 4.0.0** — global trust infrastructure for autonomous agents. See `docs/PROTOCOL-V4.md`.
+
+### 11.1 Full trust pipeline (recommended)
+- **Endpoint:** `POST /api/protocol/pipeline/full-trust` — **$0.45**
+- **Runs:** passport → TrustScore v2 → fraud scan → oracle quorum → credit bureau → compliance → guard → replay binding
+
+### 11.2 Identity & trust
+| Endpoint | Price | Purpose |
+|----------|-------|---------|
+| `POST /api/protocol/passport/issue` | $0.06 | Agent DID passport VC |
+| `POST /api/protocol/passport/verify` | $0.02 | Verify passport |
+| `POST /api/protocol/trust-score/v2` | $0.08 | Multi-factor trust + HMAC proof |
+| `POST /api/protocol/oracle/consensus` | $0.12 | 4-oracle quorum |
+
+### 11.3 Fraud, execution, escrow
+| Endpoint | Price | Purpose |
+|----------|-------|---------|
+| `POST /api/protocol/fraud/scan` | $0.10 | Graph fraud signals |
+| `POST /api/protocol/execution/issue` | $0.05 | Proof of Execution receipt |
+| `POST /api/protocol/escrow/create` | $0.08 | Escrow FSM CREATED |
+| `POST /api/protocol/replay/bind` | $0.02 | Anti-replay binding |
+
+### 11.4 Free discovery
+- `GET /api/protocol/architecture`
+- `GET /api/protocol/threat-model`
+- `GET /api/protocol/security/audit`
+
+**MCP:** `@mimranakb/trust-layer-mcp@3.0.0` — `trust_protocol_full_pipeline`, `trust_protocol_trust_score_v2`, `trust_protocol_fraud_scan`, `trust_protocol_execution_receipt`, `trust_protocol_credit_score`
 
 MIT

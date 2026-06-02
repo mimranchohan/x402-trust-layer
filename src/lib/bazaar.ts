@@ -4,7 +4,7 @@ import { SUITE_VERSION } from "./version.js";
 
 const SERVICE_NAME = "x402 Trust Layer";
 const SERVICE_DESCRIPTION =
-  "36 paid x402 trust infrastructure APIs: guard, semantic escrow, mandate diff, certified seller network, KYM, ERC-8004, mandates, compliance, and settlement orchestration.";
+  "55 paid x402 trust infrastructure APIs: guard, semantic escrow, mandate diff, certified sellers, ERC-8004, plus Agent Trust Protocol v4 (passport, trust v2, fraud, oracle, PoE, escrow FSM, replay, zk, credit bureau).";
 
 const ENDPOINT_META: Record<string, { summary: string; category: string; tags: string[] }> = {
   "/api/x402/proxy": {
@@ -196,6 +196,46 @@ const ENDPOINT_META: Record<string, { summary: string; category: string; tags: s
     summary: "Slash certified seller virtual bond after failed delivery",
     category: "Trust",
     tags: ["bond", "slash", "seller", "trust-network"],
+  },
+  "/api/protocol/pipeline/full-trust": {
+    summary: "Full Agent Trust Protocol v4 pipeline before x402 payment",
+    category: "Protocol",
+    tags: ["protocol", "trust", "pipeline"],
+  },
+  "/api/protocol/passport/issue": {
+    summary: "Issue Agent Passport DID verifiable credential",
+    category: "Protocol",
+    tags: ["did", "identity", "passport"],
+  },
+  "/api/protocol/trust-score/v2": {
+    summary: "Tamper-resistant TrustScore v2 with HMAC proof",
+    category: "Protocol",
+    tags: ["trust-score", "erc8004"],
+  },
+  "/api/protocol/fraud/scan": {
+    summary: "Graph fraud scan: Sybil, wash trading, circular payments",
+    category: "Protocol",
+    tags: ["fraud", "risk"],
+  },
+  "/api/protocol/execution/issue": {
+    summary: "Proof of Execution receipt with tool and settlement proofs",
+    category: "Protocol",
+    tags: ["poe", "receipt", "audit"],
+  },
+  "/api/protocol/escrow/create": {
+    summary: "Create escrow state machine (CREATED)",
+    category: "Protocol",
+    tags: ["escrow", "fsm"],
+  },
+  "/api/protocol/replay/bind": {
+    summary: "Replay-safe binding: nonce + resource hash + request hash",
+    category: "Protocol",
+    tags: ["replay", "security"],
+  },
+  "/api/protocol/credit/score": {
+    summary: "AI Agent Credit Bureau score 300-900",
+    category: "Protocol",
+    tags: ["credit", "bureau"],
   },
 };
 

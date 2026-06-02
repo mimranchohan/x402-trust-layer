@@ -152,4 +152,76 @@ export const ENDPOINT_META: Record<string, { summary: string; tags: string[] }> 
     summary: "Slash seller virtual bond after failed delivery",
     tags: ["bond", "slash", "trust-network"],
   },
+  "/api/protocol/pipeline/full-trust": {
+    summary: "Agent Trust Protocol v4 full pipeline before x402 payment",
+    tags: ["protocol", "trust", "pipeline"],
+  },
+  "/api/protocol/passport/issue": {
+    summary: "Issue Agent Passport DID verifiable credential",
+    tags: ["protocol", "did", "identity"],
+  },
+  "/api/protocol/passport/verify": {
+    summary: "Verify Agent Passport credential signature",
+    tags: ["protocol", "did", "verify"],
+  },
+  "/api/protocol/trust-score/v2": {
+    summary: "TrustScore v2 with tamper-resistant HMAC proof",
+    tags: ["protocol", "trust-score"],
+  },
+  "/api/protocol/fraud/scan": {
+    summary: "Graph fraud scan for Sybil and wash trading",
+    tags: ["protocol", "fraud"],
+  },
+  "/api/protocol/oracle/consensus": {
+    summary: "Trust oracle quorum consensus",
+    tags: ["protocol", "oracle"],
+  },
+  "/api/protocol/execution/issue": {
+    summary: "Proof of Execution task receipt",
+    tags: ["protocol", "poe"],
+  },
+  "/api/protocol/execution/verify": {
+    summary: "Verify Proof of Execution receipt",
+    tags: ["protocol", "poe", "verify"],
+  },
+  "/api/protocol/reasoning/commit": {
+    summary: "Commit reasoning audit Merkle tree",
+    tags: ["protocol", "audit", "merkle"],
+  },
+  "/api/protocol/reasoning/disclose": {
+    summary: "Selective disclosure of reasoning audit leaves",
+    tags: ["protocol", "zk", "disclosure"],
+  },
+  "/api/protocol/escrow/create": {
+    summary: "Create escrow FSM (CREATED)",
+    tags: ["protocol", "escrow"],
+  },
+  "/api/protocol/escrow/transition": {
+    summary: "Transition escrow FSM state",
+    tags: ["protocol", "escrow"],
+  },
+  "/api/protocol/escrow/status": {
+    summary: "Query escrow FSM status",
+    tags: ["protocol", "escrow"],
+  },
+  "/api/protocol/replay/bind": {
+    summary: "Replay-safe payment binding",
+    tags: ["protocol", "replay", "security"],
+  },
+  "/api/protocol/replay/verify": {
+    summary: "Verify and consume replay binding",
+    tags: ["protocol", "replay"],
+  },
+  "/api/protocol/zk/prove": {
+    summary: "ZK-style proof of budget, reputation, or compliance",
+    tags: ["protocol", "zk"],
+  },
+  "/api/protocol/credit/score": {
+    summary: "AI Agent Credit Bureau 300-900",
+    tags: ["protocol", "credit"],
+  },
+  "/api/protocol/compliance/assess": {
+    summary: "Enterprise AML/KYC compliance assess",
+    tags: ["protocol", "compliance"],
+  },
 };

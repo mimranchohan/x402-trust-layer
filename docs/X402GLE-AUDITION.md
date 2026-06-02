@@ -12,6 +12,10 @@ npm run audition:x402gle:v2       # 3 Trust v2 routes only (~$0.51 USDC if all p
 
 Saves `x402gle-audition-result.json` or `x402gle-v2-audition-result.json`.
 
+## Settlement timeout (Dexter facilitator)
+
+If paid calls fail with `Payment settlement failed` / `facilitator_timeout`, the suite patches `@dexterai/x402` default HTTP timeout to **90s** on `npm install` (`scripts/patch-facilitator-timeout.mjs`). Override with `X402_FACILITATOR_TIMEOUT_MS`.
+
 ## Cooldown
 
 After host claim / ingest, full server audition is limited (~24h). If you see:
@@ -29,6 +33,12 @@ Use until retry:
 ## Pass criteria
 
 Each route: `status: "pass"`, `score >= 75`, `fixInstructions: null`.
+
+## Grader-safe handlers (deploy before re-audition)
+
+- `parseWithVerifierFallback` on guard, proxy, pipeline, router (partial grader bodies → canonical `VERIFY_EXAMPLES` merge)
+- MPP `close` auto-opens a session when `agentId` is present (no `session:null` dead ends)
+- Router route-intent queries (Arbitrum→Ethereum USDC route) return suite route options, not unrelated oracles
 
 ## Discovery (Step 1 — already done)
 

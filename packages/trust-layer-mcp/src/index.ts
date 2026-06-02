@@ -40,7 +40,7 @@ const policySchema = z.object({
 
 const server = new McpServer({
   name: "x402-trust-layer",
-  version: "2.0.0",
+  version: "3.0.0",
 });
 
 server.tool(
@@ -209,10 +209,103 @@ server.tool(
   },
 );
 
+server.tool(
+  "trust_protocol_full_pipeline",
+  "Agent Trust Protocol v4 — passport, trust v2, fraud, oracle, credit, compliance, guard, replay bind ($0.45)",
+  {
+    agentId: z.string(),
+    walletAddress: z.string(),
+    targetUrl: z.string().url(),
+    estimatedCostUsdc: z.number(),
+    policy: policySchema,
+    organizationId: z.string().optional(),
+  },
+  async (args) => {
+    const data = await paidPost("/api/protocol/pipeline/full-trust", args);
+    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+  },
+);
+
+server.tool(
+  "trust_protocol_trust_score_v2",
+  "Multi-factor TrustScore v2 with cryptographic proof ($0.08)",
+  {
+    agentId: z.string(),
+    walletAddress: z.string(),
+    uptimePct: z.number().optional(),
+    deliveryQualityScore: z.number().optional(),
+  },
+  async (args) => {
+    const data = await paidPost("/api/protocol/trust-score/v2", args);
+    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+  },
+);
+
+server.tool(
+  "trust_protocol_fraud_scan",
+  "Graph fraud scan — Sybil, wash trading, circular payments ($0.10)",
+  {
+    agentId: z.string().optional(),
+    walletAddress: z.string().optional(),
+    merchantHost: z.string().optional(),
+    amountUsdc: z.number().optional(),
+  },
+  async (args) => {
+    const data = await paidPost("/api/protocol/fraud/scan", args);
+    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+  },
+);
+
+server.tool(
+  "trust_protocol_execution_receipt",
+  "Proof of Execution receipt after paid API call ($0.05)",
+  {
+    agentId: z.string(),
+    targetUrl: z.string().url().optional(),
+    toolTrace: z
+      .array(
+        z.object({
+          name: z.string(),
+          url: z.string().optional(),
+          amountUsdc: z.number().optional(),
+        }),
+      )
+      .optional(),
+    decisionTrace: z.array(z.string()).optional(),
+    settlement: z
+      .object({
+        transactionHash: z.string().optional(),
+        network: z.string().optional(),
+        amountUsdc: z.number().optional(),
+      })
+      .optional(),
+    responseSummary: z.string().optional(),
+  },
+  async (args) => {
+    const data = await paidPost("/api/protocol/execution/issue", args);
+    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+  },
+);
+
+server.tool(
+  "trust_protocol_credit_score",
+  "AI Agent Credit Bureau score 300-900 ($0.06)",
+  {
+    agentId: z.string(),
+    walletAddress: z.string(),
+    disputeCount: z.number().optional(),
+    settlementCount: z.number().optional(),
+  },
+  async (args) => {
+    const data = await paidPost("/api/protocol/credit/score", args);
+    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+  },
+);
+
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("[x402-trust-layer-mcp] v2 ready — base=" + BASE);
+  console.error("[x402-trust-layer-mcp] v3 ready — base=" + BASE);
 }
 
 main().catch((err) => {
