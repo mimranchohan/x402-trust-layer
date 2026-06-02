@@ -42,6 +42,13 @@ import { listProtocolEndpoints, registerProtocolRoutes } from "./routes-protocol
 import { idempotencyCapture, idempotencyPreCheck } from "./lib/idempotency.js";
 import { dispatchWebhooks } from "./lib/webhooks.js";
 
+function withRequestHeaders<T extends Record<string, unknown>>(
+  body: T,
+  req: Request,
+): T & { requestHeaders: Record<string, unknown> } {
+  return { ...body, requestHeaders: req.headers as Record<string, unknown> };
+}
+
 type PaidMw = ReturnType<typeof import("@dexterai/x402/server").x402Middleware>;
 type AsyncRoute = (
   handler: (req: Request, res: Response) => Promise<void>,
@@ -162,7 +169,7 @@ export function registerRoutes(
         req.body,
       );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
-      res.json(await runAgentVerify(parsed.data));
+      res.json(await runAgentVerify(withRequestHeaders(parsed.data, req)));
     },
   );
 
@@ -173,7 +180,7 @@ export function registerRoutes(
     async (req, res) => {
       const parsed = parseWithVerifierFallback("/api/guard/pre-x402", guardBodySchema, req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
-      const result = await runPreX402Guard(parsed.data);
+      const result = await runPreX402Guard(withRequestHeaders(parsed.data, req));
       const fleetId = parsed.data.agentId.split(":")[0] ?? parsed.data.agentId;
       void dispatchWebhooks(
         result.allowed ? "guard.allowed" : "guard.denied",
@@ -326,7 +333,7 @@ export function registerRoutes(
         );
       }
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
-      res.json(await runPipelineExecute(parsed.data));
+      res.json(await runPipelineExecute(withRequestHeaders(parsed.data, req)));
     },
   );
 
@@ -346,7 +353,7 @@ export function registerRoutes(
         req.body,
       );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
-      res.json(await runX402Proxy(parsed.data));
+      res.json(await runX402Proxy(withRequestHeaders(parsed.data, req)));
     },
   );
 
@@ -655,7 +662,7 @@ export function registerRoutes(
         req.body,
       );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
-      res.json(await runMarketBuyAdvisor(parsed.data));
+      res.json(await runMarketBuyAdvisor(withRequestHeaders(parsed.data, req)));
     },
   );
 
@@ -706,7 +713,7 @@ export function registerRoutes(
             resourceCount: null,
             openapiPathCount: null,
           },
-          globalFixes: [err instanceof Error ? err.message : String(err)],
+          globalFixes: ["Audition coach failed — check origin reachability and redeploy logs"],
           routes: [],
           routeAudits: [],
           coaching: { hostScoreEstimate: 0, failCount: 0, passCount: 0, warnCount: 0, topFixes: [] },

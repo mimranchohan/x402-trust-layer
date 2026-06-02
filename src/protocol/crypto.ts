@@ -1,4 +1,4 @@
-import { createHash, createHmac, randomBytes } from "node:crypto";
+import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { config } from "../config.js";
 
 export function sha256Hex(input: string | Buffer): string {
@@ -11,7 +11,12 @@ export function hmacSign(payload: string): string {
 
 export function verifyHmac(payload: string, signature: string): boolean {
   const expected = hmacSign(payload);
-  return expected.length === signature.length && expected === signature;
+  if (expected.length !== signature.length) return false;
+  try {
+    return timingSafeEqual(Buffer.from(expected, "utf8"), Buffer.from(signature, "utf8"));
+  } catch {
+    return false;
+  }
 }
 
 export function merkleRoot(leaves: string[]): string {

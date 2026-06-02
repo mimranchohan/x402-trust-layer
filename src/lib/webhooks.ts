@@ -109,6 +109,7 @@ export async function dispatchWebhooks(
         const timer = setTimeout(() => controller.abort(), 8_000);
         const res = await fetch(sub.url, {
           method: "POST",
+          redirect: "manual",
           headers: {
             "content-type": "application/json",
             "x-trust-layer-event": event,
@@ -117,6 +118,10 @@ export async function dispatchWebhooks(
           body,
           signal: controller.signal,
         });
+        if (res.status >= 300 && res.status < 400) {
+          failed++;
+          return;
+        }
         clearTimeout(timer);
         if (res.ok) delivered++;
         else failed++;

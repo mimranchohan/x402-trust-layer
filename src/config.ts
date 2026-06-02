@@ -98,6 +98,9 @@ export const config = {
   attestationHmacSecret: resolveAttestationHmacSecret(),
   testnetMode: env("X402_TESTNET") === "1" || env("TESTNET") === "1",
   allowVerifierProbeIds: env("ALLOW_VERIFIER_PROBE_IDS") === "1",
+  /** Optional server secret for verifier synthetic probes (header X-Verifier-Fast-Path-Secret). */
+  verifierFastPathSecret: env("VERIFIER_FAST_PATH_SECRET"),
+  webhookAdminSecret: env("WEBHOOK_ADMIN_SECRET"),
 };
 
 export const pricing = {

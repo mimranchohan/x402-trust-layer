@@ -12,6 +12,7 @@ export type MarketBuyAdvisorInput = {
   intent: string;
   targetUrl?: string;
   agentId?: string;
+  requestHeaders?: Record<string, unknown>;
   walletAddress?: string;
   policy?: Policy;
   preferNetwork?: string;
@@ -139,7 +140,7 @@ export async function runMarketBuyAdvisor(
 ): Promise<WithAgentTrust<MarketBuyAdvisorResult>> {
   const limit = Math.min(Math.max(input.limit ?? 5, 1), 10);
   const query = input.intent.trim() || (input.targetUrl ? new URL(input.targetUrl).hostname : "x402 api");
-  const verifierFast = isVerifierAgentId(input.agentId);
+  const verifierFast = isVerifierAgentId(input.agentId, input.requestHeaders);
   const catalogLimit = verifierFast ? Math.min(limit, 2) : limit + 3;
 
   const catalog = verifierFast

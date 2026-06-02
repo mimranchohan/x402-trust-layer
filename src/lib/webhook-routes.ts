@@ -1,4 +1,5 @@
 import type { Express, Request, Response } from "express";
+import { timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { UnsafeUrlError } from "./ssrf.js";
 import {
@@ -8,6 +9,7 @@ import {
   registerWebhook,
   type WebhookEvent,
 } from "./webhooks.js";
+import { requireWebhookAdmin } from "./webhook-auth.js";
 
 function isProduction(): boolean {
   return process.env.NODE_ENV === "production" || !!process.env.RAILWAY_ENVIRONMENT;
@@ -23,6 +25,7 @@ const eventSchema = z.enum([
 
 export function registerWebhookRoutes(app: Express): void {
   app.post("/api/webhooks/register", (req: Request, res: Response) => {
+    if (!requireWebhookAdmin(req, res)) return;
     const parsed = z
       .object({
         fleetId: z.string().min(1),
@@ -57,6 +60,7 @@ export function registerWebhookRoutes(app: Express): void {
   });
 
   app.get("/api/webhooks/list", (req: Request, res: Response) => {
+    if (!requireWebhookAdmin(req, res)) return;
     const fleetId = typeof req.query.fleetId === "string" ? req.query.fleetId : undefined;
     res.json({
       ok: true,
@@ -73,6 +77,7 @@ export function registerWebhookRoutes(app: Express): void {
   });
 
   app.delete("/api/webhooks/:id", (req: Request, res: Response) => {
+    if (!requireWebhookAdmin(req, res)) return;
     const fleetId = typeof req.query.fleetId === "string" ? req.query.fleetId : "";
     if (!fleetId) {
       res.status(400).json({ error: "fleetId query param required" });
@@ -89,8 +94,14 @@ export function registerWebhookRoutes(app: Express): void {
   app.post("/api/webhooks/test-dispatch", async (req: Request, res: Response) => {
     if (isProduction()) {
       const secret = process.env.WEBHOOK_TEST_SECRET?.trim();
-      const provided = req.headers["x-webhook-test-secret"];
-      if (!secret || provided !== secret) {
+      const raw = req.headers["x-webhook-test-secret"];
+      const provided = Array.isArray(raw) ? raw[0] : raw;
+      const ok =
+        secret &&
+        typeof provided === "string" &&
+        secret.length === provided.length &&
+        timingSafeEqual(Buffer.from(secret, "utf8"), Buffer.from(provided, "utf8"));
+      if (!ok) {
         res.status(403).json({ error: "Forbidden — set WEBHOOK_TEST_SECRET and X-Webhook-Test-Secret header" });
         return;
       }

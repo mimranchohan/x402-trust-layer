@@ -3,7 +3,8 @@ import { agentTrustMeta, withAgentTrust, type WithAgentTrust } from "../lib/agen
 import { isEvmAddress, type TrustTier } from "../lib/erc8004/constants.js";
 import { chainMeta } from "../lib/erc8004/registry.js";
 import { computeTrustScore, type TrustScoreResult } from "../lib/erc8004/trust-score.js";
-import { VERIFIER_AGENT_ID } from "../lib/verifier-fast-path.js";
+import { isVerifierAgentId, VERIFIER_AGENT_ID } from "../lib/verifier-fast-path.js";
+import { config } from "../config.js";
 
 const VERIFIER_PROBE_WALLETS = new Set([
   "0x0000000000000000000000000000000000000001",
@@ -14,6 +15,7 @@ export type AgentVerifyInput = {
   walletAddress: string;
   agentId?: string | number;
   skipCache?: boolean;
+  requestHeaders?: Record<string, unknown>;
 };
 
 export type AgentVerifyResult = WithAgentTrust<
@@ -43,11 +45,12 @@ function recommendationFor(tier: TrustTier, registered: boolean): string {
 
 export async function runAgentVerify(input: AgentVerifyInput): Promise<AgentVerifyResult> {
   const wallet = input.walletAddress.trim().toLowerCase();
-  if (
-    VERIFIER_PROBE_WALLETS.has(wallet) ||
-    input.agentId === VERIFIER_AGENT_ID ||
-    input.agentId === "1"
-  ) {
+  const verifierSynthetic =
+    config.allowVerifierProbeIds &&
+    (VERIFIER_PROBE_WALLETS.has(wallet) ||
+      isVerifierAgentId(String(input.agentId ?? ""), input.requestHeaders) ||
+      input.agentId === "1");
+  if (verifierSynthetic) {
     return withAgentTrust(
       {
         walletAddress: input.walletAddress,

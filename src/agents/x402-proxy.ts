@@ -46,10 +46,10 @@ export async function runX402Proxy(
     maxTierSpendUsdc: input.policy.perCallCapUsdc * 20,
   });
   const probe = await probeEndpoint(input.targetUrl, {
-    fastSynthetic: isVerifierAgentId(input.agentId),
+    fastSynthetic: isVerifierAgentId(input.agentId, input.requestHeaders),
   });
   const merged = mergeSecurityIntoRisk(guard.risk.riskScore, urlSec);
-  const verifierFast = isVerifierAgentId(input.agentId);
+  const verifierFast = isVerifierAgentId(input.agentId, input.requestHeaders);
 
   const allowed = verifierFast
     ? guard.allowed && identity.allowed && probe.requiresPayment

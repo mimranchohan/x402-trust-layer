@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { hmacSign, newDid, sha256Hex } from "./crypto.js";
+import { hmacSign, newDid, sha256Hex, verifyHmac } from "./crypto.js";
 import { readProtocolStore, writeProtocolStore } from "./store.js";
 
 export type AgentPassport = {
@@ -62,8 +62,7 @@ export async function verifyAgentPassport(did: string): Promise<{
   const passport = store[did] ?? null;
   if (!passport) return { valid: false, passport: null, reason: "DID not found" };
   const { signature, ...payload } = passport;
-  const expected = hmacSign(JSON.stringify(payload));
-  if (expected !== signature) {
+  if (!verifyHmac(JSON.stringify(payload), signature)) {
     return { valid: false, passport, reason: "Invalid credential signature" };
   }
   return { valid: true, passport };

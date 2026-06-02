@@ -1,3 +1,6 @@
+import { assertSafeOutboundUrl } from "../ssrf.js";
+import { safeFetch } from "../safe-fetch.js";
+
 export type AgentCardJson = {
   name?: string;
   description?: string;
@@ -59,10 +62,12 @@ export async function fetchAgentCard(agentUri: string): Promise<AgentCardJson | 
   if (!url.startsWith("http")) return null;
 
   try {
-    const res = await fetch(url, {
+    assertSafeOutboundUrl(url);
+    const res = await safeFetch(url, {
       headers: { accept: "application/json" },
-      signal: AbortSignal.timeout(8000),
+      timeoutMs: 8000,
     });
+    if (res.status >= 300 && res.status < 400) return null;
     if (!res.ok) return null;
     return (await res.json()) as AgentCardJson;
   } catch {
@@ -154,10 +159,14 @@ export async function verifyWellKnown(domain: string | null): Promise<WellKnownS
 
   const url = `https://${domain}/.well-known/agent-registration.json`;
   try {
-    const res = await fetch(url, {
+    assertSafeOutboundUrl(url);
+    const res = await safeFetch(url, {
       headers: { accept: "application/json" },
-      signal: AbortSignal.timeout(6000),
+      timeoutMs: 6000,
     });
+    if (res.status >= 300 && res.status < 400) {
+      return { points: 0, maxPoints, verified: false, url, error: "redirect_not_followed" };
+    }
     if (!res.ok) {
       return { points: 0, maxPoints, verified: false, url, error: `HTTP ${res.status}` };
     }

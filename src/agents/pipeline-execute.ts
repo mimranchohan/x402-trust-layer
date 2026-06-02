@@ -74,7 +74,7 @@ export async function runPipelineExecute(
     );
   }
 
-  const verifierFast = isVerifierAgentId(input.agentId);
+  const verifierFast = isVerifierAgentId(input.agentId, input.requestHeaders);
 
   if (input.includeFailover !== false && !verifierFast) {
     result.facilitator = await runFacilitatorFailover({

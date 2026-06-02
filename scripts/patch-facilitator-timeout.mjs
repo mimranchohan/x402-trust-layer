@@ -10,23 +10,40 @@ const root = path.dirname(fileURLToPath(import.meta.url));
 const pkgRoot = path.join(root, "..", "node_modules", "@dexterai", "x402", "dist", "server");
 const targets = ["index.js", "index.cjs"].map((f) => path.join(pkgRoot, f));
 
-const oldSnippet = "this.timeoutMs=n?.timeoutMs??1e4";
-const newSnippet =
-  'this.timeoutMs=n?.timeoutMs??(Number(process.env.X402_FACILITATOR_TIMEOUT_MS)||9e4)';
+const timeoutDefault =
+  "(Number(process.env.X402_FACILITATOR_TIMEOUT_MS)||9e4)";
+
+/** @type {{ from: string; to: string }[]} */
+const replacements = [
+  {
+    from: "this.timeoutMs=n?.timeoutMs??1e4",
+    to: `this.timeoutMs=n?.timeoutMs??${timeoutDefault}`,
+  },
+  {
+    from: "this.timeoutMs = config?.timeoutMs ?? 1e4",
+    to: `this.timeoutMs = config?.timeoutMs ?? ${timeoutDefault}`,
+  },
+];
 
 let patched = 0;
 for (const file of targets) {
   if (!fs.existsSync(file)) continue;
   let src = fs.readFileSync(file, "utf8");
-  if (!src.includes(oldSnippet)) {
-    if (src.includes("X402_FACILITATOR_TIMEOUT_MS")) {
-      patched += 1;
-      continue;
+  if (src.includes("X402_FACILITATOR_TIMEOUT_MS")) {
+    patched += 1;
+    continue;
+  }
+  let changed = false;
+  for (const { from, to } of replacements) {
+    if (src.includes(from)) {
+      src = src.replaceAll(from, to);
+      changed = true;
     }
+  }
+  if (!changed) {
     console.warn(`[patch-facilitator-timeout] pattern not found in ${path.basename(file)}`);
     continue;
   }
-  src = src.replaceAll(oldSnippet, newSnippet);
   fs.writeFileSync(file, src);
   patched += 1;
 }

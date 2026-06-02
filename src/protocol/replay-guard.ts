@@ -1,5 +1,23 @@
+import { writeFile, mkdir } from "node:fs/promises";
+import path from "node:path";
 import { sha256Hex, hmacSign } from "./crypto.js";
 import { readProtocolStore, writeProtocolStore } from "./store.js";
+
+const NONCE_DIR = path.join(process.cwd(), "data", "protocol", "used-nonces");
+
+async function claimNonceOnce(nonce: string): Promise<boolean> {
+  const safe = nonce.replace(/[^a-f0-9]/gi, "").slice(0, 64);
+  if (!safe) return false;
+  await mkdir(NONCE_DIR, { recursive: true });
+  const file = path.join(NONCE_DIR, `${safe}.lock`);
+  try {
+    await writeFile(file, String(Date.now()), { flag: "wx" });
+    return true;
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === "EEXIST") return false;
+    throw err;
+  }
+}
 
 export type ReplayBindingInput = {
   agentId: string;
@@ -22,7 +40,6 @@ export type ReplayBinding = {
 };
 
 type BindingStore = Record<string, ReplayBinding>;
-type UsedNonceStore = Record<string, number>;
 
 export async function createReplayBinding(input: ReplayBindingInput): Promise<ReplayBinding> {
   const nonce = sha256Hex(`${Date.now()}:${input.agentId}`).slice(0, 32);
@@ -99,10 +116,8 @@ export async function verifyReplayBinding(
     }
   }
 
-  const used = await readProtocolStore<UsedNonceStore>("replay-used", {});
-  if (used[binding.nonce]) return { valid: false, reason: "Nonce already consumed (replay)" };
-  used[binding.nonce] = Date.now();
-  await writeProtocolStore("replay-used", used);
+  const claimed = await claimNonceOnce(binding.nonce);
+  if (!claimed) return { valid: false, reason: "Nonce already consumed (replay)" };
 
   return { valid: true };
 }

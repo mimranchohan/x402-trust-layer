@@ -30,7 +30,7 @@ void ensureVerifierProbeMandate().catch((err) => {
 });
 
 const app = express();
-app.set("trust proxy", true);
+app.set("trust proxy", Number(process.env.TRUST_PROXY_HOPS ?? 1));
 app.disable("x-powered-by");
 registerX402gleHostVerification(app);
 app.use(stripTrailingSlash);
