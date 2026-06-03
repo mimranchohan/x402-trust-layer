@@ -42,14 +42,11 @@ function parsePaymentOptions(body: unknown): PaymentOption[] {
   for (const item of raw) {
     if (!item || typeof item !== "object") continue;
     const o = item as Record<string, unknown>;
-    const price =
+    const raw =
       typeof o.price === "number"
         ? o.price
-        : typeof o.maxAmountRequired === "string"
-          ? Number(o.maxAmountRequired) / 1_000_000
-          : typeof o.maxAmountRequired === "number"
-            ? o.maxAmountRequired / 1_000_000
-            : null;
+        : Number(o.maxAmountRequired ?? o.price ?? 0);
+    const price = raw >= 1000 ? raw / 1_000_000 : raw > 0 ? raw : null;
     const network = typeof o.network === "string" ? o.network : null;
     if (price == null || !network) continue;
     out.push({

@@ -1,8 +1,9 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { config } from "../config.js";
+import { db } from "./db.js";
 import { SUITE_VERSION } from "./version.js";
 
 export type MandateScope = {
@@ -27,24 +28,95 @@ export type MandateRecord = {
 };
 
 const root = path.dirname(fileURLToPath(import.meta.url));
-const storePath = path.join(root, "..", "..", "data", "mandates.json");
+const legacyStorePath = path.join(root, "..", "..", "data", "mandates.json");
 
 /** Stable mandate id used by x402gle / Dexter verifier probes (see verify-examples.ts). */
 export const VERIFIER_PROBE_MANDATE_ID = "mdt_verifier_probe_example";
 
-async function loadStore(): Promise<MandateRecord[]> {
+type MandateRow = {
+  mandate_id: string;
+  principal: string;
+  agent_id: string;
+  intent: string;
+  intent_hash: string;
+  scope: string;
+  signature: string;
+  issued_at: string;
+  suite_version: string;
+};
+
+const selectById = db.prepare("SELECT * FROM mandates WHERE mandate_id = ?");
+const selectAll = db.prepare("SELECT * FROM mandates ORDER BY issued_at DESC");
+const upsertMandate = db.prepare(`
+  INSERT OR REPLACE INTO mandates (
+    mandate_id, principal, agent_id, intent, intent_hash, scope, signature,
+    issued_at, expires_at, suite_version
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+`);
+
+function rowToRecord(row: MandateRow): MandateRecord {
+  return {
+    mandateId: row.mandate_id,
+    issuedAt: row.issued_at,
+    principal: row.principal,
+    agentId: row.agent_id,
+    intent: row.intent,
+    intentHash: row.intent_hash,
+    scope: JSON.parse(row.scope) as MandateScope,
+    suiteVersion: row.suite_version,
+    signature: row.signature,
+  };
+}
+
+function expiresAtUnix(scope: MandateScope): number | null {
+  const t = new Date(scope.expiresAt).getTime();
+  return Number.isFinite(t) ? Math.floor(t / 1000) : null;
+}
+
+async function migrateLegacyJsonOnce(): Promise<void> {
+  const count = (db.prepare("SELECT COUNT(*) AS c FROM mandates").get() as { c: number }).c;
+  if (count > 0) return;
   try {
-    const raw = await readFile(storePath, "utf8");
+    const raw = await readFile(legacyStorePath, "utf8");
     const parsed = JSON.parse(raw) as MandateRecord[];
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return;
+    for (const r of parsed) {
+      upsertMandate.run(
+        r.mandateId,
+        r.principal,
+        r.agentId,
+        r.intent,
+        r.intentHash,
+        JSON.stringify(r.scope),
+        r.signature,
+        r.issuedAt,
+        expiresAtUnix(r.scope),
+        r.suiteVersion ?? SUITE_VERSION,
+      );
+    }
   } catch {
-    return [];
+    /* no legacy file */
   }
 }
 
-async function saveStore(rows: MandateRecord[]): Promise<void> {
-  await mkdir(path.dirname(storePath), { recursive: true });
-  await writeFile(storePath, JSON.stringify(rows.slice(-500), null, 2), "utf8");
+async function loadStore(): Promise<MandateRecord[]> {
+  await migrateLegacyJsonOnce();
+  return (selectAll.all() as MandateRow[]).map(rowToRecord);
+}
+
+async function saveRecord(record: MandateRecord): Promise<void> {
+  upsertMandate.run(
+    record.mandateId,
+    record.principal,
+    record.agentId,
+    record.intent,
+    record.intentHash,
+    JSON.stringify(record.scope),
+    record.signature,
+    record.issuedAt,
+    expiresAtUnix(record.scope),
+    record.suiteVersion,
+  );
 }
 
 export function hashIntent(intent: string): string {
@@ -96,17 +168,14 @@ export async function issueMandate(input: {
   };
   const signature = sign(canonical(base));
   const record: MandateRecord = { ...base, suiteVersion: SUITE_VERSION, signature };
-  const rows = await loadStore();
-  rows.push(record);
-  await saveStore(rows);
+  await saveRecord(record);
   return record;
 }
 
 /** Seed a signed probe mandate so /api/mandate/verify passes x402gle audits. */
 export async function ensureVerifierProbeMandate(): Promise<MandateRecord> {
-  const rows = await loadStore();
-  const existing = rows.find((r) => r.mandateId === VERIFIER_PROBE_MANDATE_ID);
-  if (existing) return existing;
+  const existing = selectById.get(VERIFIER_PROBE_MANDATE_ID) as MandateRow | undefined;
+  if (existing) return rowToRecord(existing);
 
   const intent = "Buy ETH/USD oracle data for a trading bot, under $1 per call, daily $10 cap";
   const scope: MandateScope = {
@@ -130,8 +199,7 @@ export async function ensureVerifierProbeMandate(): Promise<MandateRecord> {
   };
   const signature = sign(canonical(base));
   const record: MandateRecord = { ...base, suiteVersion: SUITE_VERSION, signature };
-  rows.push(record);
-  await saveStore(rows);
+  await saveRecord(record);
   return record;
 }
 
@@ -157,8 +225,9 @@ export async function verifyMandate(
   if (mandateId === VERIFIER_PROBE_MANDATE_ID) {
     await ensureVerifierProbeMandate();
   }
-  const rows = await loadStore();
-  const record = rows.find((r) => r.mandateId === mandateId) ?? null;
+  await migrateLegacyJsonOnce();
+  const row = selectById.get(mandateId) as MandateRow | undefined;
+  const record = row ? rowToRecord(row) : null;
   if (!record) {
     return { valid: false, withinScope: false, reason: "Mandate not found", record: null, violations: ["not_found"] };
   }

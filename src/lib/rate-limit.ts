@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
+import { hasPaymentSignatureHeader } from "./x402-headers.js";
 
 type Bucket = { count: number; resetAt: number };
 
@@ -8,10 +9,27 @@ function clientKey(req: Request): string {
   return req.ip ?? req.socket.remoteAddress ?? "unknown";
 }
 
-function hasPaymentSignature(req: Request): boolean {
-  const h = req.headers["payment-signature"];
-  return typeof h === "string" && h.length > 0;
+function pruneExpired(map: Map<string, Bucket>, now: number): void {
+  for (const [key, bucket] of map.entries()) {
+    if (now >= bucket.resetAt) map.delete(key);
+  }
 }
+
+function startRateLimitCleanup(): void {
+  const timer = setInterval(() => {
+    const now = Date.now();
+    pruneExpired(buckets, now);
+    pruneExpired(hourlyBuckets, now);
+    pruneExpired(bucketsUnpaid, now);
+    pruneExpired(lookupBuckets, now);
+  }, 5 * 60_000);
+  timer.unref();
+}
+
+const hourlyBuckets = new Map<string, Bucket>();
+const bucketsUnpaid = new Map<string, Bucket>();
+const lookupBuckets = new Map<string, Bucket>();
+startRateLimitCleanup();
 
 /**
  * Rate limit paid retries only. Unpaid discovery probes (x402scan, AgentCash) must reach
@@ -20,7 +38,7 @@ function hasPaymentSignature(req: Request): boolean {
 export function rateLimitPerMinute(maxRequests: number) {
   const windowMs = 60_000;
   return (req: Request, res: Response, next: NextFunction): void => {
-    if (!hasPaymentSignature(req)) {
+    if (!hasPaymentSignatureHeader(req)) {
       next();
       return;
     }
@@ -47,7 +65,6 @@ export function rateLimitPerMinute(maxRequests: number) {
 /** Free tier endpoints (e.g. agent lookup) — hourly cap per IP */
 export function rateLimitPerHour(maxRequests: number) {
   const windowMs = 3_600_000;
-  const hourlyBuckets = new Map<string, Bucket>();
   return (req: Request, res: Response, next: NextFunction): void => {
     const key = clientKey(req);
     const now = Date.now();
@@ -72,9 +89,8 @@ export function rateLimitPerHour(maxRequests: number) {
 /** Optional cap on unpaid probes per IP (very high — blocks only extreme abuse) */
 export function rateLimitUnpaidProbes(maxPerMinute: number) {
   const windowMs = 60_000;
-  const bucketsUnpaid = new Map<string, Bucket>();
   return (req: Request, res: Response, next: NextFunction): void => {
-    if (hasPaymentSignature(req)) {
+    if (hasPaymentSignatureHeader(req)) {
       next();
       return;
     }
@@ -100,7 +116,6 @@ export function rateLimitUnpaidProbes(maxPerMinute: number) {
 /** Free agent lookup — separate from unpaid x402 probes */
 export function rateLimitAgentLookup(maxPerHour: number) {
   const windowMs = 3_600_000;
-  const lookupBuckets = new Map<string, Bucket>();
   return (req: Request, res: Response, next: NextFunction): void => {
     const key = clientKey(req);
     const now = Date.now();

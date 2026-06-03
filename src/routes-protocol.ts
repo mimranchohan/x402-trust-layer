@@ -474,6 +474,7 @@ export function registerProtocolRoutes(
       );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       try {
+        res.setHeader("X-ZK-Simulated", "true");
         res.json(
           withAgentTrust({ status: "ok", proof: generateZkProof(parsed.data) }, agentTrustMeta(["zk_prove"])),
         );

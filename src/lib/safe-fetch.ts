@@ -1,4 +1,4 @@
-import { assertSafeOutboundUrl } from "./ssrf.js";
+import { assertSafeResolvedUrl } from "./ssrf.js";
 
 export type SafeFetchInit = Omit<RequestInit, "redirect"> & {
   timeoutMs?: number;
@@ -6,7 +6,7 @@ export type SafeFetchInit = Omit<RequestInit, "redirect"> & {
 
 /** Outbound fetch with SSRF hostname checks and redirects disabled (anti-SSRF). */
 export async function safeFetch(url: string, init: SafeFetchInit = {}): Promise<Response> {
-  assertSafeOutboundUrl(url);
+  await assertSafeResolvedUrl(url);
   const { timeoutMs, ...rest } = init;
   const controller = new AbortController();
   const timer =

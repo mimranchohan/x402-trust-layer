@@ -1,12 +1,9 @@
 import type { Request, Response, NextFunction } from "express";
 import { createHash } from "node:crypto";
 import { hasPaymentSignatureHeader } from "./x402-headers.js";
-import { mkdirSync, readFileSync, writeFileSync, existsSync, unlinkSync } from "node:fs";
-import { join } from "node:path";
+import { db } from "./db.js";
 
-const TTL_MS = 24 * 60 * 60 * 1000;
-const STORE_PATH = join(process.cwd(), "data", "idempotency.json");
-const CLAIM_DIR = join(process.cwd(), "data", "idempotency-claims");
+const TTL_SEC = 24 * 60 * 60;
 
 type CachedEntry = {
   status: number;
@@ -16,59 +13,33 @@ type CachedEntry = {
   bodyHash: string;
 };
 
-type Store = Record<string, CachedEntry>;
+const getCache = db.prepare(
+  "SELECT status, body, body_hash, route, created_at FROM idempotency_cache WHERE cache_key = ?",
+);
+const insertCache = db.prepare(`
+  INSERT OR REPLACE INTO idempotency_cache (cache_key, status, body, body_hash, route, created_at)
+  VALUES (?, ?, ?, ?, ?, unixepoch())
+`);
+const claimInflight = db.prepare(
+  "INSERT OR IGNORE INTO idempotency_inflight (cache_key, created_at) VALUES (?, unixepoch())",
+);
+const releaseInflight = db.prepare("DELETE FROM idempotency_inflight WHERE cache_key = ?");
+const pruneCache = db.prepare(
+  "DELETE FROM idempotency_cache WHERE created_at < unixepoch() - ?",
+);
+const pruneInflight = db.prepare(
+  "DELETE FROM idempotency_inflight WHERE created_at < unixepoch() - 3600",
+);
 
-function loadStore(): Store {
-  try {
-    if (!existsSync(STORE_PATH)) return {};
-    return JSON.parse(readFileSync(STORE_PATH, "utf8")) as Store;
-  } catch {
-    return {};
+function maybePrune(): void {
+  if (Math.random() < 0.02) {
+    pruneCache.run(TTL_SEC);
+    pruneInflight.run();
   }
-}
-
-function saveStore(store: Store): void {
-  mkdirSync(join(process.cwd(), "data"), { recursive: true });
-  writeFileSync(STORE_PATH, JSON.stringify(store, null, 2));
-}
-
-function prune(store: Store): Store {
-  const now = Date.now();
-  const out: Store = {};
-  for (const [k, v] of Object.entries(store)) {
-    if (now - v.createdAt < TTL_MS) out[k] = v;
-  }
-  return out;
 }
 
 function cacheKey(route: string, idempotencyKey: string): string {
   return `${route}::${idempotencyKey}`;
-}
-
-function claimFilePath(cacheKeyStr: string): string {
-  const hash = createHash("sha256").update(cacheKeyStr).digest("hex");
-  return join(CLAIM_DIR, `${hash}.claim`);
-}
-
-function tryClaimInFlight(cacheKeyStr: string): boolean {
-  mkdirSync(CLAIM_DIR, { recursive: true });
-  const file = claimFilePath(cacheKeyStr);
-  try {
-    writeFileSync(file, String(Date.now()), { flag: "wx" });
-    return true;
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "EEXIST") return false;
-    throw err;
-  }
-}
-
-function releaseClaim(cacheKeyStr: string): void {
-  const file = claimFilePath(cacheKeyStr);
-  try {
-    if (existsSync(file)) unlinkSync(file);
-  } catch {
-    /* ignore */
-  }
 }
 
 function bodyHash(req: Request): string {
@@ -76,8 +47,46 @@ function bodyHash(req: Request): string {
   return createHash("sha256").update(raw).digest("hex").slice(0, 16);
 }
 
-function hasPaymentHeader(req: Request): boolean {
-  return hasPaymentSignatureHeader(req);
+function rowToEntry(row: {
+  status: number;
+  body: string;
+  body_hash: string;
+  route: string;
+  created_at: number;
+}): CachedEntry {
+  return {
+    status: row.status,
+    body: JSON.parse(row.body) as unknown,
+    bodyHash: row.body_hash,
+    route: row.route,
+    createdAt: row.created_at * 1000,
+  };
+}
+
+function tryClaimInFlight(cacheKeyStr: string): boolean {
+  const r = claimInflight.run(cacheKeyStr);
+  return r.changes > 0;
+}
+
+function releaseClaim(cacheKeyStr: string): void {
+  releaseInflight.run(cacheKeyStr);
+}
+
+function loadHit(keyStr: string): CachedEntry | null {
+  maybePrune();
+  const row = getCache.get(keyStr) as
+    | {
+        status: number;
+        body: string;
+        body_hash: string;
+        route: string;
+        created_at: number;
+      }
+    | undefined;
+  if (!row) return null;
+  const entry = rowToEntry(row);
+  if (Date.now() - entry.createdAt >= TTL_SEC * 1000) return null;
+  return entry;
 }
 
 /** Return cached paid response when Idempotency-Key matches (CDP-style safe retries). */
@@ -88,12 +97,11 @@ export function idempotencyPreCheck(
 ): void {
   const key = String(req.headers["idempotency-key"] ?? "").trim();
   if (!key || key.length > 128) return void next();
-  if (!hasPaymentHeader(req)) return void next();
+  if (!hasPaymentSignatureHeader(req)) return void next();
 
   const route = req.path;
   const keyStr = cacheKey(route, key);
-  const store = prune(loadStore());
-  const hit = store[keyStr];
+  const hit = loadHit(keyStr);
   if (hit) {
     if (hit.bodyHash !== bodyHash(req)) {
       res.status(409).json({
@@ -108,7 +116,7 @@ export function idempotencyPreCheck(
   }
 
   if (!tryClaimInFlight(keyStr)) {
-    const retry = prune(loadStore())[keyStr];
+    const retry = loadHit(keyStr);
     if (retry) {
       if (retry.bodyHash !== bodyHash(req)) {
         res.status(409).json({
@@ -145,16 +153,14 @@ export function idempotencyCapture(
 
   const origJson = res.json.bind(res);
   res.json = ((body?: unknown) => {
-    if (res.statusCode >= 200 && res.statusCode < 300 && hasPaymentHeader(req)) {
-      const store = prune(loadStore());
-      store[routeKey] = {
-        status: res.statusCode,
-        body,
-        createdAt: Date.now(),
-        route: req.path,
-        bodyHash: bodyHash(req),
-      };
-      saveStore(store);
+    if (res.statusCode >= 200 && res.statusCode < 300 && hasPaymentSignatureHeader(req)) {
+      insertCache.run(
+        routeKey,
+        res.statusCode,
+        JSON.stringify(body ?? null),
+        bodyHash(req),
+        req.path,
+      );
     }
     if (claimKeyStr) releaseClaim(claimKeyStr);
     return origJson(body);

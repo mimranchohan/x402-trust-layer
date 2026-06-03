@@ -1,3 +1,4 @@
+import { resolve4, resolve6 } from "node:dns/promises";
 import { isIP } from "node:net";
 import { hostOf } from "./probe.js";
 
@@ -17,7 +18,7 @@ const BLOCKED_HOSTNAMES = new Set([
 
 const BLOCKED_SUFFIXES = [".local", ".internal", ".localhost", ".lan"];
 
-function isPrivateOrReservedIp(ip: string): boolean {
+export function isPrivateOrReservedIp(ip: string): boolean {
   if (ip === "::1") return true;
   const lower = ip.toLowerCase();
   if (lower.startsWith("fe80:") || lower.startsWith("fc") || lower.startsWith("fd")) return true;
@@ -84,6 +85,31 @@ export function assertSafeOutboundUrl(url: string): void {
 
   if (host.endsWith(".google.internal") || host.includes("metadata")) {
     throw new UnsafeUrlError("Cloud metadata hosts are not allowed");
+  }
+}
+
+/** DNS rebinding guard — resolve hostname and reject private/reserved targets. */
+export async function assertSafeResolvedUrl(url: string): Promise<void> {
+  assertSafeOutboundUrl(url);
+  const { hostname } = new URL(url);
+  if (hostnameLooksLikeIp(hostname)) return;
+  try {
+    const [ipv4, ipv6] = await Promise.allSettled([resolve4(hostname), resolve6(hostname)]);
+    const allIps = [
+      ...(ipv4.status === "fulfilled" ? ipv4.value : []),
+      ...(ipv6.status === "fulfilled" ? ipv6.value : []),
+    ];
+    if (allIps.length === 0) {
+      throw new UnsafeUrlError(`DNS resolution failed for ${hostname}`);
+    }
+    for (const ip of allIps) {
+      if (isPrivateOrReservedIp(ip)) {
+        throw new UnsafeUrlError(`${hostname} resolves to private IP: ${ip} (DNS rebinding blocked)`);
+      }
+    }
+  } catch (e) {
+    if (e instanceof UnsafeUrlError) throw e;
+    throw new UnsafeUrlError(`DNS resolution failed for ${hostname}`);
   }
 }
 

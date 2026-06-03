@@ -1,5 +1,5 @@
 import { computeTrustScoreV2 } from "./trust-score-v2.js";
-import { readProtocolStore } from "./store.js";
+import { readProtocolStoreKey, writeProtocolStoreKey } from "./store.js";
 
 export type CreditScoreInput = {
   agentId: string;
@@ -17,8 +17,6 @@ export type CreditScoreResult = {
   limits: { suggestedDailyCapUsdc: number; suggestedPerCallCapUsdc: number };
 };
 
-type BureauStore = Record<string, { scores: number[] }>;
-
 export async function computeAgentCreditScore(input: CreditScoreInput): Promise<CreditScoreResult> {
   const trust = await computeTrustScoreV2({
     agentId: input.agentId,
@@ -27,9 +25,9 @@ export async function computeAgentCreditScore(input: CreditScoreInput): Promise<
     uptimePct: input.uptimePct ?? 95,
   });
 
-  const history = await readProtocolStore<BureauStore>("credit-bureau", {});
   const key = input.agentId;
-  const prev = history[key]?.scores ?? [];
+  const agentHistory = await readProtocolStoreKey<{ scores: number[] }>("credit-bureau", key, { scores: [] });
+  const prev = agentHistory.scores ?? [];
   const settlements = input.settlementCount ?? prev.length;
   const reliability = Math.min(200, settlements * 4);
   const disputePenalty = Math.min(150, (input.disputeCount ?? 0) * 25);
@@ -47,6 +45,9 @@ export async function computeAgentCreditScore(input: CreditScoreInput): Promise<
           : creditScore >= 500
             ? "poor"
             : "high_risk";
+
+  const updatedHistory = { scores: [...prev, creditScore].slice(-50) };
+  await writeProtocolStoreKey("credit-bureau", key, updatedHistory);
 
   return {
     creditScore,

@@ -1,6 +1,7 @@
 import Database, { type Database as SqliteDatabase } from "better-sqlite3";
 import path from "node:path";
 import { mkdirSync } from "node:fs";
+import { runMigrations } from "./migrations.js";
 
 const DB_PATH = process.env.DB_PATH?.trim() || path.join(process.cwd(), "data", "trust-layer.db");
 
@@ -81,6 +82,7 @@ function ensurePayloadColumns(): void {
 }
 
 ensurePayloadColumns();
+runMigrations(db);
 
 export function dbPath(): string {
   return DB_PATH;

@@ -10,6 +10,24 @@ export type SemanticJudgeResult = {
   mode: "heuristic" | "llm";
 };
 
+const INJECTION_PATTERNS =
+  /ignore\s{0,20}(all|previous|above|prior|system|instructions)/gi;
+
+function sanitizeForLlm(s: string): string {
+  return s.replace(INJECTION_PATTERNS, "[BLOCKED]").slice(0, 2000);
+}
+
+function whitelistScalarFields(fields?: Record<string, unknown>): Record<string, string | number | boolean> {
+  const out: Record<string, string | number | boolean> = {};
+  if (!fields) return out;
+  for (const [k, v] of Object.entries(fields)) {
+    if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
+      out[k.slice(0, 64)] = typeof v === "string" ? v.slice(0, 500) : v;
+    }
+  }
+  return out;
+}
+
 /** Rules-only judge (used in production fallback and golden tests). */
 export function heuristicJudge(input: SemanticJudgeInput): SemanticJudgeResult {
   const reasons: string[] = [];
@@ -77,9 +95,9 @@ async function llmJudge(input: SemanticJudgeInput): Promise<SemanticJudgeResult 
           {
             role: "user",
             content: JSON.stringify({
-              deliveryIntent: input.deliveryIntent,
-              fields: input.fields ?? {},
-              sample: input.sample.slice(0, 4000),
+              deliveryIntent: sanitizeForLlm(input.deliveryIntent),
+              fields: whitelistScalarFields(input.fields),
+              sample: sanitizeForLlm(input.sample),
             }),
           },
         ],

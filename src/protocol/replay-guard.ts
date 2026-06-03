@@ -1,4 +1,4 @@
-import { sha256Hex, hmacSign } from "./crypto.js";
+import { sha256Hex, hmacSign, verifyHmac } from "./crypto.js";
 import { claimNonceKey, isNonceKeyUsed } from "../lib/nonce-store.js";
 import { readProtocolStore, writeProtocolStore } from "./store.js";
 
@@ -72,18 +72,18 @@ export async function verifyReplayBinding(
   const binding = store[bindingId];
   if (!binding) return { valid: false, reason: "Binding not found" };
 
-  const expected = hmacSign(
-    JSON.stringify({
-      bindingId: binding.bindingId,
-      nonce: binding.nonce,
-      resourceHash: binding.resourceHash,
-      requestHash: binding.requestHash,
-      agentId: binding.agentId,
-      sessionId: binding.sessionId,
-      expiresAt: binding.expiresAt,
-    }),
-  );
-  if (expected !== binding.signature) return { valid: false, reason: "Binding signature invalid" };
+  const payload = JSON.stringify({
+    bindingId: binding.bindingId,
+    nonce: binding.nonce,
+    resourceHash: binding.resourceHash,
+    requestHash: binding.requestHash,
+    agentId: binding.agentId,
+    sessionId: binding.sessionId,
+    expiresAt: binding.expiresAt,
+  });
+  if (!verifyHmac(payload, binding.signature)) {
+    return { valid: false, reason: "Binding signature invalid" };
+  }
 
   if (new Date(binding.expiresAt).getTime() < Date.now()) {
     return { valid: false, reason: "Binding expired" };

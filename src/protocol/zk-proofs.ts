@@ -1,4 +1,4 @@
-import { hmacSign, sha256Hex } from "./crypto.js";
+import { sha256Hex } from "./crypto.js";
 import { config } from "../config.js";
 
 export type ZkProveType =
@@ -25,6 +25,9 @@ export type ZkProofBundle = {
   verified: boolean;
   note: string;
   simulated: boolean;
+  productionReady: boolean;
+  disclaimer: string;
+  zkLibrary: string;
 };
 
 export function assertZkProveAllowed(): void {
@@ -46,16 +49,18 @@ export function generateZkProof(input: ZkProveInput): ZkProofBundle {
   };
   const commitment = sha256Hex(`${witnessHash}:${JSON.stringify(publicInputs)}`);
   const nullifier = sha256Hex(`${input.agentId}:${input.proofType}:${witnessHash}`).slice(0, 32);
-  const verified = hmacSign(commitment).length === 64;
-
   return {
     proofType: input.proofType,
     scheme: "commitment-v1-simulated",
     publicInputs,
     commitment,
     nullifier,
-    verified,
+    verified: false,
     simulated: true,
+    productionReady: false,
+    disclaimer:
+      "This proof is cryptographically simulated (SHA256 commitment, not Groth16/PLONK). Do not use for production financial decisions.",
+    zkLibrary: "snarkjs-pending-integration",
     note: "Simulated commitment proof — not Groth16. Roadmap: circom + on-chain verifier.",
   };
 }

@@ -1,4 +1,6 @@
 import express, { type Request, type Response, type NextFunction } from "express";
+import helmet from "helmet";
+import cors from "cors";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { assertConfig, config } from "./config.js";
@@ -48,6 +50,16 @@ void ensureVerifierProbeProtocol().catch((err) => {
 const app = express();
 app.set("trust proxy", Number(process.env.TRUST_PROXY_HOPS ?? 1));
 app.disable("x-powered-by");
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: { defaultSrc: ["'none'"], scriptSrc: ["'none'"] },
+    },
+    crossOriginEmbedderPolicy: false,
+  }),
+);
+const corsOrigins = process.env.CORS_ORIGINS?.split(",").map((o) => o.trim()).filter(Boolean);
+app.use(cors({ origin: corsOrigins?.length ? corsOrigins : false }));
 app.use(telemetryMiddleware);
 registerX402gleHostVerification(app);
 app.use(stripTrailingSlash);

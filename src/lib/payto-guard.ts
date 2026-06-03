@@ -1,12 +1,12 @@
 import { config, isAllowedNetwork } from "../config.js";
 
-const TRUSTED_PAY_TO = new Set(
-  [config.payTo, config.payToEvm].filter(Boolean).map((a) => a.toLowerCase()),
-);
-
 export function isTrustedPayTo(payTo: string | undefined): boolean {
   if (!payTo) return false;
-  return TRUSTED_PAY_TO.has(payTo.toLowerCase());
+  const lower = payTo.toLowerCase();
+  return (
+    lower === config.payTo.toLowerCase() ||
+    (!!config.payToEvm && lower === config.payToEvm.toLowerCase())
+  );
 }
 
 export function validateIncomingPaymentRequirements(requirements: {

@@ -1,4 +1,5 @@
 import { db } from "./db.js";
+import { assertSafeOutboundUrl } from "./ssrf.js";
 
 const checkNonce = db.prepare("SELECT 1 AS ok FROM used_nonces WHERE nonce = ?");
 const insertNonce = db.prepare(
@@ -43,6 +44,10 @@ async function ensureRedis(): Promise<boolean> {
 
 async function redisRestSetNx(key: string, ttlSec: number): Promise<boolean> {
   if (!REDIS_REST_URL || !REDIS_REST_TOKEN) return false;
+  assertSafeOutboundUrl(REDIS_REST_URL);
+  if (!REDIS_REST_URL.startsWith("https://")) {
+    throw new Error("Redis REST must be HTTPS");
+  }
   const res = await fetch(REDIS_REST_URL, {
     method: "POST",
     headers: {

@@ -24,7 +24,7 @@ const eventSchema = z.enum([
 ]);
 
 export function registerWebhookRoutes(app: Express): void {
-  app.post("/api/webhooks/register", (req: Request, res: Response) => {
+  app.post("/api/webhooks/register", async (req: Request, res: Response) => {
     if (!requireWebhookAdmin(req, res)) return;
     const parsed = z
       .object({
@@ -37,35 +37,34 @@ export function registerWebhookRoutes(app: Express): void {
       res.status(400).json({ error: parsed.error.flatten() });
       return;
     }
-    let sub;
     try {
-      sub = registerWebhook(parsed.data);
+      const sub = await registerWebhook(parsed.data);
+      res.status(201).json({
+        ok: true,
+        subscription: {
+          id: sub.id,
+          fleetId: sub.fleetId,
+          url: sub.url,
+          events: sub.events,
+          secret: sub.secret,
+          createdAt: sub.createdAt,
+        },
+        note: "Deliveries signed with x-hub-signature-256 (HMAC-SHA256).",
+      });
     } catch (err) {
       const msg = err instanceof UnsafeUrlError ? err.message : "Invalid webhook URL";
       res.status(400).json({ error: msg });
-      return;
     }
-    res.status(201).json({
-      ok: true,
-      subscription: {
-        id: sub.id,
-        fleetId: sub.fleetId,
-        url: sub.url,
-        events: sub.events,
-        secret: sub.secret,
-        createdAt: sub.createdAt,
-      },
-      note: "Beta — verify deliveries with X-Trust-Layer-Signature (sha256 of secret.body).",
-    });
   });
 
-  app.get("/api/webhooks/list", (req: Request, res: Response) => {
+  app.get("/api/webhooks/list", async (req: Request, res: Response) => {
     if (!requireWebhookAdmin(req, res)) return;
     const fleetId = typeof req.query.fleetId === "string" ? req.query.fleetId : undefined;
+    const subs = await listWebhooks(fleetId);
     res.json({
       ok: true,
-      count: listWebhooks(fleetId).length,
-      subscriptions: listWebhooks(fleetId).map((s) => ({
+      count: subs.length,
+      subscriptions: subs.map((s) => ({
         id: s.id,
         fleetId: s.fleetId,
         url: s.url,
@@ -76,14 +75,14 @@ export function registerWebhookRoutes(app: Express): void {
     });
   });
 
-  app.delete("/api/webhooks/:id", (req: Request, res: Response) => {
+  app.delete("/api/webhooks/:id", async (req: Request, res: Response) => {
     if (!requireWebhookAdmin(req, res)) return;
     const fleetId = typeof req.query.fleetId === "string" ? req.query.fleetId : "";
     if (!fleetId) {
       res.status(400).json({ error: "fleetId query param required" });
       return;
     }
-    const ok = deactivateWebhook(req.params.id, fleetId);
+    const ok = await deactivateWebhook(req.params.id, fleetId);
     if (!ok) {
       res.status(404).json({ error: "Webhook not found" });
       return;
