@@ -3,101 +3,364 @@
   "domain": "x402trustlayer.xyz",
   "tagline": "The trust layer for agent payments",
   "layers": [
-    { "id": "guard", "num": "01", "title": "Guard", "desc": "Preflight spend, identity and URL risk before any payment" },
-    { "id": "attestation", "num": "02", "title": "Attestation", "desc": "Issue, verify and register agent credentials and mandates" },
-    { "id": "compliance", "num": "03", "title": "Compliance", "desc": "Ledgers, evidence, disputes and refund arbitration" },
-    { "id": "settlement", "num": "04", "title": "Settlement Ops", "desc": "Rail routing, MPP sessions, escrow and receipt audit" }
+    {
+      "id": "guard",
+      "num": "01",
+      "title": "Guard",
+      "desc": "Preflight spend, identity and URL risk before any payment"
+    },
+    {
+      "id": "attestation",
+      "num": "02",
+      "title": "Attestation",
+      "desc": "Issue, verify and register agent credentials and mandates"
+    },
+    {
+      "id": "compliance",
+      "num": "03",
+      "title": "Compliance",
+      "desc": "Ledgers, evidence, disputes and refund arbitration"
+    },
+    {
+      "id": "settlement",
+      "num": "04",
+      "title": "Settlement Ops",
+      "desc": "Rail routing, MPP sessions, escrow and receipt audit"
+    }
   ],
   "agents": [
     {
-      "id": "x402-proxy",
-      "name": "x402 Proxy",
-      "tier": "entry",
-      "tierLabel": "Entry & Gateway",
+      "id": "a2a-execute",
+      "name": "Execute",
+      "tier": "killer",
+      "tierLabel": "Killer APIs",
       "layer": "guard",
       "method": "POST",
-      "path": "/api/x402/proxy",
-      "price": 0.08,
-      "summary": "All-in-one preflight before any external x402 payment — policy, identity, risk, security grade and optional attestation.",
-      "why": "Replaces 3–4 separate gate calls in one purchase. Default guard for agent fleets.",
-      "inputs": ["agentId", "walletAddress", "targetUrl", "estimatedCostUsdc", "policy", "issueAttestation?"],
-      "outputs": ["allowed", "securityGrade", "riskScore", "spend", "identity", "attestation", "probe"],
-      "tags": ["guard", "preflight", "bundle"]
+      "path": "/api/a2a/execute",
+      "price": 0.1,
+      "summary": "Agent-to-agent x402 orchestration: trust preflight then paid call to seller endpoint",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "killer",
+        "x402"
+      ]
     },
     {
-      "id": "pre-x402-guard",
-      "name": "Pre-x402 Guard",
-      "tier": "entry",
-      "tierLabel": "Entry & Gateway",
-      "layer": "guard",
+      "id": "bedrock-preflight",
+      "name": "Preflight",
+      "tier": "orchestration",
+      "tierLabel": "Orchestration",
+      "layer": "settlement",
       "method": "POST",
-      "path": "/api/guard/pre-x402",
+      "path": "/api/bedrock/preflight",
       "price": 0.05,
-      "summary": "Spend governor + identity gate + risk gate in one lightweight call.",
-      "why": "Cheapest allow/deny decision for high-frequency payment loops.",
-      "inputs": ["agentId", "walletAddress", "targetUrl", "estimatedCostUsdc", "policy", "minAgentTier?", "minTrustScore?"],
-      "outputs": ["allowed", "securityGrade", "spend", "identity", "risk", "agentTrust?"],
-      "tags": ["guard", "policy"]
-    },
-    {
-      "id": "agent-verify",
-      "name": "Agent Verify (ERC-8004)",
-      "tier": "identity",
-      "tierLabel": "Identity (ERC-8004)",
-      "layer": "guard",
-      "method": "POST",
-      "path": "/api/agent/verify",
-      "price": 0.04,
-      "summary": "ERC-8004 TrustScore on Base mainnet — registration, reputation, wallet binding, agent card, domain.",
-      "why": "On-chain agent identity before high-value x402 spend or fleet onboarding.",
-      "inputs": ["walletAddress", "agentId?"],
-      "outputs": ["trustScore", "tier", "breakdown", "registered", "recommendation"],
-      "tags": ["erc-8004", "identity", "trust-score"]
-    },
-    {
-      "id": "pipeline-execute",
-      "name": "Pipeline Execute",
-      "tier": "entry",
-      "tierLabel": "Entry & Gateway",
-      "layer": "guard",
-      "method": "POST",
-      "path": "/api/pipeline/execute",
-      "price": 0.25,
-      "summary": "One-shot orchestration: guard, NL plan, facilitator routing and marketplace pick.",
-      "why": "Turns a natural-language task and budget into an executed, audited flow.",
-      "inputs": ["agentId", "walletAddress", "targetUrl", "task", "maxBudgetUsdc", "marketplaceQuery"],
-      "outputs": ["allowed", "plan", "facilitator", "route", "recommendedNextCalls"],
-      "tags": ["orchestration", "pipeline"]
+      "summary": "AWS Bedrock / enterprise agent preflight: guard, mandate, and trust bundle before x402 pay",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "orchestration",
+        "x402"
+      ]
     },
     {
       "id": "market-buy-advisor",
       "name": "Market Buy-Advisor",
-      "tier": "marketplace",
-      "tierLabel": "Marketplace",
+      "tier": "killer",
+      "tierLabel": "Killer APIs",
       "layer": "guard",
       "method": "POST",
       "path": "/api/market/buy-advisor",
       "price": 0.08,
       "summary": "Jupiter-style buy quote — ranks paid APIs for an intent with policy and MPP advice.",
       "why": "Stops agents overpaying or buying from low-quality marketplace hosts.",
-      "inputs": ["intent", "maxPriceUsdc", "expectedCalls", "policy", "dryRunTarget?"],
-      "outputs": ["recommendation", "quotes", "mppAdvice", "chainAdvisor"],
-      "tags": ["marketplace", "discovery"]
+      "inputs": [
+        "intent",
+        "maxPriceUsdc",
+        "expectedCalls",
+        "policy",
+        "dryRunTarget?"
+      ],
+      "outputs": [
+        "recommendation",
+        "quotes",
+        "mppAdvice",
+        "chainAdvisor"
+      ],
+      "tags": [
+        "marketplace",
+        "discovery"
+      ]
     },
     {
       "id": "seller-audition-coach",
       "name": "Seller Audition Coach",
-      "tier": "marketplace",
-      "tierLabel": "Marketplace",
+      "tier": "killer",
+      "tierLabel": "Killer APIs",
       "layer": "guard",
       "method": "POST",
       "path": "/api/seller/audition-coach",
       "price": 0.06,
       "summary": "Pre-listing QA: audits OpenAPI, discovery manifests and 402 probes.",
       "why": "Raises verification score before Dexter/x402gle ingest (target ≥75).",
-      "inputs": ["origin", "maxRoutes?"],
-      "outputs": ["hostScoreEstimate", "routes", "globalFixes", "discovery"],
-      "tags": ["seller", "quality"]
+      "inputs": [
+        "origin",
+        "maxRoutes?"
+      ],
+      "outputs": [
+        "hostScoreEstimate",
+        "routes",
+        "globalFixes",
+        "discovery"
+      ],
+      "tags": [
+        "seller",
+        "quality"
+      ]
+    },
+    {
+      "id": "x402-proxy",
+      "name": "x402 Proxy",
+      "tier": "killer",
+      "tierLabel": "Killer APIs",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/x402/proxy",
+      "price": 0.08,
+      "summary": "All-in-one preflight before any external x402 payment — policy, identity, risk, security grade and optional attestation.",
+      "why": "Replaces 3–4 separate gate calls in one purchase. Default guard for agent fleets.",
+      "inputs": [
+        "agentId",
+        "walletAddress",
+        "targetUrl",
+        "estimatedCostUsdc",
+        "policy",
+        "issueAttestation?"
+      ],
+      "outputs": [
+        "allowed",
+        "securityGrade",
+        "riskScore",
+        "spend",
+        "identity",
+        "attestation",
+        "probe"
+      ],
+      "tags": [
+        "guard",
+        "preflight",
+        "bundle"
+      ]
+    },
+    {
+      "id": "mpp-session",
+      "name": "MPP Session",
+      "tier": "killer",
+      "tierLabel": "Killer APIs",
+      "layer": "settlement",
+      "method": "POST",
+      "path": "/api/mpp/session",
+      "price": 0.03,
+      "summary": "MPP session lifecycle: open, voucher, close — batch settlement on Base/Solana.",
+      "why": "Cuts per-call settlement cost for high-frequency agent workloads.",
+      "inputs": [
+        "action",
+        "sessionId?",
+        "expectedCalls",
+        "chain",
+        "agentId"
+      ],
+      "outputs": [
+        "session",
+        "estimatedSavingsUsdc",
+        "nextSteps"
+      ],
+      "tags": [
+        "mpp",
+        "batch"
+      ]
+    },
+    {
+      "id": "attestation-issue",
+      "name": "Attestation Issue",
+      "tier": "killer",
+      "tierLabel": "Killer APIs",
+      "layer": "attestation",
+      "method": "POST",
+      "path": "/api/attestation/issue",
+      "price": 0.04,
+      "summary": "Issues HMAC-signed preflight attestation for partner agent networks.",
+      "why": "Gate partner interactions on verifiable credential status.",
+      "inputs": [
+        "agentId",
+        "walletAddress",
+        "targetUrl",
+        "estimatedCostUsdc",
+        "policy"
+      ],
+      "outputs": [
+        "attestationId",
+        "signature",
+        "securityGrade",
+        "expiresAt"
+      ],
+      "tags": [
+        "attestation",
+        "trust"
+      ]
+    },
+    {
+      "id": "attestation-verify",
+      "name": "Attestation Verify",
+      "tier": "killer",
+      "tierLabel": "Killer APIs",
+      "layer": "attestation",
+      "method": "POST",
+      "path": "/api/attestation/verify",
+      "price": 0.02,
+      "summary": "Verifies attestation signature, expiry and registry lookup.",
+      "why": "Confirm a partner attestation before trusting their response.",
+      "inputs": [
+        "attestationId"
+      ],
+      "outputs": [
+        "valid",
+        "record",
+        "reason",
+        "checks_passed"
+      ],
+      "tags": [
+        "attestation",
+        "verify"
+      ]
+    },
+    {
+      "id": "attestation-registry",
+      "name": "Attestation Registry",
+      "tier": "killer",
+      "tierLabel": "Killer APIs",
+      "layer": "attestation",
+      "method": "GET",
+      "path": "/api/attestation/registry",
+      "price": 0.02,
+      "summary": "Query trust registry of valid agent attestations.",
+      "why": "Fleet controllers reject paid calls without valid X-Suite-Attestation.",
+      "inputs": [
+        "minGrade?",
+        "agentId?",
+        "limit?"
+      ],
+      "outputs": [
+        "count",
+        "records",
+        "policy"
+      ],
+      "tags": [
+        "registry",
+        "trust"
+      ]
+    },
+    {
+      "id": "pre-x402-guard",
+      "name": "Pre-x402 Guard",
+      "tier": "bundle",
+      "tierLabel": "Bundles",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/guard/pre-x402",
+      "price": 0.05,
+      "summary": "Spend governor + identity gate + risk gate in one lightweight call.",
+      "why": "Cheapest allow/deny decision for high-frequency payment loops.",
+      "inputs": [
+        "agentId",
+        "walletAddress",
+        "targetUrl",
+        "estimatedCostUsdc",
+        "policy",
+        "minAgentTier?",
+        "minTrustScore?"
+      ],
+      "outputs": [
+        "allowed",
+        "securityGrade",
+        "spend",
+        "identity",
+        "risk",
+        "agentTrust?"
+      ],
+      "tags": [
+        "guard",
+        "policy"
+      ]
+    },
+    {
+      "id": "agent-verify",
+      "name": "Agent Verify (ERC-8004)",
+      "tier": "identity",
+      "tierLabel": "Identity",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/agent/verify",
+      "price": 0.04,
+      "summary": "ERC-8004 TrustScore on Base mainnet — registration, reputation, wallet binding, agent card, domain.",
+      "why": "On-chain agent identity before high-value x402 spend or fleet onboarding.",
+      "inputs": [
+        "walletAddress",
+        "agentId?"
+      ],
+      "outputs": [
+        "trustScore",
+        "tier",
+        "breakdown",
+        "registered",
+        "recommendation"
+      ],
+      "tags": [
+        "erc-8004",
+        "identity",
+        "trust-score"
+      ]
+    },
+    {
+      "id": "pipeline-execute",
+      "name": "Pipeline Execute",
+      "tier": "bundle",
+      "tierLabel": "Bundles",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/pipeline/execute",
+      "price": 0.25,
+      "summary": "One-shot orchestration: guard, NL plan, facilitator routing and marketplace pick.",
+      "why": "Turns a natural-language task and budget into an executed, audited flow.",
+      "inputs": [
+        "agentId",
+        "walletAddress",
+        "targetUrl",
+        "task",
+        "maxBudgetUsdc",
+        "marketplaceQuery"
+      ],
+      "outputs": [
+        "allowed",
+        "plan",
+        "facilitator",
+        "route",
+        "recommendedNextCalls"
+      ],
+      "tags": [
+        "orchestration",
+        "pipeline"
+      ]
     },
     {
       "id": "payment-intent-compile",
@@ -110,9 +373,22 @@
       "price": 0.15,
       "summary": "Compiles natural-language task + budget into a multi-step x402 execution plan.",
       "why": "Deterministic planning layer for autonomous spend within budget.",
-      "inputs": ["task", "maxBudgetUsdc", "agentId", "externalCallEstimateUsdc?"],
-      "outputs": ["steps", "totalEstimatedUsdc", "withinBudget", "executionOrder"],
-      "tags": ["plan", "compiler"]
+      "inputs": [
+        "task",
+        "maxBudgetUsdc",
+        "agentId",
+        "externalCallEstimateUsdc?"
+      ],
+      "outputs": [
+        "steps",
+        "totalEstimatedUsdc",
+        "withinBudget",
+        "executionOrder"
+      ],
+      "tags": [
+        "plan",
+        "compiler"
+      ]
     },
     {
       "id": "facilitator-failover",
@@ -125,9 +401,19 @@
       "price": 0.05,
       "summary": "Ranks x402 facilitators and recommends a healthy failover route.",
       "why": "Avoids settlement failures when a facilitator degrades.",
-      "inputs": ["targetUrl", "preferNetwork?"],
-      "outputs": ["recommendedFacilitator", "facilitators", "targetProbe"],
-      "tags": ["facilitator", "failover"]
+      "inputs": [
+        "targetUrl",
+        "preferNetwork?"
+      ],
+      "outputs": [
+        "recommendedFacilitator",
+        "facilitators",
+        "targetProbe"
+      ],
+      "tags": [
+        "facilitator",
+        "failover"
+      ]
     },
     {
       "id": "mpp-session-plan",
@@ -140,24 +426,20 @@
       "price": 0.02,
       "summary": "Estimates MPP batch session savings vs per-call settlement.",
       "why": "Quantifies when Stripe MPP / Dexter sessions beat individual settlements.",
-      "inputs": ["action", "expectedCalls", "avgPricePerCallUsdc"],
-      "outputs": ["estimatedSavingsUSDC", "recommendation", "breakEvenCallCount"],
-      "tags": ["mpp", "estimate"]
-    },
-    {
-      "id": "mpp-session",
-      "name": "MPP Session",
-      "tier": "orchestration",
-      "tierLabel": "Orchestration",
-      "layer": "settlement",
-      "method": "POST",
-      "path": "/api/mpp/session",
-      "price": 0.03,
-      "summary": "MPP session lifecycle: open, voucher, close — batch settlement on Base/Solana.",
-      "why": "Cuts per-call settlement cost for high-frequency agent workloads.",
-      "inputs": ["action", "sessionId?", "expectedCalls", "chain", "agentId"],
-      "outputs": ["session", "estimatedSavingsUsdc", "nextSteps"],
-      "tags": ["mpp", "batch"]
+      "inputs": [
+        "action",
+        "expectedCalls",
+        "avgPricePerCallUsdc"
+      ],
+      "outputs": [
+        "estimatedSavingsUSDC",
+        "recommendation",
+        "breakEvenCallCount"
+      ],
+      "tags": [
+        "mpp",
+        "estimate"
+      ]
     },
     {
       "id": "spend-governor",
@@ -170,9 +452,21 @@
       "price": 0.03,
       "summary": "Enforces per-call and daily USDC spend caps per agent.",
       "why": "Hard budget guardrail — the floor of every preflight decision.",
-      "inputs": ["agentId", "estimatedCostUsdc", "targetUrl", "policy"],
-      "outputs": ["allowed", "spentTodayUsdc", "remainingDailyUsdc"],
-      "tags": ["spend", "budget"]
+      "inputs": [
+        "agentId",
+        "estimatedCostUsdc",
+        "targetUrl",
+        "policy"
+      ],
+      "outputs": [
+        "allowed",
+        "spentTodayUsdc",
+        "remainingDailyUsdc"
+      ],
+      "tags": [
+        "spend",
+        "budget"
+      ]
     },
     {
       "id": "identity-gate",
@@ -185,9 +479,20 @@
       "price": 0.05,
       "summary": "Wallet identity tier and risk scoring before paid calls.",
       "why": "Blocks low-trust or unfunded wallets from mainnet spend.",
-      "inputs": ["walletAddress", "maxTierSpendUsdc?"],
-      "outputs": ["allowed", "tier", "riskScore", "maxSpendUsdc"],
-      "tags": ["identity", "wallet"]
+      "inputs": [
+        "walletAddress",
+        "maxTierSpendUsdc?"
+      ],
+      "outputs": [
+        "allowed",
+        "tier",
+        "riskScore",
+        "maxSpendUsdc"
+      ],
+      "tags": [
+        "identity",
+        "wallet"
+      ]
     },
     {
       "id": "risk-gate",
@@ -200,9 +505,21 @@
       "price": 0.08,
       "summary": "Probes URL safety, HTTPS and x402 payment requirements.",
       "why": "Detects unreachable, mispriced or unsafe endpoints before payment.",
-      "inputs": ["targetUrl", "estimatedCostUsdc", "policy"],
-      "outputs": ["safe", "riskScore", "securityGrade", "probe"],
-      "tags": ["risk", "security"]
+      "inputs": [
+        "targetUrl",
+        "estimatedCostUsdc",
+        "policy"
+      ],
+      "outputs": [
+        "safe",
+        "riskScore",
+        "securityGrade",
+        "probe"
+      ],
+      "tags": [
+        "risk",
+        "security"
+      ]
     },
     {
       "id": "router",
@@ -215,9 +532,20 @@
       "price": 0.02,
       "summary": "Routes capability queries to the best verified x402 marketplace API.",
       "why": "Capability-based routing instead of hard-coded endpoints.",
-      "inputs": ["query", "preferNetwork?", "maxPriceUsdc?"],
-      "outputs": ["selected", "alternatives", "probedPriceUsdc"],
-      "tags": ["router", "marketplace"]
+      "inputs": [
+        "query",
+        "preferNetwork?",
+        "maxPriceUsdc?"
+      ],
+      "outputs": [
+        "selected",
+        "alternatives",
+        "probedPriceUsdc"
+      ],
+      "tags": [
+        "router",
+        "marketplace"
+      ]
     },
     {
       "id": "research-brief",
@@ -230,9 +558,20 @@
       "price": 0.2,
       "summary": "Builds a paid-API research pipeline and cost estimate for any topic.",
       "why": "Turns a research goal into a concrete, budgeted API plan.",
-      "inputs": ["topic", "includePrice?"],
-      "outputs": ["brief", "sources", "pipeline", "estimatedCostUsdc"],
-      "tags": ["research", "planning"]
+      "inputs": [
+        "topic",
+        "includePrice?"
+      ],
+      "outputs": [
+        "brief",
+        "sources",
+        "pipeline",
+        "estimatedCostUsdc"
+      ],
+      "tags": [
+        "research",
+        "planning"
+      ]
     },
     {
       "id": "receipt-auditor",
@@ -245,99 +584,48 @@
       "price": 0.05,
       "summary": "Verifies x402 settlement receipts and on-chain transaction alignment.",
       "why": "Proof that payment settled for the correct amount on-chain.",
-      "inputs": ["transactionHash", "network", "expectedAmountUsdc", "settlement"],
-      "outputs": ["valid", "checks", "explorerUrl"],
-      "tags": ["receipt", "audit"]
-    },
-    {
-      "id": "attestation-issue",
-      "name": "Attestation Issue",
-      "tier": "attestation",
-      "tierLabel": "Attestation",
-      "layer": "attestation",
-      "method": "POST",
-      "path": "/api/attestation/issue",
-      "price": 0.04,
-      "summary": "Issues HMAC-signed preflight attestation for partner agent networks.",
-      "why": "Gate partner interactions on verifiable credential status.",
-      "inputs": ["agentId", "walletAddress", "targetUrl", "estimatedCostUsdc", "policy"],
-      "outputs": ["attestationId", "signature", "securityGrade", "expiresAt"],
-      "tags": ["attestation", "trust"]
-    },
-    {
-      "id": "attestation-verify",
-      "name": "Attestation Verify",
-      "tier": "attestation",
-      "tierLabel": "Attestation",
-      "layer": "attestation",
-      "method": "POST",
-      "path": "/api/attestation/verify",
-      "price": 0.02,
-      "summary": "Verifies attestation signature, expiry and registry lookup.",
-      "why": "Confirm a partner attestation before trusting their response.",
-      "inputs": ["attestationId"],
-      "outputs": ["valid", "record", "reason", "checks_passed"],
-      "tags": ["attestation", "verify"]
-    },
-    {
-      "id": "attestation-registry",
-      "name": "Attestation Registry",
-      "tier": "attestation",
-      "tierLabel": "Attestation",
-      "layer": "attestation",
-      "method": "GET",
-      "path": "/api/attestation/registry",
-      "price": 0.02,
-      "summary": "Query trust registry of valid agent attestations.",
-      "why": "Fleet controllers reject paid calls without valid X-Suite-Attestation.",
-      "inputs": ["minGrade?", "agentId?", "limit?"],
-      "outputs": ["count", "records", "policy"],
-      "tags": ["registry", "trust"]
+      "inputs": [
+        "transactionHash",
+        "network",
+        "expectedAmountUsdc",
+        "settlement"
+      ],
+      "outputs": [
+        "valid",
+        "checks",
+        "explorerUrl"
+      ],
+      "tags": [
+        "receipt",
+        "audit"
+      ]
     },
     {
       "id": "refund-arbiter",
       "name": "Refund Arbiter",
       "tier": "trust",
-      "tierLabel": "Trust",
+      "tierLabel": "Trust & Refunds",
       "layer": "compliance",
       "method": "POST",
       "path": "/api/refund-arbiter/evaluate",
       "price": 0.08,
       "summary": "Evaluates buyer refund eligibility from verification signals.",
       "why": "Programmatic refund decisions when an API underdelivers.",
-      "inputs": ["verificationScore", "responseEmpty", "endpointReachable"],
-      "outputs": ["refundEligible", "protectionTier", "buyerGuidance", "grade"],
-      "tags": ["refund", "arbiter"]
-    },
-    {
-      "id": "settlement-graph",
-      "name": "Settlement Graph",
-      "tier": "intelligence",
-      "tierLabel": "Intelligence",
-      "layer": "settlement",
-      "method": "POST",
-      "path": "/api/settlement-graph/next",
-      "price": 0.02,
-      "summary": "Recommends next paid APIs to call after a settlement receipt.",
-      "why": "Drives multi-step agent journeys and reduces search steps.",
-      "inputs": ["lastEndpointPath", "lastTopic?"],
-      "outputs": ["recommendations", "graphNote"],
-      "tags": ["graph", "recommendations"]
-    },
-    {
-      "id": "quality-monitor",
-      "name": "Quality Monitor",
-      "tier": "intelligence",
-      "tierLabel": "Intelligence",
-      "layer": "guard",
-      "method": "POST",
-      "path": "/api/quality-monitor/probe",
-      "price": 0.03,
-      "summary": "Regression-probes up to 10 x402 endpoints and returns quality scores.",
-      "why": "Continuous SLA monitoring of a fleet's API dependencies.",
-      "inputs": ["urls"],
-      "outputs": ["results", "averageScore", "overall"],
-      "tags": ["monitor", "quality"]
+      "inputs": [
+        "verificationScore",
+        "responseEmpty",
+        "endpointReachable"
+      ],
+      "outputs": [
+        "refundEligible",
+        "protectionTier",
+        "buyerGuidance",
+        "grade"
+      ],
+      "tags": [
+        "refund",
+        "arbiter"
+      ]
     },
     {
       "id": "budget-allocator",
@@ -350,9 +638,67 @@
       "price": 0.03,
       "summary": "Allocates shared USDC pool across agent fleet by priority.",
       "why": "Fair, priority-weighted budget distribution at fleet scale.",
-      "inputs": ["fleetId", "poolRemainingUsdc", "agents"],
-      "outputs": ["allocations", "poolAfterUsdc"],
-      "tags": ["budget", "fleet"]
+      "inputs": [
+        "fleetId",
+        "poolRemainingUsdc",
+        "agents"
+      ],
+      "outputs": [
+        "allocations",
+        "poolAfterUsdc"
+      ],
+      "tags": [
+        "budget",
+        "fleet"
+      ]
+    },
+    {
+      "id": "settlement-graph",
+      "name": "Settlement Graph",
+      "tier": "intelligence",
+      "tierLabel": "Intelligence",
+      "layer": "settlement",
+      "method": "POST",
+      "path": "/api/settlement-graph/next",
+      "price": 0.02,
+      "summary": "Recommends next paid APIs to call after a settlement receipt.",
+      "why": "Drives multi-step agent journeys and reduces search steps.",
+      "inputs": [
+        "lastEndpointPath",
+        "lastTopic?"
+      ],
+      "outputs": [
+        "recommendations",
+        "graphNote"
+      ],
+      "tags": [
+        "graph",
+        "recommendations"
+      ]
+    },
+    {
+      "id": "quality-monitor",
+      "name": "Quality Monitor",
+      "tier": "intelligence",
+      "tierLabel": "Intelligence",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/quality-monitor/probe",
+      "price": 0.03,
+      "summary": "Regression-probes up to 10 x402 endpoints and returns quality scores.",
+      "why": "Continuous SLA monitoring of a fleet's API dependencies.",
+      "inputs": [
+        "urls"
+      ],
+      "outputs": [
+        "results",
+        "averageScore",
+        "overall"
+      ],
+      "tags": [
+        "monitor",
+        "quality"
+      ]
     },
     {
       "id": "evidence-locker",
@@ -365,9 +711,20 @@
       "price": 0.1,
       "summary": "Exports tamper-evident compliance bundles for x402 settlements.",
       "why": "Audit-grade evidence export for finance and security review.",
-      "inputs": ["organizationId", "records"],
-      "outputs": ["bundleId", "checksum", "bundleSignature", "export"],
-      "tags": ["compliance", "audit"]
+      "inputs": [
+        "organizationId",
+        "records"
+      ],
+      "outputs": [
+        "bundleId",
+        "checksum",
+        "bundleSignature",
+        "export"
+      ],
+      "tags": [
+        "compliance",
+        "audit"
+      ]
     },
     {
       "id": "agent-escrow",
@@ -380,9 +737,22 @@
       "price": 0.12,
       "summary": "Create, status or release agent-to-agent USDC escrow records.",
       "why": "Conditional payment between agents — release on verified condition.",
-      "inputs": ["action", "payerAgentId", "payeeAgentId", "amountUsdc", "escrowId?"],
-      "outputs": ["escrow", "status", "releasedAt?"],
-      "tags": ["escrow", "agents"]
+      "inputs": [
+        "action",
+        "payerAgentId",
+        "payeeAgentId",
+        "amountUsdc",
+        "escrowId?"
+      ],
+      "outputs": [
+        "escrow",
+        "status",
+        "releasedAt?"
+      ],
+      "tags": [
+        "escrow",
+        "agents"
+      ]
     },
     {
       "id": "merchant-trust",
@@ -395,9 +765,24 @@
       "price": 0.06,
       "summary": "Know-Your-Merchant trust score with wash-trading and verification signals.",
       "why": "Only public KYM oracle — pay / caution / avoid before any merchant payment.",
-      "inputs": ["host", "washTradePct", "verifiedResources", "totalResources", "probe?"],
-      "outputs": ["trustScore", "grade", "recommendation", "penalties"],
-      "tags": ["kym", "trust", "tier1"]
+      "inputs": [
+        "host",
+        "washTradePct",
+        "verifiedResources",
+        "totalResources",
+        "probe?"
+      ],
+      "outputs": [
+        "trustScore",
+        "grade",
+        "recommendation",
+        "penalties"
+      ],
+      "tags": [
+        "kym",
+        "trust",
+        "tier1"
+      ]
     },
     {
       "id": "mandate-compile",
@@ -410,9 +795,25 @@
       "price": 0.08,
       "summary": "Compiles AP2-style signed payment mandate from human intent and guardrails.",
       "why": "Tamper-resistant intent → execution audit trail for Visa CLI / AP2 fleets.",
-      "inputs": ["principal", "agentId", "intent", "maxPerTxUsdc", "dailyCapUsdc", "allowedMerchants"],
-      "outputs": ["mandate", "mandateId", "signature", "verifyUrl"],
-      "tags": ["mandate", "ap2", "tier1"]
+      "inputs": [
+        "principal",
+        "agentId",
+        "intent",
+        "maxPerTxUsdc",
+        "dailyCapUsdc",
+        "allowedMerchants"
+      ],
+      "outputs": [
+        "mandate",
+        "mandateId",
+        "signature",
+        "verifyUrl"
+      ],
+      "tags": [
+        "mandate",
+        "ap2",
+        "tier1"
+      ]
     },
     {
       "id": "mandate-verify",
@@ -425,9 +826,21 @@
       "price": 0.02,
       "summary": "Verifies mandate signature and scopes a proposed payment against it.",
       "why": "Merchants confirm agent payment is within authorized human intent.",
-      "inputs": ["mandateId", "proposed"],
-      "outputs": ["valid", "withinScope", "violations", "record"],
-      "tags": ["mandate", "verify", "tier1"]
+      "inputs": [
+        "mandateId",
+        "proposed"
+      ],
+      "outputs": [
+        "valid",
+        "withinScope",
+        "violations",
+        "record"
+      ],
+      "tags": [
+        "mandate",
+        "verify",
+        "tier1"
+      ]
     },
     {
       "id": "rail-optimizer",
@@ -440,9 +853,22 @@
       "price": 0.04,
       "summary": "Picks best rail: Visa CLI, Stripe MPP, Circle, Base x402 or Solana x402.",
       "why": "Unifies card and stablecoin rails in one cost + protection decision.",
-      "inputs": ["amountUsdc", "disputable?", "expectedCalls?", "latencySensitive?"],
-      "outputs": ["recommendedRail", "ranked", "recommendation"],
-      "tags": ["rail", "visa-cli", "tier1"]
+      "inputs": [
+        "amountUsdc",
+        "disputable?",
+        "expectedCalls?",
+        "latencySensitive?"
+      ],
+      "outputs": [
+        "recommendedRail",
+        "ranked",
+        "recommendation"
+      ],
+      "tags": [
+        "rail",
+        "visa-cli",
+        "tier1"
+      ]
     },
     {
       "id": "compliance-ledger",
@@ -455,9 +881,23 @@
       "price": 0.12,
       "summary": "SOC2/tax-ready spend reconciliation with policy flags and tamper hash.",
       "why": "CFO-grade audit trail for autonomous agent spend at enterprise scale.",
-      "inputs": ["organizationId", "period", "records", "policy"],
-      "outputs": ["summary", "breakdown", "violations", "ledgerHash"],
-      "tags": ["compliance", "cfo", "tier1"]
+      "inputs": [
+        "organizationId",
+        "period",
+        "records",
+        "policy"
+      ],
+      "outputs": [
+        "summary",
+        "breakdown",
+        "violations",
+        "ledgerHash"
+      ],
+      "tags": [
+        "compliance",
+        "cfo",
+        "tier1"
+      ]
     },
     {
       "id": "dispute-resolve",
@@ -470,9 +910,24 @@
       "price": 0.1,
       "summary": "Visa chargeback dossier or on-chain refund claim builder.",
       "why": "Automates dispute filing for Visa CLI and refund routes for stablecoin rails.",
-      "inputs": ["rail", "merchant", "amountUsdc", "reason", "evidence"],
-      "outputs": ["path", "reasonCode", "disputeStrength", "filingSteps"],
-      "tags": ["dispute", "chargeback", "tier1"]
+      "inputs": [
+        "rail",
+        "merchant",
+        "amountUsdc",
+        "reason",
+        "evidence"
+      ],
+      "outputs": [
+        "path",
+        "reasonCode",
+        "disputeStrength",
+        "filingSteps"
+      ],
+      "tags": [
+        "dispute",
+        "chargeback",
+        "tier1"
+      ]
     },
     {
       "id": "quality-escrow",
@@ -485,9 +940,24 @@
       "price": 0.1,
       "summary": "Quality-gated escrow — release on pass, auto-refund on response mismatch.",
       "why": "Closes trust gap on final stablecoin settlements with no chargeback recourse.",
-      "inputs": ["action", "amountUsdc", "expectedProfile", "actualResponse", "releaseThreshold"],
-      "outputs": ["decision", "qualityScore", "status", "reasons"],
-      "tags": ["escrow", "quality", "tier1"]
+      "inputs": [
+        "action",
+        "amountUsdc",
+        "expectedProfile",
+        "actualResponse",
+        "releaseThreshold"
+      ],
+      "outputs": [
+        "decision",
+        "qualityScore",
+        "status",
+        "reasons"
+      ],
+      "tags": [
+        "escrow",
+        "quality",
+        "tier1"
+      ]
     },
     {
       "id": "quality-escrow-semantic",
@@ -500,9 +970,24 @@
       "price": 0.12,
       "summary": "Schema + intent rubric escrow with optional LLM judge and auto bond slash.",
       "why": "Post-pay delivery guarantee beyond JSON schema — refunds on semantic failure.",
-      "inputs": ["deliveryIntent", "expectedProfile", "actualResponse", "amountUsdc"],
-      "outputs": ["decision", "semanticScore", "schemaScore", "judgeMode", "bondSlash"],
-      "tags": ["escrow", "semantic", "tier1"]
+      "inputs": [
+        "deliveryIntent",
+        "expectedProfile",
+        "actualResponse",
+        "amountUsdc"
+      ],
+      "outputs": [
+        "decision",
+        "semanticScore",
+        "schemaScore",
+        "judgeMode",
+        "bondSlash"
+      ],
+      "tags": [
+        "escrow",
+        "semantic",
+        "tier1"
+      ]
     },
     {
       "id": "mandate-diff",
@@ -515,9 +1000,21 @@
       "price": 0.04,
       "summary": "Compare signed mandate scope to MCP tool trace before payment.",
       "why": "Blocks prompt-injected routing and out-of-scope merchants before x402 pay.",
-      "inputs": ["mandateId", "toolCalls", "task?"],
-      "outputs": ["allowed", "liabilityTier", "violations"],
-      "tags": ["mandate", "diff", "tier1"]
+      "inputs": [
+        "mandateId",
+        "toolCalls",
+        "task?"
+      ],
+      "outputs": [
+        "allowed",
+        "liabilityTier",
+        "violations"
+      ],
+      "tags": [
+        "mandate",
+        "diff",
+        "tier1"
+      ]
     },
     {
       "id": "merchant-certify",
@@ -530,9 +1027,23 @@
       "price": 0.15,
       "summary": "Certify seller with KYM pass, badge, buyer policy, optional virtual bond.",
       "why": "Two-sided trust network — sellers require attested buyers.",
-      "inputs": ["host", "policy", "bondUsdc?", "goodResponseProfile?"],
-      "outputs": ["certified", "badgeId", "policy", "expiresAt"],
-      "tags": ["certification", "seller", "tier1"]
+      "inputs": [
+        "host",
+        "policy",
+        "bondUsdc?",
+        "goodResponseProfile?"
+      ],
+      "outputs": [
+        "certified",
+        "badgeId",
+        "policy",
+        "expiresAt"
+      ],
+      "tags": [
+        "certification",
+        "seller",
+        "tier1"
+      ]
     },
     {
       "id": "buyer-gate",
@@ -545,9 +1056,21 @@
       "price": 0.03,
       "summary": "Verify buyer attestation and tier against certified seller policy.",
       "why": "Premium APIs only accept attested agents with minimum TrustScore.",
-      "inputs": ["sellerHost", "walletAddress", "attestationId?"],
-      "outputs": ["allowed", "violations", "requiredHeaders"],
-      "tags": ["buyer", "gate", "tier1"]
+      "inputs": [
+        "sellerHost",
+        "walletAddress",
+        "attestationId?"
+      ],
+      "outputs": [
+        "allowed",
+        "violations",
+        "requiredHeaders"
+      ],
+      "tags": [
+        "buyer",
+        "gate",
+        "tier1"
+      ]
     },
     {
       "id": "pipeline-trust-v2",
@@ -560,9 +1083,24 @@
       "price": 0.35,
       "summary": "One-shot: mandate diff + KYM ingest + guard + certified buyer gate.",
       "why": "Default pre-pay bundle for OpenDexter and fleet agents.",
-      "inputs": ["agentId", "walletAddress", "targetUrl", "policy", "mandateId?", "toolCalls?"],
-      "outputs": ["allowed", "steps", "recommendedNextCalls"],
-      "tags": ["pipeline", "trust-v2", "tier1"]
+      "inputs": [
+        "agentId",
+        "walletAddress",
+        "targetUrl",
+        "policy",
+        "mandateId?",
+        "toolCalls?"
+      ],
+      "outputs": [
+        "allowed",
+        "steps",
+        "recommendedNextCalls"
+      ],
+      "tags": [
+        "pipeline",
+        "trust-v2",
+        "tier1"
+      ]
     },
     {
       "id": "bond-slash",
@@ -575,9 +1113,416 @@
       "price": 0.03,
       "summary": "Slash certified seller virtual bond after failed delivery.",
       "why": "Economic accountability for certified sellers without on-chain contract yet.",
-      "inputs": ["sellerHost", "amountUsdc", "reason"],
-      "outputs": ["slashed", "bondRemainingUsdc"],
-      "tags": ["bond", "slash", "tier1"]
+      "inputs": [
+        "sellerHost",
+        "amountUsdc",
+        "reason"
+      ],
+      "outputs": [
+        "slashed",
+        "bondRemainingUsdc"
+      ],
+      "tags": [
+        "bond",
+        "slash",
+        "tier1"
+      ]
+    },
+    {
+      "id": "protocol-pipeline-full-trust",
+      "name": "Full Trust",
+      "tier": "protocol",
+      "tierLabel": "Agent Trust Protocol v4",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/protocol/pipeline/full-trust",
+      "price": 0.45,
+      "summary": "Agent Trust Protocol v4 full pipeline before x402 payment",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "protocol",
+        "x402"
+      ]
+    },
+    {
+      "id": "protocol-passport-issue",
+      "name": "Issue",
+      "tier": "protocol",
+      "tierLabel": "Agent Trust Protocol v4",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/protocol/passport/issue",
+      "price": 0.06,
+      "summary": "Issue Agent Passport DID verifiable credential",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "protocol",
+        "x402"
+      ]
+    },
+    {
+      "id": "protocol-passport-verify",
+      "name": "Verify",
+      "tier": "protocol",
+      "tierLabel": "Agent Trust Protocol v4",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/protocol/passport/verify",
+      "price": 0.02,
+      "summary": "Verify Agent Passport credential signature",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "protocol",
+        "x402"
+      ]
+    },
+    {
+      "id": "protocol-trust-score-v2",
+      "name": "V2",
+      "tier": "protocol",
+      "tierLabel": "Agent Trust Protocol v4",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/protocol/trust-score/v2",
+      "price": 0.08,
+      "summary": "TrustScore v2 with tamper-resistant HMAC proof",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "protocol",
+        "x402"
+      ]
+    },
+    {
+      "id": "protocol-fraud-scan",
+      "name": "Scan",
+      "tier": "protocol",
+      "tierLabel": "Agent Trust Protocol v4",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/protocol/fraud/scan",
+      "price": 0.1,
+      "summary": "Graph fraud scan for Sybil and wash trading",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "protocol",
+        "x402"
+      ]
+    },
+    {
+      "id": "protocol-oracle-consensus",
+      "name": "Consensus",
+      "tier": "protocol",
+      "tierLabel": "Agent Trust Protocol v4",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/protocol/oracle/consensus",
+      "price": 0.12,
+      "summary": "Trust oracle quorum consensus",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "protocol",
+        "x402"
+      ]
+    },
+    {
+      "id": "protocol-execution-issue",
+      "name": "Issue",
+      "tier": "protocol",
+      "tierLabel": "Agent Trust Protocol v4",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/protocol/execution/issue",
+      "price": 0.05,
+      "summary": "Proof of Execution task receipt",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "protocol",
+        "x402"
+      ]
+    },
+    {
+      "id": "protocol-execution-verify",
+      "name": "Verify",
+      "tier": "protocol",
+      "tierLabel": "Agent Trust Protocol v4",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/protocol/execution/verify",
+      "price": 0.03,
+      "summary": "Verify Proof of Execution receipt",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "protocol",
+        "x402"
+      ]
+    },
+    {
+      "id": "protocol-reasoning-commit",
+      "name": "Commit",
+      "tier": "protocol",
+      "tierLabel": "Agent Trust Protocol v4",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/protocol/reasoning/commit",
+      "price": 0.08,
+      "summary": "Commit reasoning audit Merkle tree",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "protocol",
+        "x402"
+      ]
+    },
+    {
+      "id": "protocol-reasoning-disclose",
+      "name": "Disclose",
+      "tier": "protocol",
+      "tierLabel": "Agent Trust Protocol v4",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/protocol/reasoning/disclose",
+      "price": 0.04,
+      "summary": "Selective disclosure of reasoning audit leaves",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "protocol",
+        "x402"
+      ]
+    },
+    {
+      "id": "protocol-escrow-create",
+      "name": "Create",
+      "tier": "protocol",
+      "tierLabel": "Agent Trust Protocol v4",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/protocol/escrow/create",
+      "price": 0.08,
+      "summary": "Create escrow FSM (CREATED)",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "protocol",
+        "x402"
+      ]
+    },
+    {
+      "id": "protocol-escrow-transition",
+      "name": "Transition",
+      "tier": "protocol",
+      "tierLabel": "Agent Trust Protocol v4",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/protocol/escrow/transition",
+      "price": 0.06,
+      "summary": "Transition escrow FSM state",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "protocol",
+        "x402"
+      ]
+    },
+    {
+      "id": "protocol-escrow-status",
+      "name": "Status",
+      "tier": "protocol",
+      "tierLabel": "Agent Trust Protocol v4",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/protocol/escrow/status",
+      "price": 0.02,
+      "summary": "Query escrow FSM status",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "protocol",
+        "x402"
+      ]
+    },
+    {
+      "id": "protocol-replay-bind",
+      "name": "Bind",
+      "tier": "protocol",
+      "tierLabel": "Agent Trust Protocol v4",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/protocol/replay/bind",
+      "price": 0.02,
+      "summary": "Replay-safe payment binding",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "protocol",
+        "x402"
+      ]
+    },
+    {
+      "id": "protocol-replay-verify",
+      "name": "Verify",
+      "tier": "protocol",
+      "tierLabel": "Agent Trust Protocol v4",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/protocol/replay/verify",
+      "price": 0.02,
+      "summary": "Verify and consume replay binding",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "protocol",
+        "x402"
+      ]
+    },
+    {
+      "id": "protocol-zk-prove",
+      "name": "Prove",
+      "tier": "protocol",
+      "tierLabel": "Agent Trust Protocol v4",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/protocol/zk/prove",
+      "price": 0.15,
+      "summary": "ZK-style proof of budget, reputation, or compliance",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "protocol",
+        "x402"
+      ]
+    },
+    {
+      "id": "protocol-credit-score",
+      "name": "Score",
+      "tier": "protocol",
+      "tierLabel": "Agent Trust Protocol v4",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/protocol/credit/score",
+      "price": 0.06,
+      "summary": "AI Agent Credit Bureau 300-900",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "protocol",
+        "x402"
+      ]
+    },
+    {
+      "id": "protocol-compliance-assess",
+      "name": "Assess",
+      "tier": "protocol",
+      "tierLabel": "Agent Trust Protocol v4",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/protocol/compliance/assess",
+      "price": 0.1,
+      "summary": "Enterprise AML/KYC compliance assess",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "protocol",
+        "x402"
+      ]
     }
   ]
 }

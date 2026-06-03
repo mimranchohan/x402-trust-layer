@@ -200,11 +200,14 @@
     });
     const order = [
       "all",
+      "killer",
       "entry",
       "tier1",
-      "marketplace",
+      "protocol",
       "orchestration",
+      "bundle",
       "core",
+      "identity",
       "attestation",
       "trust",
       "intelligence",
@@ -243,7 +246,7 @@
   }
 
   function setStatsImmediate(agents) {
-    const endpoints = agents?.length ?? 38;
+    const endpoints = agents?.length ?? 58;
     const elEndpoints = $("#s-endpoints");
     const elVerified = $("#s-verified");
     const elChains = $("#s-chains");

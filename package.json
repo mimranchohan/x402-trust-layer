@@ -1,7 +1,7 @@
 {
   "name": "x402-trust-layer",
-  "version": "5.0.0",
-  "description": "x402 Trust Layer — paid x402 APIs: Guard, Attest, Comply, Audit. Agent-to-agent payments with zero human interference.",
+  "version": "5.1.0",
+  "description": "x402 Trust Layer — 58 paid x402 APIs (Guard, Attest, Comply, Audit, Agent Trust Protocol v4). Live at x402trustlayer.xyz. Dexter facilitator, Base/Solana/Polygon.",
   "type": "module",
   "author": "Mimran Chohan",
   "license": "MIT",
@@ -15,13 +15,17 @@
   },
   "keywords": [
     "x402",
+    "x402-trust-layer",
     "ai-agents",
     "usdc",
     "dexter",
     "micropayments",
     "solana",
     "base",
-    "agentic-market"
+    "polygon",
+    "agentic-commerce",
+    "agent-trust-protocol",
+    "x402trustlayer"
   ],
   "scripts": {
     "dev": "tsx watch src/index.ts",
@@ -48,6 +52,7 @@
     "smoke:guard": "tsx scripts/smoke-guard-paid.ts",
     "openapi:generate": "tsx scripts/generate-openapi.ts",
     "docs:ai": "node scripts/generate-ai-docs.mjs",
+    "sync:public": "tsx scripts/sync-public-catalog.ts && npm run docs:ai",
     "build:packages": "npm run build --prefix packages/x402-preflight && npm run build --prefix packages/trust-layer-mcp",
     "discovery:discover": "npx -y @agentcash/discovery@latest discover",
     "discovery:check": "npx -y @agentcash/discovery@latest check",

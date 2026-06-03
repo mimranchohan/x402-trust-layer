@@ -2,7 +2,7 @@
 
 ## Product Summary
 
-x402 Trust Layer is the **control plane** between AI agents and the open x402 marketplace. 38 paid HTTP APIs decide whether to pay, whom to trust, which rail to use, and how to audit or dispute settlements. No API keys — USDC micropayments on Base, Solana, and Polygon.
+x402 Trust Layer is the **control plane** between AI agents and the open x402 marketplace. 58 paid HTTP APIs decide whether to pay, whom to trust, which rail to use, and how to audit or dispute settlements. No API keys — USDC micropayments on Base, Solana, and Polygon.
 
 - **Base URL:** https://x402trustlayer.xyz
 - **OpenAPI:** https://x402trustlayer.xyz/openapi.json

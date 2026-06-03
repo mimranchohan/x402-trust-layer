@@ -29,7 +29,7 @@ const llmsTxt = `# x402 Trust Layer
 - Full context: https://x402trustlayer.xyz/llms-full.txt
 - MCP: npx @mimranakb/trust-layer-mcp@${MCP_VERSION} (trust_before_x402_fetch, trust_mandate_diff, trust_semantic_settle)
 - npm: x402-agent-suite-preflight
-- GitHub: https://github.com/mimranchohan/x402-agent-suite
+- GitHub: https://github.com/mimranchohan/x402-trust-layer
 
 ## Default buyer flow (3 steps)
 

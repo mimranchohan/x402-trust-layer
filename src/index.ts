@@ -4,7 +4,7 @@ import cors from "cors";
 import { readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { assertConfig, config } from "./config.js";
-import { db } from "./lib/db.js";
+import { db, dbPath } from "./lib/db.js";
 import "./lib/db.js";
 import { logger } from "./lib/logger.js";
 import { startOtelIfEnabled } from "./lib/otel.js";
@@ -125,7 +125,10 @@ function asyncRoute(
   };
 }
 
+const GITHUB_REPO = "https://github.com/mimranchohan/x402-trust-layer";
+
 function healthPayload() {
+  const dataDir = process.env.DATA_DIR?.trim() || "/app/data";
   return {
     ok: true,
     service: "x402-trust-layer",
@@ -134,9 +137,24 @@ function healthPayload() {
     protocolArchitecture: `${config.publicBaseUrl}/api/protocol/architecture`,
     chains: config.chains,
     networks: config.networks,
+    facilitator: config.facilitatorUrl,
     endpointCount: listEndpoints().length,
     nonceBackend: metricsPayload().nonceBackend,
     gitCommit: process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) ?? null,
+    deploy: {
+      platform: process.env.RAILWAY_ENVIRONMENT ? "railway" : null,
+      docker: true,
+      volumeMount: "/app/data",
+      dataDir,
+      sqlitePath: dbPath(),
+      entrypoint: "scripts/docker-entrypoint.sh (chown volume for non-root app user)",
+    },
+    documentation: {
+      github: GITHUB_REPO,
+      railwayDeploy: `${GITHUB_REPO}/blob/main/docs/RAILWAY-DEPLOY.md`,
+      productionHardening: `${GITHUB_REPO}/blob/main/docs/PRODUCTION-HARDENING.md`,
+      npm: "https://www.npmjs.com/package/x402-trust-layer",
+    },
     agenticGetProbes: true,
     agenticReady:
       config.publicBaseUrl.startsWith("https://") &&
@@ -310,10 +328,16 @@ app.get("/", (req, res) => {
   const all = listEndpoints();
   res.json({
     name: "x402 Trust Layer — Agent Suite",
+    version: SUITE_VERSION,
     description: `${all.length} paid x402 infrastructure APIs — guard, semantic escrow, mandate diff, certified seller network, Agent Trust Protocol v4`,
+    github: GITHUB_REPO,
+    npm: "https://www.npmjs.com/package/x402-trust-layer",
     docs: `${config.publicBaseUrl}/openapi.json`,
+    llmsTxt: `${config.publicBaseUrl}/llms.txt`,
+    skillMd: `${config.publicBaseUrl}/skill.md`,
     discovery: `${config.publicBaseUrl}/x402/api/discover`,
     bazaar: `${config.publicBaseUrl}/x402/api/services.json`,
+    deployDocs: `${GITHUB_REPO}/blob/main/docs/RAILWAY-DEPLOY.md`,
     agenticMarket: "https://agentic.market/",
     agentCash: "https://agentcash.dev/",
     x402scanRegister: "https://www.x402scan.com/resources/register",

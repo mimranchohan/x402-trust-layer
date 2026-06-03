@@ -1,16 +1,15 @@
 # x402 Trust Layer
 
-> 55 paid x402 trust infrastructure APIs + Agent Trust Protocol v4. Guard, attest, comply, audit, identity passport, fraud graph, PoE, escrow FSM, credit bureau.
+> 58 paid x402 trust infrastructure APIs for AI agent fleets. Guard, attest, comply and audit every payment — before the money moves.
 
 - Website: https://x402trustlayer.xyz
 - OpenAPI: https://x402trustlayer.xyz/openapi.json
 - Discovery: https://x402trustlayer.xyz/.well-known/x402
 - Skill (agents): https://x402trustlayer.xyz/skill.md
 - Full context: https://x402trustlayer.xyz/llms-full.txt
-- MCP: npx @mimranakb/trust-layer-mcp@3.0.0 (trust_protocol_full_pipeline, trust_before_x402_fetch, trust_semantic_settle)
-- Protocol v4: GET https://x402trustlayer.xyz/api/protocol/architecture
+- MCP: npx @mimranakb/trust-layer-mcp@1.2.0 (trust_before_x402_fetch, trust_mandate_diff, trust_semantic_settle)
 - npm: x402-agent-suite-preflight
-- GitHub: https://github.com/mimranchohan/x402-agent-suite
+- GitHub: https://github.com/mimranchohan/x402-trust-layer
 
 ## Default buyer flow (3 steps)
 
@@ -22,9 +21,7 @@
 
 | Method | Path | Price | Purpose |
 |--------|------|-------|---------|
-| POST | /api/x402/proxy | $0.08 | All-in-one preflight before any external x402 payment — policy, identity, risk, security grade and optional attestation. |
-| POST | /api/guard/pre-x402 | $0.05 | Spend governor + identity gate + risk gate in one lightweight call. |
-| POST | /api/pipeline/execute | $0.25 | One-shot orchestration: guard, NL plan, facilitator routing and marketplace pick. |
+
 
 ## Tier-1 enterprise
 
@@ -44,33 +41,35 @@
 | POST | /api/pipeline/trust-v2 | $0.35 | One-shot: mandate diff + KYM ingest + guard + certified buyer gate. |
 | POST | /api/trust-network/bond/slash | $0.03 | Slash certified seller virtual bond after failed delivery. |
 
-## All 38 paid routes
+## All 58 paid routes
 
 | Method | Path | Price | Summary |
 |--------|------|-------|---------|
+| POST | /api/a2a/execute | $0.10 | Agent-to-agent x402 orchestration: trust preflight then paid call to seller endpoint |
+| POST | /api/bedrock/preflight | $0.05 | AWS Bedrock / enterprise agent preflight: guard, mandate, and trust bundle before x402 pay |
+| POST | /api/market/buy-advisor | $0.08 | Jupiter-style buy quote — ranks paid APIs for an intent with policy and MPP advice. |
+| POST | /api/seller/audition-coach | $0.06 | Pre-listing QA: audits OpenAPI, discovery manifests and 402 probes. |
 | POST | /api/x402/proxy | $0.08 | All-in-one preflight before any external x402 payment — policy, identity, risk, security grade and optional attestation. |
+| POST | /api/mpp/session | $0.03 | MPP session lifecycle: open, voucher, close — batch settlement on Base/Solana. |
+| POST | /api/attestation/issue | $0.04 | Issues HMAC-signed preflight attestation for partner agent networks. |
+| POST | /api/attestation/verify | $0.02 | Verifies attestation signature, expiry and registry lookup. |
+| GET | /api/attestation/registry | $0.02 | Query trust registry of valid agent attestations. |
 | POST | /api/guard/pre-x402 | $0.05 | Spend governor + identity gate + risk gate in one lightweight call. |
 | POST | /api/agent/verify | $0.04 | ERC-8004 TrustScore on Base mainnet — registration, reputation, wallet binding, agent card, domain. |
 | POST | /api/pipeline/execute | $0.25 | One-shot orchestration: guard, NL plan, facilitator routing and marketplace pick. |
-| POST | /api/market/buy-advisor | $0.08 | Jupiter-style buy quote — ranks paid APIs for an intent with policy and MPP advice. |
-| POST | /api/seller/audition-coach | $0.06 | Pre-listing QA: audits OpenAPI, discovery manifests and 402 probes. |
 | POST | /api/payment-intent/compile | $0.15 | Compiles natural-language task + budget into a multi-step x402 execution plan. |
 | POST | /api/facilitator/failover | $0.05 | Ranks x402 facilitators and recommends a healthy failover route. |
 | POST | /api/mpp/session-plan | $0.02 | Estimates MPP batch session savings vs per-call settlement. |
-| POST | /api/mpp/session | $0.03 | MPP session lifecycle: open, voucher, close — batch settlement on Base/Solana. |
 | POST | /api/spend-governor/check | $0.03 | Enforces per-call and daily USDC spend caps per agent. |
 | POST | /api/identity-gate/check | $0.05 | Wallet identity tier and risk scoring before paid calls. |
 | POST | /api/risk-gate/scan | $0.08 | Probes URL safety, HTTPS and x402 payment requirements. |
 | POST | /api/router/route | $0.02 | Routes capability queries to the best verified x402 marketplace API. |
 | POST | /api/research/brief | $0.20 | Builds a paid-API research pipeline and cost estimate for any topic. |
 | POST | /api/receipt-auditor/verify | $0.05 | Verifies x402 settlement receipts and on-chain transaction alignment. |
-| POST | /api/attestation/issue | $0.04 | Issues HMAC-signed preflight attestation for partner agent networks. |
-| POST | /api/attestation/verify | $0.02 | Verifies attestation signature, expiry and registry lookup. |
-| GET | /api/attestation/registry | $0.02 | Query trust registry of valid agent attestations. |
 | POST | /api/refund-arbiter/evaluate | $0.08 | Evaluates buyer refund eligibility from verification signals. |
+| POST | /api/budget-allocator/run | $0.03 | Allocates shared USDC pool across agent fleet by priority. |
 | POST | /api/settlement-graph/next | $0.02 | Recommends next paid APIs to call after a settlement receipt. |
 | POST | /api/quality-monitor/probe | $0.03 | Regression-probes up to 10 x402 endpoints and returns quality scores. |
-| POST | /api/budget-allocator/run | $0.03 | Allocates shared USDC pool across agent fleet by priority. |
 | POST | /api/evidence-locker/export | $0.10 | Exports tamper-evident compliance bundles for x402 settlements. |
 | POST | /api/agent-escrow | $0.12 | Create, status or release agent-to-agent USDC escrow records. |
 | POST | /api/merchant-trust/score | $0.06 | Know-Your-Merchant trust score with wash-trading and verification signals. |
@@ -86,6 +85,24 @@
 | POST | /api/trust-network/buyer-gate | $0.03 | Verify buyer attestation and tier against certified seller policy. |
 | POST | /api/pipeline/trust-v2 | $0.35 | One-shot: mandate diff + KYM ingest + guard + certified buyer gate. |
 | POST | /api/trust-network/bond/slash | $0.03 | Slash certified seller virtual bond after failed delivery. |
+| POST | /api/protocol/pipeline/full-trust | $0.45 | Agent Trust Protocol v4 full pipeline before x402 payment |
+| POST | /api/protocol/passport/issue | $0.06 | Issue Agent Passport DID verifiable credential |
+| POST | /api/protocol/passport/verify | $0.02 | Verify Agent Passport credential signature |
+| POST | /api/protocol/trust-score/v2 | $0.08 | TrustScore v2 with tamper-resistant HMAC proof |
+| POST | /api/protocol/fraud/scan | $0.10 | Graph fraud scan for Sybil and wash trading |
+| POST | /api/protocol/oracle/consensus | $0.12 | Trust oracle quorum consensus |
+| POST | /api/protocol/execution/issue | $0.05 | Proof of Execution task receipt |
+| POST | /api/protocol/execution/verify | $0.03 | Verify Proof of Execution receipt |
+| POST | /api/protocol/reasoning/commit | $0.08 | Commit reasoning audit Merkle tree |
+| POST | /api/protocol/reasoning/disclose | $0.04 | Selective disclosure of reasoning audit leaves |
+| POST | /api/protocol/escrow/create | $0.08 | Create escrow FSM (CREATED) |
+| POST | /api/protocol/escrow/transition | $0.06 | Transition escrow FSM state |
+| POST | /api/protocol/escrow/status | $0.02 | Query escrow FSM status |
+| POST | /api/protocol/replay/bind | $0.02 | Replay-safe payment binding |
+| POST | /api/protocol/replay/verify | $0.02 | Verify and consume replay binding |
+| POST | /api/protocol/zk/prove | $0.15 | ZK-style proof of budget, reputation, or compliance |
+| POST | /api/protocol/credit/score | $0.06 | AI Agent Credit Bureau 300-900 |
+| POST | /api/protocol/compliance/assess | $0.10 | Enterprise AML/KYC compliance assess |
 
 ## Free endpoints (no x402 payment)
 

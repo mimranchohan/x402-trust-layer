@@ -9,17 +9,18 @@
 
 <p align="center">
 <a href="https://x402trustlayer.xyz"><img src="https://img.shields.io/badge/x402%20Trust%20Layer-live-16C7C0" alt="live"/></a>
-<a href="https://x402gle.com/servers/x402trustlayer.xyz"><img src="https://img.shields.io/badge/x402gle-38%20routes-16C7C0" alt="verified"/></a>
+<a href="https://x402gle.com/servers/x402trustlayer.xyz"><img src="https://img.shields.io/badge/x402gle-listed-16C7C0" alt="x402gle"/></a>
 <a href="https://dexter.cash/sellers/9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt"><img src="https://img.shields.io/badge/Dexter-seller-green" alt="Dexter"/></a>
-<a href="https://www.x402scan.com"><img src="https://img.shields.io/badge/x402scan-38%20resources-7c3aed" alt="x402scan"/></a>
+<a href="https://www.npmjs.com/package/x402-trust-layer"><img src="https://img.shields.io/badge/npm-x402--trust--layer-CB3837" alt="npm"/></a>
+<a href="https://github.com/mimranchohan/x402-trust-layer"><img src="https://img.shields.io/badge/GitHub-x402--trust--layer-24292f" alt="github"/></a>
 </p>
 
 ---
 
-> **x402 Trust Layer** *(x402 Agent Suite Pro)* — 38 paid x402 APIs for guard,
-> attestation, compliance and settlement. Live at **https://x402trustlayer.xyz**
+> **x402 Trust Layer** *(x402 Agent Suite Pro)* — **58 paid x402 APIs** for guard,
+> attestation, compliance, settlement, and **Agent Trust Protocol v4**. Live at **https://x402trustlayer.xyz**
 
-A control plane for autonomous agent commerce. Thirty-eight paid x402 APIs that an
+A control plane for autonomous agent commerce. Fifty-eight paid x402 APIs that an
 AI agent calls *before, during, and after* it spends money — to decide whether a
 merchant is trustworthy, whether a payment is allowed, which rail is cheapest, and
 whether the response it paid for was actually worth it. Everything settles in USDC
@@ -62,13 +63,27 @@ guarded pipeline.
 
 ---
 
+## What's new (v5.1)
+
+- **58 paid routes** — protocol v4 (`/api/protocol/*`), A2A, Bedrock preflight, trust v2 bundles.
+- **Production hardening** — SQLite mandates/idempotency/webhooks, HMAC attestations, SSRF DNS guard, helmet/cors, Vitest, RFC 9457 errors. See [PRODUCTION-HARDENING.md](docs/PRODUCTION-HARDENING.md).
+- **Railway Docker** — volume at `/app/data`, entrypoint fixes permissions, `GET /health` reports `deploy` + `documentation` links.
+- **npm:** [`x402-trust-layer`](https://www.npmjs.com/package/x402-trust-layer) · **GitHub:** [mimranchohan/x402-trust-layer](https://github.com/mimranchohan/x402-trust-layer)
+
+```bash
+npm run sync:public   # refresh public/data/agents.json, llms.txt, skill.md
+npm run ci            # before deploy
+```
+
+---
+
 ## Proof it works
 
 This isn't a mock. As of the last release every route was exercised with **real,
 on-chain USDC settlement on Base**, and the whole origin is indexed on x402scan:
 
-- **x402scan** — registered via OpenAPI discovery, `38/38` resources accepted, `0` failed.
-- **Live paid pass** — all 38 endpoints return `402` unpaid probes; paid settlement via Dexter/OpenDexter.
+- **OpenAPI / discovery** — 58 paid paths; `npm run verify:bazaar` + `npm run probe:production`.
+- **Live paid pass** — endpoints return `402` on unpaid probes; settlement via [Dexter](https://x402.dexter.cash) / OpenDexter.
 - **x402gle auditions** (live, paid, response-scored):
   - `POST /api/pipeline/execute` → **93** · [audition](https://x402gle.com/audition/04540084-c255-44fd-957a-1487eafaa23d)
   - `POST /api/mpp/session-plan` → **86** · [audition](https://x402gle.com/audition/4e16c507-5c6e-4b9e-96e2-a1cba9732a55)
@@ -81,7 +96,7 @@ ready-to-send request body for every single endpoint.
 
 ## The three things most agents need
 
-You rarely need all 38 routes at once. For the common case, reach for one of these:
+You rarely need all 58 routes at once. For the common case, reach for one of these:
 
 | Endpoint | Price | Use it when |
 |----------|-------|-------------|
@@ -104,10 +119,9 @@ if (!(await pre.json()).allowed) throw new Error("blocked by policy");
 
 ---
 
-## The full catalog — all 38 agents
+## The full catalog — 58 paid APIs
 
-Full reference (inputs, outputs, internal logic, example calls) lives in
-**[docs/AGENT-CATALOG.md](docs/AGENT-CATALOG.md)**. The short version:
+Canonical list: **`GET /openapi.json`**, **`GET /api/agents`**, or **[docs/AGENT-CATALOG.md](docs/AGENT-CATALOG.md)**. Includes **Agent Trust Protocol v4** (`POST /api/protocol/*`). Short version:
 
 ### Tier-1 — enterprise control plane
 
@@ -189,7 +203,7 @@ curl -i -X POST $BASE/api/merchant-trust/score          # expect HTTP 402
 # 2) One paid call (any x402 client / OpenDexter x402_fetch)
 #    point it at an endpoint, set a per-call cap, send the example body
 
-# 3) Full paid pass — all 38 routes, ~$2.80 USDC on Base
+# 3) Full paid pass — npm run demo (see docs/TESTING.md for per-route bodies)
 npm run demo
 ```
 
@@ -203,7 +217,9 @@ Paid calls need a wallet with a little USDC. Most endpoints cost $0.02–$0.12;
 | URL | Purpose |
 |-----|---------|
 | `GET /openapi.json` | Canonical contract (x402scan / AgentCash read this first) |
-| `GET /.well-known/x402` | 38 payable resource URLs |
+| `GET /.well-known/x402` | Paid resource catalog |
+| `GET /.well-known/x402/v2` | x402 v2 discovery |
+| `GET /llms.txt` · `GET /skill.md` | Agent index (sync via `npm run sync:public`) |
 | `GET /x402/api/services.json` | Bazaar manifest |
 | `GET /api/agents` | Live route list with prices and tiers |
 
@@ -216,8 +232,8 @@ Re-register on x402scan any time with `node scripts/register-x402scan.mjs`
 ## Run it locally
 
 ```bash
-git clone https://github.com/mimranchohan/x402-agent-suite.git
-cd x402-agent-suite
+git clone https://github.com/mimranchohan/x402-trust-layer.git
+cd x402-trust-layer
 cp .env.example .env
 npm install
 npm run dev
@@ -234,16 +250,44 @@ FACILITATOR_URL=https://x402.dexter.cash
 
 ---
 
+## Deploy (Railway)
+
+Dockerfile + `railway.toml`. Persistent SQLite: volume mount **`/app/data`**, `DATA_DIR=/app/data` (or omit). Do **not** mount `/app` — it hides `dist/index.js`.
+
+Full steps: **[docs/RAILWAY-DEPLOY.md](docs/RAILWAY-DEPLOY.md)** · **[DEPLOY.md](DEPLOY.md)**
+
+```bash
+curl https://x402trustlayer.xyz/health   # expect db: ok, endpointCount: 58
+```
+
+## npm
+
+| Package | Purpose |
+|---------|---------|
+| [`x402-trust-layer`](https://www.npmjs.com/package/x402-trust-layer) | This server (58 paid APIs) |
+| `x402-agent-suite-preflight` | Client preflight helpers (`packages/x402-preflight`) |
+| `@mimranakb/trust-layer-mcp` | MCP tools (`packages/trust-layer-mcp`) |
+
+```bash
+npm install x402-trust-layer
+npm publish   # maintainers only, after version bump
+```
+
+---
+
 ## Docs
 
 | Doc | Topic |
 |-----|-------|
-| [AGENT-CATALOG.md](docs/AGENT-CATALOG.md) | Full reference for all 38 agents — logic, schemas, examples |
-| [TESTING.md](docs/TESTING.md) | How to test every endpoint, with ready-to-send bodies |
+| [RAILWAY-DEPLOY.md](docs/RAILWAY-DEPLOY.md) | Volume mount, env, crash troubleshooting |
+| [PRODUCTION-HARDENING.md](docs/PRODUCTION-HARDENING.md) | Security & data phases 1–8 |
+| [AGENT-CATALOG.md](docs/AGENT-CATALOG.md) | Agent reference — logic, schemas, examples |
+| [TESTING.md](docs/TESTING.md) | Test every endpoint, ready-to-send bodies |
+| [X402GLE-COOLDOWN.md](docs/X402GLE-COOLDOWN.md) | x402gle audition cooldown |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design and request lifecycle |
 | [INTEGRATE.md](docs/INTEGRATE.md) | Fleet flow, attestation, the 3-line rule |
-| [MARKETPLACES.md](docs/MARKETPLACES.md) | Dexter + x402scan + Agentic listing checklist |
-| [DEXTER-SCORE.md](docs/DEXTER-SCORE.md) | Hitting a 75+ verification score |
+| [MARKETPLACES.md](docs/MARKETPLACES.md) | Dexter + x402scan + Agentic listing |
+| [CHANGELOG.md](CHANGELOG.md) | Release notes |
 
 ---
 
