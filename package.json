@@ -54,6 +54,7 @@
     "audition:x402gle": "tsx scripts/run-x402gle-audition.ts",
     "audition:x402gle:v2": "tsx scripts/run-x402gle-audition-v2.ts",
     "audition:x402gle:missing": "tsx scripts/run-x402gle-missing-routes.ts",
+    "audition:x402gle:endpoints": "tsx scripts/run-x402gle-all-endpoints.ts --only-missing",
     "postinstall": "node scripts/patch-facilitator-timeout.mjs",
     "probe:production": "node scripts/probe-production.mjs",
     "x402scan:register": "node scripts/register-x402scan.mjs",

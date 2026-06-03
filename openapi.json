@@ -14,7 +14,7 @@
     "title": "x402 Trust Layer",
     "version": "5.0.0",
     "description": "36 paid x402 trust infrastructure APIs: guard, semantic escrow, mandate diff, certified seller network, KYM, mandates, compliance, disputes, and orchestration.",
-    "x-guidance": "x402 Trust Layer — 36 paid agent payment infrastructure APIs on Base and Solana via Dexter facilitator.\n\nTypical flow:\n1. POST /api/guard/pre-x402 or POST /api/x402/proxy before any downstream x402 payment.\n2. POST /api/merchant-trust/score for Know-Your-Merchant preflight on unknown hosts.\n3. POST /api/mandate/compile for AP2-style signed intent; POST /api/mandate/diff + /api/mandate/verify before spend.\n4. POST /api/trust-network/buyer-gate when paying certified sellers; POST /api/merchant-trust/certify to join network.\n5. POST /api/quality-escrow/semantic-settle after delivery for auto-refund on bad responses.\n6. POST /api/payment-intent/compile or POST /api/pipeline/execute for multi-step orchestration.\n7. POST /api/mpp/session with action open|voucher|close for batch settlement savings.\n8. POST /api/attestation/issue then pass X-Suite-Attestation on partner calls.\n9. POST /api/receipt-auditor/verify after external settlements; POST /api/compliance/ledger for audit.\n\nPay with x402 (USDC). Unpaid GET probes return 402; send Payment-Signature on POST for full JSON responses.\n\nFree (not in this catalog): GET /health — monitoring only, returns 200 without payment."
+    "x-guidance": "x402 Trust Layer — 58 paid agent payment infrastructure APIs on Base, Solana, and Polygon via Dexter facilitator.\n\nTypical flow:\n1. POST /api/guard/pre-x402 or POST /api/x402/proxy before any downstream x402 payment.\n2. POST /api/merchant-trust/score for Know-Your-Merchant preflight on unknown hosts.\n3. POST /api/mandate/compile for AP2-style signed intent; POST /api/mandate/diff + /api/mandate/verify before spend.\n4. POST /api/trust-network/buyer-gate when paying certified sellers; POST /api/merchant-trust/certify to join network.\n5. POST /api/quality-escrow/semantic-settle after delivery for auto-refund on bad responses.\n6. POST /api/payment-intent/compile or POST /api/pipeline/execute for multi-step orchestration.\n7. POST /api/mpp/session with action open|voucher|close for batch settlement savings.\n8. POST /api/attestation/issue then pass X-Suite-Attestation on partner calls.\n9. POST /api/receipt-auditor/verify after external settlements; POST /api/compliance/ledger for audit.\n\nPay with x402 (USDC). Unpaid GET probes return 402; send Payment-Signature on POST for full JSON responses.\n\nFree (not in this catalog): GET /health — monitoring only, returns 200 without payment."
   },
   "x-discovery": {
     "ownershipProofs": [
@@ -52,11 +52,13 @@
     "/api/a2a/execute": {
       "post": {
         "operationId": "post_a2a_execute",
-        "summary": "/api/a2a/execute",
-        "description": "/api/a2a/execute — $0.10 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "summary": "Agent-to-agent x402 orchestration: trust preflight then paid call to seller endpoint",
+        "description": "Agent-to-agent x402 orchestration: trust preflight then paid call to seller endpoint — $0.10 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "killer",
-          "x402"
+          "a2a",
+          "agents",
+          "orchestration"
         ],
         "security": [
           {
@@ -171,11 +173,13 @@
     "/api/bedrock/preflight": {
       "post": {
         "operationId": "post_bedrock_preflight",
-        "summary": "/api/bedrock/preflight",
-        "description": "/api/bedrock/preflight — $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "summary": "AWS Bedrock / enterprise agent preflight: guard, mandate, and trust bundle before x402 pay",
+        "description": "AWS Bedrock / enterprise agent preflight: guard, mandate, and trust bundle before x402 pay — $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "orchestration",
-          "x402"
+          "bedrock",
+          "enterprise",
+          "preflight"
         ],
         "security": [
           {
@@ -3479,7 +3483,7 @@
                     "endpoint": "/api/spend-governor/check",
                     "amountUsdc": 0.03,
                     "network": "solana",
-                    "timestamp": "2026-06-03T02:39:19.962Z"
+                    "timestamp": "2026-06-03T16:42:32.961Z"
                   }
                 ]
               }
@@ -4349,7 +4353,7 @@
                     "category": "oracle",
                     "agentId": "dexter-verifier-probe",
                     "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
-                    "timestamp": "2026-06-03T02:39:19.963Z"
+                    "timestamp": "2026-06-03T16:42:32.961Z"
                   }
                 ],
                 "policy": {

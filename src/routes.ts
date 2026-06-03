@@ -461,15 +461,17 @@ export function registerRoutes(
     pricing.paymentCompiler,
     "Compile multi-step x402 agent execution plans from natural language tasks",
     async (req, res) => {
-      const parsed = z
-        .object({
+      const parsed = parseWithVerifierFallback(
+        "/api/payment-intent/compile",
+        z.object({
           task: z.string().min(3),
-          maxBudgetUsdc: z.number().positive(),
+          maxBudgetUsdc: z.coerce.number().positive(),
           agentId: z.string().min(1),
           includeResearch: z.boolean().optional(),
-          externalCallEstimateUsdc: z.number().optional(),
-        })
-        .safeParse(req.body);
+          externalCallEstimateUsdc: z.coerce.number().optional(),
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(runPaymentIntentCompiler(parsed.data));
     },

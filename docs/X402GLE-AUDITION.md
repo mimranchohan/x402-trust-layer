@@ -6,20 +6,24 @@ Origin: `https://x402trustlayer.xyz`
 
 ```powershell
 cd C:\Users\mimra\x402-agent-suite
-npm run audition:x402gle          # full origin (may cooldown)
-npm run audition:x402gle:v2       # 3 Trust v2 routes only (~$0.51 USDC if all pay)
-npm run audition:x402gle:missing  # only routes not yet on skills.json (one-by-one)
+npm run audition:x402gle              # full origin (registers routes; may stay pending)
+npm run audition:x402gle:endpoints    # per-URL paid score for routes not on skills.json
+npm run audition:x402gle:missing      # alias: missing routes only
+npm run audition:x402gle:v2           # 3 Trust v2 routes only
+
+# agent.md: per-endpoint URL = immediate paid score (required when whole-origin is pending/cooldown)
+npx @dexterai/opendexter audition "https://x402trustlayer.xyz/api/guard/pre-x402" --json
+```
 
 ### Windows batch auditions
 
-Rapid `npx` + `execSync` in a loop can crash Node on Windows (`UV_HANDLE_CLOSING`). The missing-routes script uses **sequential spawn** with an **8s delay** between routes (override: `set AUDITION_DELAY_MS=12000` or `--delay-ms 12000`). Test one route first:
+Rapid `npx` + `execSync` in a loop can crash Node on Windows (`UV_HANDLE_CLOSING`). Batch scripts use **sequential spawn** with **8–10s delay** (override: `set AUDITION_DELAY_MS=12000`). Test one route first:
 
 ```powershell
 npm run audition:x402gle:missing -- --limit 1
 ```
-```
 
-Saves `x402gle-audition-result.json` or `x402gle-v2-audition-result.json`.
+Saves `x402gle-audition-result.json`, `x402gle-missing-audition.json`, or `x402gle-all-endpoints-audition.json`.
 
 ## Settlement timeout (Dexter facilitator)
 

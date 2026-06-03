@@ -92,6 +92,14 @@ export const ENDPOINT_META: Record<string, { summary: string; tags: string[] }> 
     summary: "Create, status, or release agent-to-agent USDC escrow",
     tags: ["escrow", "agents"],
   },
+  "/api/a2a/execute": {
+    summary: "Agent-to-agent x402 orchestration: trust preflight then paid call to seller endpoint",
+    tags: ["a2a", "agents", "orchestration"],
+  },
+  "/api/bedrock/preflight": {
+    summary: "AWS Bedrock / enterprise agent preflight: guard, mandate, and trust bundle before x402 pay",
+    tags: ["bedrock", "enterprise", "preflight"],
+  },
   "/api/market/buy-advisor": {
     summary: "x402 buy quote: rank paid APIs, policy, chain, MPP before you pay",
     tags: ["marketplace", "quote", "discovery", "jupiter-like"],

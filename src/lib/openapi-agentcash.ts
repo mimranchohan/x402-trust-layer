@@ -11,7 +11,7 @@ const MPP_SESSION_PROTOCOLS = [
   { mpp: { method: "POST", intent: "session", currency: "0x20c000000000000000000000b9537d11c60e8b50" } },
 ];
 
-const AGENT_GUIDANCE = `x402 Trust Layer — 36 paid agent payment infrastructure APIs on Base and Solana via Dexter facilitator.
+const AGENT_GUIDANCE = `x402 Trust Layer — 58 paid agent payment infrastructure APIs on Base, Solana, and Polygon via Dexter facilitator.
 
 Typical flow:
 1. POST /api/guard/pre-x402 or POST /api/x402/proxy before any downstream x402 payment.
