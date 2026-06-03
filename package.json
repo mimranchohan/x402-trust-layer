@@ -1,17 +1,17 @@
 {
-  "name": "x402-agent-suite",
-  "version": "4.0.0",
-  "description": "55 paid x402 APIs + Agent Trust Protocol v4 — identity passport, trust score v2, fraud graph, oracle quorum, proof of execution, escrow FSM, replay guard, zk proofs, credit bureau",
+  "name": "x402-trust-layer",
+  "version": "5.0.0",
+  "description": "x402 Trust Layer — paid x402 APIs: Guard, Attest, Comply, Audit. Agent-to-agent payments with zero human interference.",
   "type": "module",
   "author": "Mimran Chohan",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mimranchohan/x402-agent-suite.git"
+    "url": "git+https://github.com/mimranchohan/x402-trust-layer.git"
   },
   "homepage": "https://x402trustlayer.xyz",
   "bugs": {
-    "url": "https://github.com/mimranchohan/x402-agent-suite/issues"
+    "url": "https://github.com/mimranchohan/x402-trust-layer/issues"
   },
   "keywords": [
     "x402",
@@ -37,6 +37,7 @@
     "test": "npm run test:golden",
     "test:golden": "tsx scripts/run-golden-tests.ts",
     "test:protocol": "tsx scripts/run-protocol-smoke.ts",
+    "test:a2a": "tsx scripts/test-a2a-integration.ts",
     "openapi:generate": "tsx scripts/generate-openapi.ts",
     "docs:ai": "node scripts/generate-ai-docs.mjs",
     "build:packages": "npm run build --prefix packages/x402-preflight && npm run build --prefix packages/trust-layer-mcp",
@@ -49,6 +50,7 @@
     "probe:production": "node scripts/probe-production.mjs",
     "x402scan:register": "node scripts/register-x402scan.mjs",
     "bazaar:settle-all": "node scripts/bazaar-settle-all.mjs",
+    "register:agent-market": "node scripts/register-agent-market.mjs",
     "videos:render": "node scripts/render-marketing-videos.mjs"
   },
   "engines": {
@@ -63,12 +65,14 @@
     "@x402/core": "^2.14.0",
     "@x402/extensions": "^2.14.0",
     "@x402/fetch": "^2.14.0",
+    "better-sqlite3": "^11.8.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "viem": "^2.52.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
     "@types/express": "^4.17.21",
     "@types/node": "^22.13.10",
     "ffmpeg-static": "^5.3.0",
