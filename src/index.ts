@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { assertConfig, config } from "./config.js";
 import "./lib/db.js";
+import { telemetryMiddleware, metricsPayload } from "./lib/telemetry.js";
 import { createPaidMiddleware } from "./lib/x402-paid.js";
 import {
   buildDiscoverCatalog,
@@ -47,6 +48,7 @@ void ensureVerifierProbeProtocol().catch((err) => {
 const app = express();
 app.set("trust proxy", Number(process.env.TRUST_PROXY_HOPS ?? 1));
 app.disable("x-powered-by");
+app.use(telemetryMiddleware);
 registerX402gleHostVerification(app);
 app.use(stripTrailingSlash);
 app.use(express.json({ limit: "512kb" }));
@@ -97,6 +99,7 @@ function healthPayload() {
     chains: config.chains,
     networks: config.networks,
     endpointCount: listEndpoints().length,
+    nonceBackend: metricsPayload().nonceBackend,
     gitCommit: process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) ?? null,
     agenticGetProbes: true,
     agenticReady:
@@ -144,6 +147,10 @@ app.get("/skill.md", (_req, res) => {
   } catch {
     res.status(404).type("text/plain").send("skill.md not found");
   }
+});
+
+app.get("/metrics", (_req, res) => {
+  res.json(metricsPayload());
 });
 
 app.get("/health", (_req, res) => {
@@ -215,8 +222,7 @@ app.get("/", (req, res) => {
   const all = listEndpoints();
   res.json({
     name: "x402 Trust Layer — Agent Suite",
-    description:
-      "36 paid x402 infrastructure APIs — guard, semantic escrow, mandate diff, certified seller network",
+    description: `${all.length} paid x402 infrastructure APIs — guard, semantic escrow, mandate diff, certified seller network, Agent Trust Protocol v4`,
     docs: `${config.publicBaseUrl}/openapi.json`,
     discovery: `${config.publicBaseUrl}/x402/api/discover`,
     bazaar: `${config.publicBaseUrl}/x402/api/services.json`,

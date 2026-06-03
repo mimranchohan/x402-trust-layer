@@ -44,7 +44,8 @@ db.exec(`
     spent_usdc REAL NOT NULL DEFAULT 0,
     status TEXT NOT NULL DEFAULT 'open',
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
-    closed_at INTEGER
+    closed_at INTEGER,
+    payload TEXT
   );
 
   CREATE TABLE IF NOT EXISTS escrow_records (
@@ -55,7 +56,8 @@ db.exec(`
     condition_hash TEXT,
     status TEXT NOT NULL DEFAULT 'held',
     created_at INTEGER NOT NULL DEFAULT (unixepoch()),
-    released_at INTEGER
+    released_at INTEGER,
+    payload TEXT
   );
 
   CREATE TABLE IF NOT EXISTS used_nonces (
@@ -66,6 +68,19 @@ db.exec(`
 
   CREATE INDEX IF NOT EXISTS idx_nonces_time ON used_nonces(used_at);
 `);
+
+function ensurePayloadColumns(): void {
+  const mppCols = db.prepare("PRAGMA table_info(mpp_sessions)").all() as { name: string }[];
+  if (!mppCols.some((c) => c.name === "payload")) {
+    db.exec("ALTER TABLE mpp_sessions ADD COLUMN payload TEXT");
+  }
+  const escCols = db.prepare("PRAGMA table_info(escrow_records)").all() as { name: string }[];
+  if (!escCols.some((c) => c.name === "payload")) {
+    db.exec("ALTER TABLE escrow_records ADD COLUMN payload TEXT");
+  }
+}
+
+ensurePayloadColumns();
 
 export function dbPath(): string {
   return DB_PATH;

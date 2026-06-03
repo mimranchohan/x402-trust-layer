@@ -9,7 +9,10 @@ import {
   extractNonceFromPaymentHeader,
   isNonceAlreadyUsed,
   markNonceUsed,
+  isIdempotencyKeyConsumed,
+  markIdempotencyKeyUsed,
 } from "./x402-payment-replay.js";
+import { incCounter } from "./telemetry.js";
 import { isTrustedPayTo } from "./payto-guard.js";
 import { enrichAcceptFromFacilitator, ensureFacilitatorExtras } from "./facilitator-extra.js";
 import { paymentRequestAls, type PaymentRequestStore } from "./payment-request-context.js";
@@ -160,13 +163,18 @@ export function createPaidMiddleware(): (
       timeoutSeconds: 120,
       getResourceUrl: (req) => resolvePaidResourceUrl(req),
       onSettlement: (info) => {
-        const pending = paymentRequestAls.getStore()?.x402PendingNonce;
+        incCounter("x402_settlements");
+        const store = paymentRequestAls.getStore();
+        const pending = store?.x402PendingNonce;
         if (pending) {
-          try {
-            markNonceUsed(pending.nonce, pending.network);
-          } catch (err) {
+          void markNonceUsed(pending.nonce, pending.network).catch((err) => {
             console.error("[x402-paid] markNonceUsed failed:", err);
-          }
+          });
+        }
+        if (store) {
+          void markIdempotencyKeyUsed(store, store.path).catch((err) => {
+            console.error("[x402-paid] idempotency mark failed:", err);
+          });
         }
         baseMiddleware.onSettlement(info);
       },
@@ -186,6 +194,14 @@ export function createPaidMiddleware(): (
       }
 
       const paymentReq = req as PaymentRequestStore;
+      if (paymentSig && isIdempotencyKeyConsumed(req, req.path)) {
+        incCounter("idempotency_replay");
+        res.status(409).json({
+          error: "Idempotency-Key already fulfilled for this resource — use a new key",
+        });
+        return;
+      }
+
       if (paymentSig) {
         const { nonce, network, payTo } = extractNonceFromPaymentHeader(paymentSig);
         if (payTo && !isTrustedPayTo(payTo)) {
@@ -200,6 +216,7 @@ export function createPaidMiddleware(): (
         }
         if (nonce) {
           if (isNonceAlreadyUsed(nonce)) {
+            incCounter("replay_blocked");
             res.status(409).json({ error: "Replay attack detected: nonce already used" });
             return;
           }
@@ -217,6 +234,10 @@ export function createPaidMiddleware(): (
             payload.error === "Payment settlement failed" &&
             payload.reason
           ) {
+            incCounter("x402_settlement_failures");
+            if (!res.headersSent) {
+              res.setHeader("Retry-After", String(process.env.SETTLEMENT_RETRY_AFTER_SEC ?? "15"));
+            }
             console.error("[x402] settlement failed:", payload.reason);
           }
         }

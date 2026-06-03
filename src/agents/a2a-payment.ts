@@ -1,6 +1,18 @@
 import { z } from "zod";
 import type { Request, Response } from "express";
 import { config } from "../config.js";
+
+function isProduction(): boolean {
+  return process.env.NODE_ENV === "production" || !!process.env.RAILWAY_ENVIRONMENT;
+}
+
+function assertA2AOrchestratorAllowed(): void {
+  if (isProduction() && !config.a2aOrchestratorEnabled) {
+    throw new Error(
+      "A2A orchestrator disabled in production. Set A2A_ORCHESTRATOR_ENABLED=1 only on dedicated signing hosts.",
+    );
+  }
+}
 import { agentTrustMeta, withAgentTrust } from "../lib/agent-response.js";
 import { assertSafeOutboundUrl } from "../lib/ssrf.js";
 import { buildX402Fetch } from "../lib/x402-client-options.js";
@@ -31,6 +43,7 @@ async function payerFetch(maxBudgetUsdc: number) {
 }
 
 export async function executeA2APayment(params: A2APaymentInput) {
+  assertA2AOrchestratorAllowed();
   const validated = A2APaymentSchema.parse(params);
   assertSafeOutboundUrl(validated.sellerEndpoint);
 

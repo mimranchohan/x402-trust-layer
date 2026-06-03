@@ -1,4 +1,5 @@
 import { hmacSign, sha256Hex } from "./crypto.js";
+import { config } from "../config.js";
 
 export type ZkProveType =
   | "authorization"
@@ -17,16 +18,26 @@ export type ZkProveInput = {
 
 export type ZkProofBundle = {
   proofType: ZkProveType;
-  scheme: "groth16-simulated-v1";
+  scheme: "commitment-v1-simulated" | "groth16";
   publicInputs: Record<string, unknown>;
   commitment: string;
   nullifier: string;
   verified: boolean;
   note: string;
+  simulated: boolean;
 };
 
-/** Simulated zk proof — production would use circom/snarkjs or vendor ZK service */
+export function assertZkProveAllowed(): void {
+  if (!config.zkSimulateAllowed) {
+    throw new Error(
+      "ZK prove is disabled in production. Set ALLOW_ZK_SIMULATE=1 for demo only, or integrate a real Groth16 verifier.",
+    );
+  }
+}
+
+/** Commitment-based simulated proof — not a SNARK; witness never returned. */
 export function generateZkProof(input: ZkProveInput): ZkProofBundle {
+  assertZkProveAllowed();
   const witnessHash = sha256Hex(JSON.stringify(input.witness));
   const publicInputs = {
     agentId: input.agentId,
@@ -39,11 +50,12 @@ export function generateZkProof(input: ZkProveInput): ZkProofBundle {
 
   return {
     proofType: input.proofType,
-    scheme: "groth16-simulated-v1",
+    scheme: "commitment-v1-simulated",
     publicInputs,
     commitment,
     nullifier,
     verified,
-    note: "Simulated ZK — witness not revealed; upgrade path to Groth16/PLONK verifier contract",
+    simulated: true,
+    note: "Simulated commitment proof — not Groth16. Roadmap: circom + on-chain verifier.",
   };
 }

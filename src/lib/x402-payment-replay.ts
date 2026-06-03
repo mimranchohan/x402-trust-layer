@@ -1,31 +1,52 @@
-import { db } from "./db.js";
+import {
+  claimNonceKey,
+  extractIdempotencyKey,
+  isNonceKeyUsed,
+} from "./nonce-store.js";
 
-const checkNonce = db.prepare("SELECT 1 AS ok FROM used_nonces WHERE nonce = ?");
-const insertNonce = db.prepare(
-  "INSERT OR IGNORE INTO used_nonces (nonce, network) VALUES (?, ?)",
-);
-const cleanOld = db.prepare("DELETE FROM used_nonces WHERE used_at < ?");
+export { extractIdempotencyKey };
 
 /** True if this nonce was already used for a successful settlement. */
 export function isNonceAlreadyUsed(nonce: string): boolean {
-  if (!nonce || nonce.length < 8) return false;
-  return !!checkNonce.get(nonce);
+  return isNonceKeyUsed(`pay:${nonce}`);
 }
 
 /** Record nonce only after facilitator settlement succeeds. */
-export function markNonceUsed(nonce: string, network: string): void {
-  if (!nonce || nonce.length < 8) return;
-  if (Math.random() < 0.02) {
-    cleanOld.run(Math.floor(Date.now() / 1000) - 86_400);
-  }
-  insertNonce.run(nonce, network || "unknown");
+export async function markNonceUsed(nonce: string, network: string): Promise<void> {
+  await claimNonceKey(`pay:${nonce}`, network || "unknown");
 }
 
-export function checkAndConsumeNonce(nonce: string, network: string): boolean {
+export async function checkAndConsumeNonce(nonce: string, network: string): Promise<boolean> {
   if (!nonce || nonce.length < 8) return true;
-  if (isNonceAlreadyUsed(nonce)) return false;
-  markNonceUsed(nonce, network);
-  return true;
+  if (isNonceKeyUsed(`pay:${nonce}`)) return false;
+  return claimNonceKey(`pay:${nonce}`, network);
+}
+
+export function idempotencyCompositeKey(
+  req: { headers: Record<string, unknown> },
+  resourcePath: string,
+): string | undefined {
+  const key = extractIdempotencyKey(req);
+  if (!key) return undefined;
+  return `idem:${resourcePath}:${key}`;
+}
+
+/** Block only after a prior request with this key completed settlement. */
+export function isIdempotencyKeyConsumed(
+  req: { headers: Record<string, unknown> },
+  resourcePath: string,
+): boolean {
+  const composite = idempotencyCompositeKey(req, resourcePath);
+  return composite ? isNonceKeyUsed(composite) : false;
+}
+
+export async function markIdempotencyKeyUsed(
+  req: { headers: Record<string, unknown> },
+  resourcePath: string,
+): Promise<void> {
+  const composite = idempotencyCompositeKey(req, resourcePath);
+  if (!composite) return;
+  await claimNonceKey(composite, "idempotency", 86_400);
 }
 
 export function extractNonceFromPaymentHeader(header: string): {

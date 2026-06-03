@@ -5,6 +5,11 @@ import { fileURLToPath } from "node:url";
 import { config } from "../config.js";
 import { CHAIN_IDS, type ChainKey } from "../lib/chains.js";
 import { agentTrustMeta, withAgentTrust, type WithAgentTrust } from "../lib/agent-response.js";
+import {
+  getMppSessionFromDb,
+  loadMppSessionsFromDb,
+  saveMppSessionToDb,
+} from "../lib/db-persistence.js";
 
 export type MppSessionType = "stripe_mpp" | "dexter_mpp" | "visa_cli" | "x402_native";
 export type MppBillingModel = "per_call" | "per_token" | "per_second" | "flat_rate";
@@ -47,18 +52,32 @@ export type MppSession = {
 const root = path.dirname(fileURLToPath(import.meta.url));
 const sessionsPath = path.join(root, "..", "..", "data", "mpp-sessions.json");
 
-async function loadSessions(): Promise<MppSession[]> {
+async function loadSessions(agentId?: string): Promise<MppSession[]> {
+  const fromDb = agentId ? loadMppSessionsFromDb(agentId) : [];
   try {
     const raw = await readFile(sessionsPath, "utf8");
-    return JSON.parse(raw) as MppSession[];
+    const fromFile = JSON.parse(raw) as MppSession[];
+    const byId = new Map<string, MppSession>();
+    for (const s of fromFile) byId.set(s.sessionId, s);
+    for (const s of fromDb) byId.set(s.sessionId, s);
+    return [...byId.values()];
   } catch {
-    return [];
+    return fromDb;
   }
 }
 
 async function saveSessions(rows: MppSession[]): Promise<void> {
   await mkdir(path.dirname(sessionsPath), { recursive: true });
-  await writeFile(sessionsPath, JSON.stringify(rows.slice(-200), null, 2), "utf8");
+  const trimmed = rows.slice(-200);
+  await writeFile(sessionsPath, JSON.stringify(trimmed, null, 2), "utf8");
+  for (const s of trimmed) saveMppSessionToDb(s);
+}
+
+async function findSession(sessionId: string, agentId?: string): Promise<MppSession | undefined> {
+  const fromDb = getMppSessionFromDb(sessionId);
+  if (fromDb) return fromDb;
+  const rows = await loadSessions(agentId);
+  return rows.find((s) => s.sessionId === sessionId);
 }
 
 export type MppSessionError = {
@@ -220,8 +239,13 @@ export async function runMppSessionV2(input: MppV2Input): Promise<WithAgentTrust
   }
 
   if (input.action === "voucher" || input.action === "status" || input.action === "close") {
-    const rows = await loadSessions();
-    let session = findOpenSession(rows, input);
+    const rows = await loadSessions(input.agentId);
+    let session: MppSession | null = null;
+    if (input.sessionId) {
+      const direct = await findSession(input.sessionId, input.agentId);
+      if (direct?.status === "open") session = direct;
+    }
+    if (!session) session = findOpenSession(rows, input);
     let resolvedBy: MppV2Result["resolvedBy"];
 
     if (session) {

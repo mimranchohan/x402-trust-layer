@@ -473,7 +473,14 @@ export function registerProtocolRoutes(
         req.body,
       );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
-      res.json(withAgentTrust({ status: "ok", proof: generateZkProof(parsed.data) }, agentTrustMeta(["zk_prove"])));
+      try {
+        res.json(
+          withAgentTrust({ status: "ok", proof: generateZkProof(parsed.data) }, agentTrustMeta(["zk_prove"])),
+        );
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        res.status(503).json({ error: message, zkSimulateAllowed: false });
+      }
     },
   );
 

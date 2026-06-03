@@ -34,7 +34,8 @@
     "alchemy:doctor": "tsx scripts/alchemy-doctor.ts",
     "doctor": "tsx scripts/doctor.ts",
     "typecheck": "tsc --noEmit",
-    "ci": "npm run typecheck && npm run verify:bazaar && npm run test:golden && npm run smoke:verifier",
+    "ci": "npm run typecheck && npm run verify:bazaar && npm run test:golden && npm run test:nonce && npm run smoke:verifier",
+    "test:nonce": "tsx scripts/test-nonce-replay.ts",
     "smoke:verifier": "tsx scripts/smoke-verifier-examples.ts",
     "test": "npm run test:golden",
     "test:golden": "tsx scripts/run-golden-tests.ts",
@@ -74,6 +75,9 @@
     "express": "^4.21.2",
     "viem": "^2.52.0",
     "zod": "^3.24.2"
+  },
+  "optionalDependencies": {
+    "redis": "^4.7.1"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.12",

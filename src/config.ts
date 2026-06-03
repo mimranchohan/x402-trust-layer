@@ -83,9 +83,37 @@ export function isAllowedNetwork(caip2Network: string): boolean {
 export const CDP_FACILITATOR_URL =
   "https://api.cdp.coinbase.com/platform/v2/x402/facilitator";
 
+const ALLOWED_FACILITATOR_ORIGINS = new Set([
+  "https://x402.dexter.cash",
+  "https://api.cdp.coinbase.com",
+  "https://x402.org",
+]);
+
+function normalizeFacilitatorUrl(url: string): string {
+  return url.replace(/\/$/, "");
+}
+
+function assertFacilitatorAllowed(url: string): void {
+  let origin = "";
+  try {
+    origin = new URL(url).origin;
+  } catch {
+    throw new Error(`Invalid FACILITATOR_URL: ${url}`);
+  }
+  if (!ALLOWED_FACILITATOR_ORIGINS.has(origin)) {
+    throw new Error(
+      `FACILITATOR_URL origin not allowlisted: ${origin}. Allowed: ${[...ALLOWED_FACILITATOR_ORIGINS].join(", ")}`,
+    );
+  }
+}
+
 function resolveFacilitatorUrl(): string {
   const explicit = env("FACILITATOR_URL");
-  if (explicit) return explicit;
+  if (explicit) {
+    const u = normalizeFacilitatorUrl(explicit);
+    assertFacilitatorAllowed(u);
+    return u;
+  }
   if (env("X402_TESTNET") === "1" || env("TESTNET") === "1") {
     return "https://x402.org/facilitator";
   }
@@ -123,6 +151,11 @@ export const config = {
   /** Optional server secret for verifier synthetic probes (header X-Verifier-Fast-Path-Secret). */
   verifierFastPathSecret: env("VERIFIER_FAST_PATH_SECRET"),
   webhookAdminSecret: env("WEBHOOK_ADMIN_SECRET"),
+  /** Production A2A orchestrator requires A2A_ORCHESTRATOR_ENABLED=1 (uses server payer keys). */
+  a2aOrchestratorEnabled: env("A2A_ORCHESTRATOR_ENABLED") === "1",
+  zkSimulateAllowed:
+    env("ALLOW_ZK_SIMULATE") === "1" ||
+    !(process.env.NODE_ENV === "production" || !!process.env.RAILWAY_ENVIRONMENT),
 };
 
 export const pricing = {
@@ -200,6 +233,7 @@ export function assertProductionSecrets(): void {
     { name: "ATTESTATION_HMAC_SECRET", value: config.attestationHmacSecret, minLen: 32 },
     { name: "PAY_TO_ADDRESS", value: config.payTo, minLen: 16 },
     { name: "PAY_TO_EVM", value: config.payToEvm, minLen: 16 },
+    { name: "WEBHOOK_ADMIN_SECRET", value: config.webhookAdminSecret, minLen: 16 },
   ];
   for (const { name, value, minLen } of required) {
     if (!value || value.length < minLen) {

@@ -1,6 +1,10 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import {
+  getEscrowFromDb,
+  saveEscrowToDb,
+} from "./db-persistence.js";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 
@@ -44,10 +48,13 @@ export async function createEscrow(input: Omit<EscrowRecord, "id" | "status" | "
   };
   store[record.id] = record;
   await writeStore(store);
+  saveEscrowToDb(record);
   return record;
 }
 
 export async function getEscrow(id: string): Promise<EscrowRecord | null> {
+  const fromDb = getEscrowFromDb(id);
+  if (fromDb) return fromDb;
   const store = await readStore();
   return store[id] ?? null;
 }
@@ -59,5 +66,6 @@ export async function releaseEscrow(id: string): Promise<EscrowRecord | null> {
   record.status = "released";
   record.releasedAt = new Date().toISOString();
   await writeStore(store);
+  saveEscrowToDb(record);
   return record;
 }

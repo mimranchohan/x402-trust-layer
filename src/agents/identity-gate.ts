@@ -2,6 +2,10 @@ import { isEvmAddress, type TrustTier } from "../lib/erc8004/constants.js";
 import { computeTrustScore } from "../lib/erc8004/trust-score.js";
 
 const BLOCKED_PATTERNS = ["test", "burn", "11111111111111111111111111111111"];
+const BLOCKED_EXACT = new Set([
+  "0x0000000000000000000000000000000000000000",
+  "11111111111111111111111111111111",
+]);
 
 export type IdentityGateInput = {
   walletAddress: string;
@@ -39,6 +43,16 @@ export async function runIdentityGate(input: IdentityGateInput): Promise<Identit
       riskScore: 100,
       maxSpendUsdc: 0,
       reasons: ["Invalid wallet address format"],
+    };
+  }
+
+  if (BLOCKED_EXACT.has(addr) || BLOCKED_EXACT.has(addr.toLowerCase())) {
+    return {
+      allowed: false,
+      tier: "restricted",
+      riskScore: 100,
+      maxSpendUsdc: 0,
+      reasons: ["Blocked sentinel wallet address"],
     };
   }
 

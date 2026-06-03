@@ -1,22 +1,13 @@
-import { writeFile, mkdir } from "node:fs/promises";
-import path from "node:path";
 import { sha256Hex, hmacSign } from "./crypto.js";
+import { claimNonceKey, isNonceKeyUsed } from "../lib/nonce-store.js";
 import { readProtocolStore, writeProtocolStore } from "./store.js";
-
-const NONCE_DIR = path.join(process.cwd(), "data", "protocol", "used-nonces");
 
 async function claimNonceOnce(nonce: string): Promise<boolean> {
   const safe = nonce.replace(/[^a-f0-9]/gi, "").slice(0, 64);
   if (!safe) return false;
-  await mkdir(NONCE_DIR, { recursive: true });
-  const file = path.join(NONCE_DIR, `${safe}.lock`);
-  try {
-    await writeFile(file, String(Date.now()), { flag: "wx" });
-    return true;
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "EEXIST") return false;
-    throw err;
-  }
+  const key = `proto:${safe}`;
+  if (isNonceKeyUsed(key)) return false;
+  return claimNonceKey(key, "protocol-replay");
 }
 
 export type ReplayBindingInput = {
