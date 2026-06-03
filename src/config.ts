@@ -1,6 +1,12 @@
 import dotenv from "dotenv";
 import { randomBytes } from "node:crypto";
-import { parseChainList, caip2Networks, type ChainKey } from "./lib/chains.js";
+import {
+  parseChainList,
+  caip2Networks,
+  normalizeToCaip2,
+  NETWORK_ALIAS_TO_CAIP2,
+  type ChainKey,
+} from "./lib/chains.js";
 
 dotenv.config();
 
@@ -56,6 +62,22 @@ function resolveChains(): ChainKey[] {
 }
 
 const chains = resolveChains();
+
+export const ALLOWED_NETWORKS = new Set(
+  chains.map((c) => NETWORK_ALIAS_TO_CAIP2[c] ?? caip2Networks([c])[0]).filter(Boolean),
+);
+
+export function isAllowedNetwork(caip2Network: string): boolean {
+  const n = normalizeToCaip2(caip2Network);
+  if (env("X402_TESTNET") === "1" || env("TESTNET") === "1") {
+    return (
+      ALLOWED_NETWORKS.has(n) ||
+      n === "eip155:84532" ||
+      n === "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+    );
+  }
+  return ALLOWED_NETWORKS.has(n);
+}
 
 /** CDP facilitator — required for CDP Bazaar catalog indexing on agentic.market */
 export const CDP_FACILITATOR_URL =
@@ -160,7 +182,32 @@ export const pricing = {
   protocolZkProve: "0.15",
   protocolCreditScore: "0.06",
   protocolComplianceAssess: "0.10",
+  a2aExecute: "0.10",
+  bedrockPreflight: "0.05",
 } as const;
+
+function isProductionEnv(): boolean {
+  return (
+    process.env.NODE_ENV === "production" ||
+    !!process.env.RAILWAY_ENVIRONMENT ||
+    !!process.env.RAILWAY_PUBLIC_DOMAIN
+  );
+}
+
+export function assertProductionSecrets(): void {
+  if (!isProductionEnv()) return;
+  const required: Array<{ name: string; value: string; minLen: number }> = [
+    { name: "ATTESTATION_HMAC_SECRET", value: config.attestationHmacSecret, minLen: 32 },
+    { name: "PAY_TO_ADDRESS", value: config.payTo, minLen: 16 },
+    { name: "PAY_TO_EVM", value: config.payToEvm, minLen: 16 },
+  ];
+  for (const { name, value, minLen } of required) {
+    if (!value || value.length < minLen) {
+      console.error(`FATAL: ${name} not set or too short for production.`);
+      process.exit(1);
+    }
+  }
+}
 
 export function assertConfig(): void {
   if (!config.payTo) {
@@ -168,6 +215,7 @@ export function assertConfig(): void {
       "Missing PAY_TO_ADDRESS. Set it in Railway/Render Variables (or .env locally) to your USDC receive wallet.",
     );
   }
+  assertProductionSecrets();
   if (
     config.publicBaseUrl.includes("railway.app") &&
     !env("PUBLIC_BASE_URL") &&

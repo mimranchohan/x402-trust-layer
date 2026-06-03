@@ -1,0 +1,104 @@
+import { z } from "zod";
+import type { Request, Response } from "express";
+import { wrapFetch } from "@dexterai/x402/client";
+import { config } from "../config.js";
+import { agentTrustMeta, withAgentTrust } from "../lib/agent-response.js";
+import { assertSafeOutboundUrl } from "../lib/ssrf.js";
+
+const A2APaymentSchema = z.object({
+  buyerAgentId: z.string().min(1),
+  sellerAgentId: z.string().min(1),
+  sellerEndpoint: z.string().url(),
+  taskDescription: z.string().min(1).max(4000),
+  maxBudgetUsdc: z.number().positive().max(10),
+});
+
+export type A2APaymentInput = z.infer<typeof A2APaymentSchema>;
+
+function payerFetch(maxBudgetUsdc: number) {
+  const evm = process.env.EVM_PRIVATE_KEY?.trim();
+  const sol = process.env.SOLANA_PRIVATE_KEY?.trim();
+  if (!evm && !sol) {
+    throw new Error(
+      "A2A execute requires EVM_PRIVATE_KEY or SOLANA_PRIVATE_KEY on the orchestrator (never pass keys in request body)",
+    );
+  }
+  return wrapFetch(fetch, {
+    evmPrivateKey: evm,
+    walletPrivateKey: sol,
+    maxAmountAtomic: String(Math.ceil(maxBudgetUsdc * 1_000_000)),
+    preferredNetwork: "eip155:8453",
+  });
+}
+
+export async function executeA2APayment(params: A2APaymentInput) {
+  const validated = A2APaymentSchema.parse(params);
+  assertSafeOutboundUrl(validated.sellerEndpoint);
+
+  const trustRes = await fetch(`${config.publicBaseUrl}/api/merchant-trust/score`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ targetUrl: validated.sellerEndpoint }),
+  });
+  const trust = (await trustRes.json()) as { recommendation?: string; score?: number };
+  if (trust.recommendation === "avoid") {
+    throw new Error(
+      `A2A payment blocked: seller trust too low (score=${trust.score ?? "unknown"})`,
+    );
+  }
+
+  const agentFetch = payerFetch(validated.maxBudgetUsdc);
+  const response = await agentFetch(validated.sellerEndpoint, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-buyer-agent-id": validated.buyerAgentId,
+      "x-seller-agent-id": validated.sellerAgentId,
+    },
+    body: JSON.stringify({ task: validated.taskDescription }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`A2A call failed: HTTP ${response.status}`);
+  }
+
+  return {
+    success: true,
+    sellerResponse: await response.json(),
+    paymentReceipt: response.headers.get("PAYMENT-RESPONSE"),
+  };
+}
+
+export async function runA2APayment(input: A2APaymentInput) {
+  const result = await executeA2APayment(input);
+  return withAgentTrust(
+    {
+      ...result,
+      buyerAgentId: input.buyerAgentId,
+      sellerAgentId: input.sellerAgentId,
+      sellerEndpoint: input.sellerEndpoint,
+    },
+    agentTrustMeta(["a2a_preflight", "trust_score", "spend_cap"], {
+      confidence: 0.95,
+      sources: ["a2a-x402", "merchant-trust"],
+      accuracy_note: "Agent-to-agent orchestration; payer keys never accepted from client body.",
+    }),
+  );
+}
+
+export async function handleA2APaymentRoute(req: Request, res: Response): Promise<void> {
+  const parsed = A2APaymentSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.flatten() });
+    return;
+  }
+  try {
+    const result = await runA2APayment(parsed.data);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({
+      error: err instanceof Error ? err.message : String(err),
+      allowed: false,
+    });
+  }
+}
