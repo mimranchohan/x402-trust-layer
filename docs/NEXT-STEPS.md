@@ -9,7 +9,7 @@
 
 ## You should do now
 
-1. **Railway volume** — mount `/data`, set `DATA_DIR=/data` (see `docs/RAILWAY-DEPLOY.md`)
+1. **Railway volume** — mount **`/app/data`** only (not `/app`); `DATA_DIR=/app/data` or omit (see `docs/RAILWAY-DEPLOY.md`)
 2. **Confirm env** — `ATTESTATION_HMAC_SECRET`, `PAY_TO_EVM`, `PUBLIC_BASE_URL`
 3. **x402gle** — wait for cooldown, then `npm run audition:x402gle:endpoints`
 4. **Register discovery** — x402scan / AgentCash with `/.well-known/x402/v2` URLs
