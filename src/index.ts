@@ -20,11 +20,20 @@ import { listEndpoints, registerRoutes } from "./routes.js";
 import { registerX402gleHostVerification } from "./lib/x402gle-host-verify.js";
 import { ensureVerifierProbeMandate } from "./lib/mandate.js";
 import { SUITE_VERSION } from "./lib/version.js";
+import { refreshFacilitatorExtras, startFacilitatorExtrasRefresh } from "./lib/facilitator-extra.js";
 import { rateLimitPerMinute, rateLimitUnpaidProbes, rateLimitAgentLookup } from "./lib/rate-limit.js";
 import { handleAgentLookup } from "./agents/agent-verify.js";
 import { runCertifiedLookup, runCertifiedCatalog } from "./agents/trust-network.js";
 
 assertConfig();
+
+void refreshFacilitatorExtras().catch((err) => {
+  console.warn(
+    "[startup] facilitator /supported preload failed:",
+    err instanceof Error ? err.message : err,
+  );
+});
+startFacilitatorExtrasRefresh();
 
 void ensureVerifierProbeMandate().catch((err) => {
   console.warn("[startup] verifier probe mandate seed skipped:", err instanceof Error ? err.message : err);

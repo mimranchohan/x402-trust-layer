@@ -47,6 +47,11 @@ for (let attempt = 1; attempt <= 2; attempt++) {
     break;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    const details =
+      err && typeof err === "object" && "details" in err
+        ? (err as { details?: unknown }).details
+        : undefined;
+    if (details) console.error("Client details:", JSON.stringify(details, null, 2));
     const extra =
       err && typeof err === "object" && "responseBody" in err
         ? String((err as { responseBody?: unknown }).responseBody)
@@ -54,6 +59,11 @@ for (let attempt = 1; attempt <= 2; attempt++) {
     if (extra) console.error("Server body:", extra.slice(0, 800));
     const reasonMatch = msg.match(/"reason"\s*:\s*"([^"]+)"/) ?? extra.match(/"reason"\s*:\s*"([^"]+)"/);
     if (reasonMatch) console.error("Facilitator reason:", reasonMatch[1]);
+    if (/facilitator_error_500/.test(msg + extra)) {
+      console.error(
+        "Hint: Base needs permit2 in 402 accepts — redeploy with facilitator-extra merge if reason is facilitator_error_500.",
+      );
+    }
     if (attempt === 1 && /settlement failed|payment was rejected/i.test(msg)) {
       console.warn(`Retry in 4.5s after: ${msg}\n`);
       await new Promise((r) => setTimeout(r, 4500));

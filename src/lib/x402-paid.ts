@@ -11,6 +11,7 @@ import {
   markNonceUsed,
 } from "./x402-payment-replay.js";
 import { isTrustedPayTo } from "./payto-guard.js";
+import { enrichAcceptFromFacilitator, ensureFacilitatorExtras } from "./facilitator-extra.js";
 
 function resolvePayTo(): string | Record<string, string> {
   if (!config.payToEvm) return config.payTo;
@@ -75,6 +76,7 @@ function normalizeAccepts(parsed: Record<string, unknown>): void {
     if (!accept.network) continue;
     if (!isAllowedNetwork(accept.network)) continue;
     if (accept.payTo && !isTrustedPayTo(accept.payTo)) continue;
+    enrichAcceptFromFacilitator(accept);
     if (accept.network === CHAIN_IDS.base) {
       accept.asset = USDC_BASE;
     } else if (accept.network.startsWith("solana:")) {
@@ -138,7 +140,16 @@ export function createPaidMiddleware(): (
       },
     });
 
-    return (req: Request, res: Response, next: NextFunction) => {
+    return async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        await ensureFacilitatorExtras();
+      } catch (err) {
+        console.warn(
+          "[x402-paid] facilitator extras cache:",
+          err instanceof Error ? err.message : err,
+        );
+      }
+
       const paymentReq = req as PaymentReq;
       activePaymentReq = paymentReq;
       const clearActive = () => {
@@ -209,7 +220,11 @@ export function createPaidMiddleware(): (
       };
       res.setHeader = patchedSetHeader as typeof res.setHeader;
 
-      inner(req, res, next);
+      try {
+        await inner(req, res, next);
+      } catch (err) {
+        next(err);
+      }
     };
   };
 }
