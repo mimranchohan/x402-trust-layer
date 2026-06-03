@@ -233,13 +233,20 @@ export function assertProductionSecrets(): void {
     { name: "ATTESTATION_HMAC_SECRET", value: config.attestationHmacSecret, minLen: 32 },
     { name: "PAY_TO_ADDRESS", value: config.payTo, minLen: 16 },
     { name: "PAY_TO_EVM", value: config.payToEvm, minLen: 16 },
-    { name: "WEBHOOK_ADMIN_SECRET", value: config.webhookAdminSecret, minLen: 16 },
   ];
   for (const { name, value, minLen } of required) {
     if (!value || value.length < minLen) {
       console.error(`FATAL: ${name} not set or too short for production.`);
       process.exit(1);
     }
+  }
+  if (!config.webhookAdminSecret || config.webhookAdminSecret.length < 16) {
+    console.warn(
+      "[config] WEBHOOK_ADMIN_SECRET not set — webhook register/list/delete return 503 until configured.",
+    );
+  }
+  if (!config.zkSimulateAllowed) {
+    console.warn("[config] ALLOW_ZK_SIMULATE not set — POST /api/protocol/zk/prove returns 503 in production.");
   }
 }
 
