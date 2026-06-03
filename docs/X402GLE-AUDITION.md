@@ -39,6 +39,20 @@ Use until retry:
 - Dexter **Verify Now** per resource
 - `npm run demo` for settlement signal
 
+While cooldown is active, verify readiness locally:
+
+```powershell
+npm run list:x402gle:missing
+npm run probe:x402gle:missing    # unpaid: expect 402 or grader-safe 200
+npm run smoke:verifier:all       # all VERIFY_EXAMPLES merge paths
+```
+
+When cooldown clears:
+
+```powershell
+npm run audition:x402gle:missing
+```
+
 ## Pass criteria
 
 Each route: `status: "pass"`, `score >= 75`, `fixInstructions: null`.
