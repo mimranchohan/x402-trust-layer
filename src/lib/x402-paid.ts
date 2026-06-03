@@ -12,6 +12,7 @@ import {
 } from "./x402-payment-replay.js";
 import { isTrustedPayTo } from "./payto-guard.js";
 import { enrichAcceptFromFacilitator, ensureFacilitatorExtras } from "./facilitator-extra.js";
+import { paymentRequestAls, type PaymentRequestStore } from "./payment-request-context.js";
 
 function resolvePayTo(): string | Record<string, string> {
   if (!config.payToEvm) return config.payTo;
@@ -36,9 +37,7 @@ function syncResourceUrl(parsed: Record<string, unknown>, req: Request): void {
   }
 }
 
-type PaymentReq = Request & {
-  x402PendingNonce?: { nonce: string; network: string };
-};
+const PAID_REQUEST_BUDGET_MS = Number(process.env.PAID_REQUEST_TIMEOUT_MS ?? 55_000);
 
 const baseMiddleware = {
   payTo: resolvePayTo(),
@@ -49,9 +48,32 @@ const baseMiddleware = {
   },
 };
 
-let activePaymentReq: PaymentReq | undefined;
-
 type PaidMw = ReturnType<typeof x402Middleware>;
+
+function withPaidRequestBudget(handler: PaidMw): PaidMw {
+  return async (req, res, next) => {
+    let settled = false;
+    const timer = setTimeout(() => {
+      if (!settled && !res.headersSent) {
+        console.error("[x402-paid] request budget exceeded", PAID_REQUEST_BUDGET_MS, "ms", req.path);
+        res.status(504).json({
+          error: "Payment settlement or handler timed out",
+          code: "gateway_timeout",
+          budgetMs: PAID_REQUEST_BUDGET_MS,
+        });
+      }
+    }, PAID_REQUEST_BUDGET_MS);
+
+    try {
+      await handler(req, res, next);
+    } catch (err) {
+      next(err);
+    } finally {
+      settled = true;
+      clearTimeout(timer);
+    }
+  };
+}
 
 function attachBazaarToPayload(parsed: Record<string, unknown>, req: Request): void {
   const bazaar = bazaarExtensionForRequest(req);
@@ -134,31 +156,32 @@ export function createPaidMiddleware(): (
       timeoutSeconds: 120,
       getResourceUrl: (req) => resolvePaidResourceUrl(req),
       onSettlement: (info) => {
-        const pending = activePaymentReq?.x402PendingNonce;
-        if (pending) markNonceUsed(pending.nonce, pending.network);
+        const pending = paymentRequestAls.getStore()?.x402PendingNonce;
+        if (pending) {
+          try {
+            markNonceUsed(pending.nonce, pending.network);
+          } catch (err) {
+            console.error("[x402-paid] markNonceUsed failed:", err);
+          }
+        }
         baseMiddleware.onSettlement(info);
       },
     });
 
-    return async (req: Request, res: Response, next: NextFunction) => {
-      try {
-        await ensureFacilitatorExtras();
-      } catch (err) {
-        console.warn(
-          "[x402-paid] facilitator extras cache:",
-          err instanceof Error ? err.message : err,
-        );
+    const paidHandler: PaidMw = async (req: Request, res: Response, next: NextFunction) => {
+      const paymentSig = getPaymentSignatureHeader(req);
+      if (!paymentSig) {
+        try {
+          await ensureFacilitatorExtras();
+        } catch (err) {
+          console.warn(
+            "[x402-paid] facilitator extras cache:",
+            err instanceof Error ? err.message : err,
+          );
+        }
       }
 
-      const paymentReq = req as PaymentReq;
-      activePaymentReq = paymentReq;
-      const clearActive = () => {
-        if (activePaymentReq === paymentReq) activePaymentReq = undefined;
-      };
-      res.once("finish", clearActive);
-      res.once("close", clearActive);
-
-      const paymentSig = getPaymentSignatureHeader(req);
+      const paymentReq = req as PaymentRequestStore;
       if (paymentSig) {
         const { nonce, network, payTo } = extractNonceFromPaymentHeader(paymentSig);
         if (payTo && !isTrustedPayTo(payTo)) {
@@ -221,10 +244,14 @@ export function createPaidMiddleware(): (
       res.setHeader = patchedSetHeader as typeof res.setHeader;
 
       try {
-        await inner(req, res, next);
+        await paymentRequestAls.run(paymentReq, async () => {
+          await inner(req, res, next);
+        });
       } catch (err) {
         next(err);
       }
     };
+
+    return withPaidRequestBudget(paidHandler);
   };
 }
