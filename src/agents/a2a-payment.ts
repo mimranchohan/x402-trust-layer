@@ -1,9 +1,9 @@
 import { z } from "zod";
 import type { Request, Response } from "express";
-import { wrapFetch } from "@dexterai/x402/client";
 import { config } from "../config.js";
 import { agentTrustMeta, withAgentTrust } from "../lib/agent-response.js";
 import { assertSafeOutboundUrl } from "../lib/ssrf.js";
+import { buildX402Fetch } from "../lib/x402-client-options.js";
 
 const A2APaymentSchema = z.object({
   buyerAgentId: z.string().min(1),
@@ -15,7 +15,7 @@ const A2APaymentSchema = z.object({
 
 export type A2APaymentInput = z.infer<typeof A2APaymentSchema>;
 
-function payerFetch(maxBudgetUsdc: number) {
+async function payerFetch(maxBudgetUsdc: number) {
   const evm = process.env.EVM_PRIVATE_KEY?.trim();
   const sol = process.env.SOLANA_PRIVATE_KEY?.trim();
   if (!evm && !sol) {
@@ -23,9 +23,7 @@ function payerFetch(maxBudgetUsdc: number) {
       "A2A execute requires EVM_PRIVATE_KEY or SOLANA_PRIVATE_KEY on the orchestrator (never pass keys in request body)",
     );
   }
-  return wrapFetch(fetch, {
-    evmPrivateKey: evm,
-    walletPrivateKey: sol,
+  return buildX402Fetch(fetch, {
     maxAmountAtomic: String(Math.ceil(maxBudgetUsdc * 1_000_000)),
     preferredNetwork: "eip155:8453",
   });
@@ -47,7 +45,7 @@ export async function executeA2APayment(params: A2APaymentInput) {
     );
   }
 
-  const agentFetch = payerFetch(validated.maxBudgetUsdc);
+  const agentFetch = await payerFetch(validated.maxBudgetUsdc);
   const response = await agentFetch(validated.sellerEndpoint, {
     method: "POST",
     headers: {

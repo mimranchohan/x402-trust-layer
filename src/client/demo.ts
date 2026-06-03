@@ -2,12 +2,12 @@
  * Full pipeline demo — pays for each x402 endpoint on your deployed suite.
  */
 import dotenv from "dotenv";
-import { wrapFetch } from "@dexterai/x402/client";
 import { CHAIN_IDS } from "../lib/chains.js";
 import {
   assertDemoPayerNotReceiveWallet,
   assertPayerKeys,
   buildWrapFetchOptions,
+  buildX402Fetch,
 } from "../lib/x402-client-options.js";
 
 dotenv.config();
@@ -35,7 +35,7 @@ async function assertServerUp(): Promise<void> {
 await assertServerUp();
 
 const wrapOpts = buildWrapFetchOptions({ verbose: process.env.X402_VERBOSE === "1" });
-const x402Fetch = wrapFetch(fetch, wrapOpts);
+const x402Fetch = await buildX402Fetch(fetch, wrapOpts);
 const solRpc = wrapOpts.rpcUrls?.[CHAIN_IDS.solana];
 if (solRpc) {
   console.log(`Solana RPC: ${solRpc} (avoids Dexter proxy StructError on USDC mint)\n`);

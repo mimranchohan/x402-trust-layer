@@ -2,27 +2,21 @@
  * End-to-end A2A flow smoke (requires payer keys in env).
  * Usage: npm run test:a2a
  */
-import { wrapFetch } from "@dexterai/x402/client";
+import { buildX402Fetch } from "../src/lib/x402-client-options.js";
 
 const BASE = (process.env.PUBLIC_BASE_URL ?? "https://x402trustlayer.xyz").replace(/\/$/, "");
 
-function payerFetch() {
+async function main() {
   const evm = process.env.EVM_PRIVATE_KEY?.trim();
   const sol = process.env.SOLANA_PRIVATE_KEY?.trim();
   if (!evm && !sol) {
     console.warn("SKIP: set EVM_PRIVATE_KEY or SOLANA_PRIVATE_KEY for paid A2A integration test");
     process.exit(0);
   }
-  return wrapFetch(fetch, {
-    evmPrivateKey: evm,
-    walletPrivateKey: sol,
+  console.log("Starting A2A integration test against", BASE);
+  const x402Fetch = await buildX402Fetch(fetch, {
     preferredNetwork: "eip155:8453",
   });
-}
-
-async function main() {
-  console.log("Starting A2A integration test against", BASE);
-  const x402Fetch = payerFetch();
 
   const pre = await x402Fetch(`${BASE}/api/guard/pre-x402`, {
     method: "POST",

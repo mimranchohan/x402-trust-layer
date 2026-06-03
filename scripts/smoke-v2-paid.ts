@@ -3,15 +3,14 @@
  * Usage: npx tsx scripts/smoke-v2-paid.ts
  */
 import dotenv from "dotenv";
-import { wrapFetch } from "@dexterai/x402/client";
-import { assertPayerKeys, buildWrapFetchOptions } from "../src/lib/x402-client-options.js";
+import { assertPayerKeys, buildWrapFetchOptions, buildX402Fetch } from "../src/lib/x402-client-options.js";
 
 dotenv.config();
 
 const base = (process.env.PUBLIC_BASE_URL ?? "https://x402trustlayer.xyz").replace(/\/$/, "");
 
 assertPayerKeys();
-const x402Fetch = wrapFetch(
+const x402Fetch = await buildX402Fetch(
   fetch,
   buildWrapFetchOptions({ verbose: process.env.X402_VERBOSE === "1" }),
 );

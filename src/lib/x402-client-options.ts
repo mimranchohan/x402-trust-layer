@@ -1,9 +1,19 @@
 import {
   createEvmKeypairWallet,
   createKeypairWallet,
+  createX402Client,
   type WrapFetchOptions,
 } from "@dexterai/x402/client";
+import type { Chain } from "viem";
+import { createWalletClient, http } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+import { base, polygon } from "viem/chains";
 import { CHAIN_IDS } from "./chains.js";
+
+const EVM_CHAIN_BY_CAIP2: Record<string, Chain> = {
+  [CHAIN_IDS.base]: base,
+  [CHAIN_IDS.polygon]: polygon,
+};
 
 /** Public mainnet RPC — Dexter proxy can return shapes web3.js 1.98 cannot parse */
 export const DEFAULT_SOLANA_RPC_URL = "https://api.mainnet-beta.solana.com";
@@ -17,6 +27,78 @@ function preferredPaymentNetwork(): string | undefined {
     return CHAIN_IDS.base;
   }
   return CHAIN_IDS.solana;
+}
+
+function evmRpcUrl(network: string): string {
+  if (network === CHAIN_IDS.polygon) {
+    return process.env.POLYGON_RPC_URL?.trim() || "https://polygon-rpc.com";
+  }
+  return process.env.BASE_RPC_URL?.trim() || "https://mainnet.base.org";
+}
+
+/**
+ * Dexter createEvmKeypairWallet() only exposes signTypedData — Base Permit2 also needs
+ * sendTransaction for the one-time USDC → Permit2 approval tx.
+ */
+export async function createEvmPermit2CapableWallet(
+  privateKey: string,
+  preferredNetwork: string = CHAIN_IDS.base,
+) {
+  const normalizedKey = privateKey.startsWith("0x") ? privateKey : `0x${privateKey}`;
+  const account = privateKeyToAccount(normalizedKey as `0x${string}`);
+  const chain = EVM_CHAIN_BY_CAIP2[preferredNetwork] ?? base;
+  const client = createWalletClient({
+    account,
+    chain,
+    transport: http(evmRpcUrl(preferredNetwork)),
+  });
+  return {
+    address: account.address,
+    signTypedData: (params: Parameters<typeof account.signTypedData>[0]) =>
+      account.signTypedData(params),
+    sendTransaction: async (tx: { to: string; data?: string; value?: bigint }) => {
+      return client.sendTransaction({
+        account,
+        chain,
+        to: tx.to as `0x${string}`,
+        data: tx.data as `0x${string}` | undefined,
+        value: tx.value ?? 0n,
+      });
+    },
+  };
+}
+
+/** Paid fetch with Permit2-capable EVM wallet (use instead of wrapFetch + evmPrivateKey). */
+export async function buildX402Fetch(
+  fetchImpl: typeof fetch = fetch,
+  overrides?: Partial<WrapFetchOptions>,
+): Promise<typeof fetch> {
+  const opts = buildWrapFetchOptions(overrides);
+  const evmKey = process.env.EVM_PRIVATE_KEY?.trim();
+  const solKey = process.env.SOLANA_PRIVATE_KEY?.trim();
+  const wallets: {
+    solana?: Awaited<ReturnType<typeof createKeypairWallet>>;
+    evm?: Awaited<ReturnType<typeof createEvmPermit2CapableWallet>>;
+  } = {};
+
+  if (solKey) wallets.solana = await createKeypairWallet(solKey);
+  if (evmKey) {
+    const evmNet = opts.preferredNetwork ?? CHAIN_IDS.base;
+    wallets.evm = await createEvmPermit2CapableWallet(evmKey, evmNet);
+  }
+
+  const client = createX402Client({
+    wallets,
+    preferredNetwork: opts.preferredNetwork as string | undefined,
+    rpcUrls: opts.rpcUrls,
+    maxAmountAtomic: opts.maxAmountAtomic,
+    verbose: opts.verbose,
+    fetch: fetchImpl,
+    onPaymentRequired: opts.onPaymentRequired,
+    accessPass: opts.accessPass,
+  });
+
+  return client.fetch.bind(client) as typeof fetch;
 }
 
 /** Shared wrapFetch options for demo, scripts, and integrators */
