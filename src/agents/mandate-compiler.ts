@@ -1,4 +1,5 @@
 import { issueMandate, verifyMandate, type MandateCheck, type MandateScope } from "../lib/mandate.js";
+import { mandateToVC } from "../lib/mandate-vc.js";
 import { agentTrustMeta, withAgentTrust } from "../lib/agent-response.js";
 import { config } from "../config.js";
 
@@ -50,6 +51,7 @@ export async function runMandateCompile(input: MandateCompileInput) {
   return withAgentTrust(
     {
       mandate: record,
+      verifiableCredential: mandateToVC(record, input.principal.startsWith("did:") ? input.principal : undefined),
       ap2: {
         mandateVersion: input.mandateVersion ?? "ap2/v1",
         validFrom: nowSec,

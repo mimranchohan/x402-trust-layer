@@ -1,10 +1,14 @@
 import express, { type Request, type Response, type NextFunction } from "express";
 import helmet from "helmet";
 import cors from "cors";
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { assertConfig, config } from "./config.js";
+import { db } from "./lib/db.js";
 import "./lib/db.js";
+import { logger } from "./lib/logger.js";
+import { startOtelIfEnabled } from "./lib/otel.js";
+import { sendProblem } from "./lib/problem-detail.js";
 import { telemetryMiddleware, metricsPayload } from "./lib/telemetry.js";
 import { createPaidMiddleware } from "./lib/x402-paid.js";
 import {
@@ -12,7 +16,12 @@ import {
   buildServicesManifest,
   buildWellKnownX402,
 } from "./lib/bazaar.js";
-import { buildAgentCashOpenApi, buildWellKnownX402Resources } from "./lib/openapi-agentcash.js";
+import {
+  buildAgentCashOpenApi,
+  buildWellKnownX402Resources,
+  buildWellKnownX402V2,
+} from "./lib/openapi-agentcash.js";
+import { registerA2AAgentCard } from "./routes/a2a-agent-card.js";
 import { renderDiscoveryPage } from "./lib/discovery-page.js";
 import { applyVerifierExampleBody } from "./lib/apply-verifier-body.js";
 import { replayBindingMiddleware } from "./lib/replay-middleware.js";
@@ -31,20 +40,22 @@ import { runCertifiedLookup, runCertifiedCatalog } from "./agents/trust-network.
 
 assertConfig();
 
+void startOtelIfEnabled();
+
 void refreshFacilitatorExtras().catch((err) => {
-  console.warn(
-    "[startup] facilitator /supported preload failed:",
-    err instanceof Error ? err.message : err,
+  logger.warn(
+    { err: err instanceof Error ? err.message : String(err) },
+    "Facilitator /supported preload failed",
   );
 });
 startFacilitatorExtrasRefresh();
 
 void ensureVerifierProbeMandate().catch((err) => {
-  console.warn("[startup] verifier probe mandate seed skipped:", err instanceof Error ? err.message : err);
+  logger.warn({ err: err instanceof Error ? err.message : err }, "Verifier probe mandate seed skipped");
 });
 
 void ensureVerifierProbeProtocol().catch((err) => {
-  console.warn("[startup] verifier probe protocol seed skipped:", err instanceof Error ? err.message : err);
+  logger.warn({ err: err instanceof Error ? err.message : err }, "Verifier probe protocol seed skipped");
 });
 
 const app = express();
@@ -60,7 +71,20 @@ app.use(
 );
 const corsOrigins = process.env.CORS_ORIGINS?.split(",").map((o) => o.trim()).filter(Boolean);
 app.use(cors({ origin: corsOrigins?.length ? corsOrigins : false }));
+
+app.use((req, res, next) => {
+  res.setHeader("API-Version", "1");
+  const orig = req.originalUrl;
+  if (orig.startsWith("/api/v1/")) {
+    req.url = `/api/${orig.slice("/api/v1/".length)}`;
+  } else if (orig.startsWith("/api/")) {
+    res.setHeader("X-Deprecated", "true");
+  }
+  next();
+});
+
 app.use(telemetryMiddleware);
+registerA2AAgentCard(app);
 registerX402gleHostVerification(app);
 app.use(stripTrailingSlash);
 app.use(express.json({ limit: "512kb" }));
@@ -165,13 +189,65 @@ app.get("/metrics", (_req, res) => {
   res.json(metricsPayload());
 });
 
+app.get("/robots.txt", (_req, res) => {
+  res
+    .type("text/plain")
+    .send(
+      "User-agent: *\nAllow: /\nSitemap: /sitemap.xml\n# Agent-friendly: see /llms.txt\n",
+    );
+});
+
+app.get("/.well-known/x402/v2", (_req, res) => {
+  res.json(buildWellKnownX402V2());
+});
+
 app.get("/health", (_req, res) => {
-  res.json(healthPayload());
+  let dbOk = false;
+  let diskOk = false;
+  try {
+    db.prepare("SELECT 1").get();
+    dbOk = true;
+  } catch {
+    /* db down */
+  }
+  try {
+    statSync(process.cwd());
+    diskOk = true;
+  } catch {
+    /* disk */
+  }
+  const status = dbOk && diskOk ? 200 : 503;
+  res.status(status).json({
+    ...healthPayload(),
+    ok: dbOk && diskOk,
+    db: dbOk ? "ok" : "error",
+    disk: diskOk ? "ok" : "error",
+  });
 });
 
 // Compatibility aliases used by some external quality probes.
 app.get("/api/health", (_req, res) => {
-  res.json(healthPayload());
+  let dbOk = false;
+  let diskOk = false;
+  try {
+    db.prepare("SELECT 1").get();
+    dbOk = true;
+  } catch {
+    /* */
+  }
+  try {
+    statSync(process.cwd());
+    diskOk = true;
+  } catch {
+    /* */
+  }
+  const status = dbOk && diskOk ? 200 : 503;
+  res.status(status).json({
+    ...healthPayload(),
+    ok: dbOk && diskOk,
+    db: dbOk ? "ok" : "error",
+    disk: diskOk ? "ok" : "error",
+  });
 });
 
 app.get("/api/version", (_req, res) => {
@@ -313,31 +389,52 @@ app.get("/api/agentic/validate-urls", (_req, res) => {
 
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   if (res.headersSent) {
-    console.error("[api error] after headers sent (ignored):", err);
+    logger.error({ err }, "API error after headers sent");
     return;
   }
-  console.error("[api error]", err);
+  logger.error({ err }, "API error");
   const expose =
     process.env.NODE_ENV !== "production" && !process.env.RAILWAY_ENVIRONMENT;
-  res.status(500).json({
-    error: "Internal server error",
-    ...(expose && err instanceof Error ? { detail: err.message } : {}),
-  });
+  if (expose && err instanceof Error) {
+    sendProblem(res, 500, "Internal server error", err.message);
+    return;
+  }
+  sendProblem(res, 500, "Internal server error");
 });
 
 const host = "0.0.0.0";
-app.listen(config.port, host, () => {
-  console.log(`[boot] version=${SUITE_VERSION} endpoints=${listEndpoints().length} chains=${config.chains.join(",")}`);
-  console.log(`[boot] payToConfigured=${config.payTo.length > 0} git=${process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) ?? "local"}`);
-  console.log(`x402 Agent Suite Pro listening on http://127.0.0.1:${config.port}`);
-  console.log(`public=${config.publicBaseUrl}`);
+const server = app.listen(config.port, host, () => {
+  logger.info(
+    {
+      version: SUITE_VERSION,
+      endpoints: listEndpoints().length,
+      chains: config.chains.join(","),
+      git: process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) ?? "local",
+      public: config.publicBaseUrl,
+    },
+    "x402 Trust Layer listening",
+  );
 });
 
+async function shutdown(signal: string): Promise<void> {
+  logger.info({ signal }, "Shutdown initiated");
+  await new Promise<void>((resolve) => server.close(() => resolve()));
+  try {
+    db.close();
+  } catch {
+    /* ignore */
+  }
+  logger.info({}, "Clean shutdown complete");
+  process.exit(0);
+}
+
+process.once("SIGTERM", () => void shutdown("SIGTERM"));
+process.once("SIGINT", () => void shutdown("SIGINT"));
 process.on("uncaughtException", (err) => {
-  console.error("[fatal]", err);
-  process.exit(1);
+  logger.error({ err }, "Uncaught exception");
+  void shutdown("uncaughtException");
 });
 
 process.on("unhandledRejection", (err) => {
-  console.error("[unhandledRejection]", err);
+  logger.error({ err }, "Unhandled rejection");
 });

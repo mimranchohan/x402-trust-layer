@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { hmacSign } from "./crypto.js";
+import { recordEscrowTransition, syncProtocolEscrow } from "../lib/escrow-unified.js";
 import { readProtocolStore, writeProtocolStore } from "./store.js";
 
 export const ESCROW_STATES = [
@@ -73,6 +74,17 @@ export async function createProtocolEscrow(input: {
   escrow.stateProof = hmacSign(`${escrowId}:${escrow.state}:${now}`);
   store[escrowId] = escrow;
   await writeProtocolStore("escrow-fsm", store);
+  syncProtocolEscrow({
+    escrowId,
+    payerAgentId: input.payerAgentId,
+    payeeId: input.payeeMerchant,
+    amountUsdc: input.amountUsdc,
+    state: escrow.state,
+    resourceHash: input.resourceHash,
+    sessionId: input.sessionId,
+    stateProof: escrow.stateProof,
+    metadata: { source: "protocol-fsm" },
+  });
   return escrow;
 }
 
@@ -94,12 +106,25 @@ export async function transitionEscrow(
   }
 
   const now = new Date().toISOString();
+  const fromState = escrow.state;
   escrow.state = nextState;
   escrow.updatedAt = now;
   escrow.history.push({ state: nextState, at: now, note });
   escrow.stateProof = hmacSign(`${escrowId}:${nextState}:${now}`);
   store[escrowId] = escrow;
   await writeProtocolStore("escrow-fsm", store);
+  recordEscrowTransition(escrowId, fromState, nextState, note, escrow.stateProof);
+  syncProtocolEscrow({
+    escrowId,
+    payerAgentId: escrow.payerAgentId,
+    payeeId: escrow.payeeMerchant,
+    amountUsdc: escrow.amountUsdc,
+    state: nextState,
+    resourceHash: escrow.resourceHash,
+    sessionId: escrow.sessionId,
+    stateProof: escrow.stateProof,
+    metadata: { source: "protocol-fsm", historyLen: escrow.history.length },
+  });
   return { ok: true, escrow };
 }
 

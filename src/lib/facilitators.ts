@@ -5,6 +5,8 @@ export type FacilitatorHealth = {
   latencyMs: number | null;
   supportedNetworks: string[];
   error: string | null;
+  synthetic?: boolean;
+  note?: string;
 };
 
 const FACILITATORS = [
@@ -66,6 +68,7 @@ export async function rankFacilitators(
   fastCheck = false,
 ): Promise<FacilitatorHealth[]> {
   if (fastCheck) {
+    const note = "Fast-check synthetic data — not measured";
     return [
       {
         id: "dexter",
@@ -78,6 +81,8 @@ export async function rankFacilitators(
           "eip155:137",
         ],
         error: null,
+        synthetic: true,
+        note,
       },
       {
         id: "coinbase",
@@ -86,6 +91,8 @@ export async function rankFacilitators(
         latencyMs: 12,
         supportedNetworks: ["eip155:8453"],
         error: null,
+        synthetic: true,
+        note,
       },
     ];
   }

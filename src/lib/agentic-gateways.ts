@@ -1,5 +1,10 @@
 /** Hosts that require SIWE/SIWS before x402 payment (401/403 is expected on bare probes). */
-export const KNOWN_AGENTIC_GATEWAY_HOSTS = ["x402.alchemy.com"] as const;
+export const KNOWN_AGENTIC_GATEWAY_HOSTS = [
+  "x402.alchemy.com",
+  "api.cdp.coinbase.com",
+  "x402.dexter.cash",
+  "x402.org",
+] as const;
 
 export function isKnownAgenticGateway(host: string): boolean {
   const h = host.toLowerCase();

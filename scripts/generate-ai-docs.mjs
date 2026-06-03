@@ -5,6 +5,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const MCP_VERSION = "1.2.0";
 const agentsPath = join(root, "public", "data", "agents.json");
 const catalog = JSON.parse(readFileSync(agentsPath, "utf8"));
 const agents = catalog.agents;
@@ -26,7 +27,7 @@ const llmsTxt = `# x402 Trust Layer
 - Discovery: https://x402trustlayer.xyz/.well-known/x402
 - Skill (agents): https://x402trustlayer.xyz/skill.md
 - Full context: https://x402trustlayer.xyz/llms-full.txt
-- MCP: npx @mimranakb/trust-layer-mcp@2.0.0 (trust_before_x402_fetch, trust_mandate_diff, trust_semantic_settle)
+- MCP: npx @mimranakb/trust-layer-mcp@${MCP_VERSION} (trust_before_x402_fetch, trust_mandate_diff, trust_semantic_settle)
 - npm: x402-agent-suite-preflight
 - GitHub: https://github.com/mimranchohan/x402-agent-suite
 

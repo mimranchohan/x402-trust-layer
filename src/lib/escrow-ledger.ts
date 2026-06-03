@@ -5,6 +5,7 @@ import {
   getEscrowFromDb,
   saveEscrowToDb,
 } from "./db-persistence.js";
+import { syncLedgerEscrow } from "./escrow-unified.js";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 
@@ -49,6 +50,7 @@ export async function createEscrow(input: Omit<EscrowRecord, "id" | "status" | "
   store[record.id] = record;
   await writeStore(store);
   saveEscrowToDb(record);
+  syncLedgerEscrow(record);
   return record;
 }
 
@@ -67,5 +69,6 @@ export async function releaseEscrow(id: string): Promise<EscrowRecord | null> {
   record.releasedAt = new Date().toISOString();
   await writeStore(store);
   saveEscrowToDb(record);
+  syncLedgerEscrow(record);
   return record;
 }

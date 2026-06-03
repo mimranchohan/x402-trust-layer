@@ -81,6 +81,47 @@ const MIGRATIONS: Migration[] = [
       CREATE INDEX IF NOT EXISTS idx_spend_wallet ON spend_ledger(wallet_address, day_key);
     `,
   },
+  {
+    version: 7,
+    sql: `
+      CREATE TABLE IF NOT EXISTS telemetry_counters (
+        name TEXT PRIMARY KEY,
+        value INTEGER NOT NULL DEFAULT 0,
+        updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+      );
+    `,
+  },
+  {
+    version: 8,
+    sql: `
+      CREATE TABLE IF NOT EXISTS escrows (
+        escrow_id TEXT PRIMARY KEY,
+        payer_agent_id TEXT NOT NULL,
+        payee_id TEXT NOT NULL,
+        amount_usdc REAL NOT NULL,
+        state TEXT NOT NULL DEFAULT 'CREATED',
+        resource_hash TEXT,
+        session_id TEXT,
+        release_condition TEXT,
+        quality_score REAL,
+        created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+        updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+        settled_at INTEGER,
+        state_proof TEXT NOT NULL,
+        metadata JSON
+      );
+      CREATE TABLE IF NOT EXISTS escrow_transitions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        escrow_id TEXT NOT NULL,
+        from_state TEXT NOT NULL,
+        to_state TEXT NOT NULL,
+        note TEXT,
+        transitioned_at INTEGER NOT NULL DEFAULT (unixepoch()),
+        proof TEXT
+      );
+      CREATE INDEX IF NOT EXISTS idx_escrow_state ON escrows(state, updated_at);
+    `,
+  },
 ];
 
 export function runMigrations(db: SqliteDatabase): void {

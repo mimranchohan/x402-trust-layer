@@ -1,0 +1,12 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "x402 Trust Layer",
+  "name_for_model": "x402_trust_layer",
+  "description_for_human": "55 paid trust APIs for AI agent commerce",
+  "description_for_model": "Guard, attest, verify, and audit x402 micropayments",
+  "auth": { "type": "none" },
+  "api": { "type": "openapi", "url": "https://x402trustlayer.xyz/openapi.json" },
+  "logo_url": "https://x402trustlayer.xyz/logo.png",
+  "contact_email": "mimran@x402trustlayer.xyz",
+  "legal_info_url": "https://x402trustlayer.xyz/legal"
+}

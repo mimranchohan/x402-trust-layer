@@ -1,6 +1,7 @@
 import { config } from "../config.js";
 import { SUITE_VERSION } from "./version.js";
-import { listEndpoints } from "../routes.js";
+import { listEndpoints } from "../routes/catalog.js";
+import { pricing } from "../config.js";
 import { defaultOutputExample } from "./bazaar-extension.js";
 import { ENDPOINT_META } from "./openapi-meta.js";
 import { VERIFY_EXAMPLES } from "./verify-examples.js";
@@ -251,6 +252,55 @@ export function buildAgentCashOpenApi(): Record<string, unknown> {
   };
 }
 
+const BASE_USDC = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
+
+function priceToMicro(priceStr: string): string {
+  const n = Number(priceStr.replace(/^\$/, ""));
+  if (!Number.isFinite(n) || n <= 0) return "10000";
+  return String(Math.round(n * 1_000_000));
+}
+
+function endpointAccepts(priceLabel: string): Record<string, unknown> {
+  const payTo = config.payToEvm || config.payTo;
+  return {
+    scheme: "exact",
+    network: "eip155:8453",
+    asset: { address: BASE_USDC, decimals: 6 },
+    maxAmountRequired: priceToMicro(priceLabel),
+    payTo,
+    extra: { name: "USDC on Base" },
+  };
+}
+
+/** AgentCash / x402scan 2026 spec v2 — per-resource accepts with micro-units. */
+export function buildWellKnownX402V2(): Record<string, unknown> {
+  const base = config.publicBaseUrl.replace(/\/$/, "");
+  const resources = listEndpoints()
+    .filter((e) => e.path.startsWith("POST "))
+    .map((e) => {
+      const [, route] = e.path.split(" ");
+      return {
+        url: `${base}${route}`,
+        method: "POST",
+        description: `${route} — ${e.tier} tier trust API`,
+        accepts: [endpointAccepts(e.price)],
+        tags: ["x402", "trust", e.tier],
+        "x-agent-hint": "Call before any external x402 payment when using guard or proxy flows",
+      };
+    });
+
+  return {
+    x402Version: 2,
+    protocolVersion: "2.14.0",
+    resources,
+    capabilities: ["guard", "mandate", "escrow", "attestation", "receipt-audit"],
+    pricing: {
+      preX402Guard: pricing.preX402Guard,
+      x402Proxy: pricing.x402Proxy,
+    },
+  };
+}
+
 /** x402scan / AgentCash compatibility fan-out */
 export function buildWellKnownX402Resources(): Record<string, unknown> {
   const ownershipProofs = [config.payToEvm, config.payTo].filter(
@@ -262,10 +312,13 @@ export function buildWellKnownX402Resources(): Record<string, unknown> {
     return `${base}${route}`;
   });
   return {
+    x402Version: 2,
+    protocolVersion: "2.14.0",
     version: 1,
     resources,
     ownershipProofs,
     instructions:
       "Free catalog endpoint (HTTP 200). Register paid resource URLs from resources[] — not this URL. Paid routes: POST with Payment-Signature; GET /api/* returns 402 when unpaid.",
+    v2: `${base}/.well-known/x402/v2`,
   };
 }
