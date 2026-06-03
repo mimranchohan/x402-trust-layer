@@ -12,6 +12,10 @@ export type MandateCompileInput = {
   allowedCategories?: string[];
   allowedRails?: string[];
   ttlMinutes?: number;
+  mandateVersion?: "ap2/v1";
+  validUntil?: number;
+  currency?: "USDC" | "USDT";
+  network?: string;
 };
 
 /**
@@ -23,13 +27,19 @@ export type MandateCompileInput = {
  */
 export async function runMandateCompile(input: MandateCompileInput) {
   const ttl = input.ttlMinutes ?? 1440;
+  const nowSec = Math.floor(Date.now() / 1000);
+  const validUntilSec = input.validUntil ?? nowSec + ttl * 60;
+  const maxExpiry = nowSec + 86400 * 30;
+  if (validUntilSec > maxExpiry) {
+    throw new Error("AP2 mandate cannot exceed 30 days validity");
+  }
   const scope: MandateScope = {
     maxPerTxUsdc: input.maxPerTxUsdc,
     dailyCapUsdc: input.dailyCapUsdc,
     allowedMerchants: input.allowedMerchants ?? [],
     allowedCategories: input.allowedCategories ?? [],
     allowedRails: input.allowedRails ?? [],
-    expiresAt: new Date(Date.now() + ttl * 60_000).toISOString(),
+    expiresAt: new Date(validUntilSec * 1000).toISOString(),
   };
   const record = await issueMandate({
     principal: input.principal,
@@ -40,6 +50,13 @@ export async function runMandateCompile(input: MandateCompileInput) {
   return withAgentTrust(
     {
       mandate: record,
+      ap2: {
+        mandateVersion: input.mandateVersion ?? "ap2/v1",
+        validFrom: nowSec,
+        validUntil: validUntilSec,
+        currency: input.currency ?? "USDC",
+        network: input.network ?? "eip155:8453",
+      },
       verifyUrl: `${config.publicBaseUrl}/api/mandate/verify`,
       usage:
         "Present mandateId to merchants/fleet controllers; they POST it to /api/mandate/verify with the proposed payment to confirm scope.",

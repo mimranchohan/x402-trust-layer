@@ -6,9 +6,17 @@ import { config } from "../config.js";
 import { CHAIN_IDS, type ChainKey } from "../lib/chains.js";
 import { agentTrustMeta, withAgentTrust, type WithAgentTrust } from "../lib/agent-response.js";
 
+export type MppSessionType = "stripe_mpp" | "dexter_mpp" | "visa_cli" | "x402_native";
+export type MppBillingModel = "per_call" | "per_token" | "per_second" | "flat_rate";
+
 export type MppV2Input = {
   action: "open" | "voucher" | "close" | "status";
   sessionId?: string;
+  sessionType?: MppSessionType;
+  stripeCustomerId?: string;
+  lightsparkNode?: string;
+  billingModel?: MppBillingModel;
+  meterUnit?: string;
   expectedCalls?: number;
   avgPricePerCallUsdc?: number;
   chain?: ChainKey;
@@ -20,6 +28,11 @@ export type MppSession = {
   sessionId: string;
   chain: ChainKey;
   agentId: string;
+  sessionType: MppSessionType;
+  billingModel: MppBillingModel;
+  meterUnit?: string;
+  stripeCustomerId?: string;
+  lightsparkNode?: string;
   maxBudgetUsdc: number;
   expectedCalls: number;
   callsUsed: number;
@@ -145,6 +158,11 @@ function createSession(input: MppV2Input): MppSession {
     sessionId: `mpp_${randomBytes(6).toString("hex")}`,
     chain,
     agentId: input.agentId ?? "anonymous",
+    sessionType: input.sessionType ?? "x402_native",
+    billingModel: input.billingModel ?? "per_call",
+    meterUnit: input.meterUnit,
+    stripeCustomerId: input.stripeCustomerId,
+    lightsparkNode: input.lightsparkNode,
     maxBudgetUsdc: input.maxBudgetUsdc ?? perCallTotal,
     expectedCalls: expected,
     callsUsed: 0,
