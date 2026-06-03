@@ -64,7 +64,18 @@ app.disable("x-powered-by");
 app.use(
   helmet({
     contentSecurityPolicy: {
-      directives: { defaultSrc: ["'none'"], scriptSrc: ["'none'"] },
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "https://fonts.googleapis.com", "'unsafe-inline'"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+        imgSrc: ["'self'", "data:"],
+        connectSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+        frameAncestors: ["'self'"],
+      },
     },
     crossOriginEmbedderPolicy: false,
   }),
