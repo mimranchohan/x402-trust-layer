@@ -160,11 +160,19 @@
 
   function renderViews() {
     const agents = filteredAgents();
+    const total = catalog?.agents?.length ?? 0;
     const termList = $("#terminal-list");
     const cards = $("#view-cards");
     const count = $("#api-count");
+    const status = $("#catalog-status");
 
     if (count) count.textContent = String(agents.length);
+    if (status) {
+      status.textContent =
+        agents.length === total
+          ? `Showing all ${total} paid APIs — scroll the list or switch to Cards view`
+          : `Showing ${agents.length} of ${total} APIs — click “All ${total}” to reset filters`;
+    }
 
     if (termList) {
       termList.innerHTML =
@@ -352,6 +360,11 @@
       if (termList) termList.innerHTML = `<div class="term-row"><div></div><div>Could not load agent catalog.</div><div></div></div>`;
       return;
     }
+
+    activeTier = "all";
+    searchQuery = "";
+    const searchEl = $("#api-search");
+    if (searchEl) searchEl.value = "";
 
     renderLayers(catalog.layers);
     renderTiers(catalog.agents);

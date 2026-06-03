@@ -107,11 +107,22 @@ try {
   LANDING_HTML = "";
 }
 
+/** Fresh catalog for landing (avoid stale 38-route cache after deploy). */
+app.get("/data/agents.json", (_req, res) => {
+  res.setHeader("Cache-Control", "public, max-age=60");
+  res.sendFile(join(process.cwd(), "public", "data", "agents.json"));
+});
+
 /** Static public files (landing.js, data, assets). index.html served via GET / negotiation. */
 app.use(
   express.static(join(process.cwd(), "public"), {
     index: false,
     maxAge: "1h",
+    setHeaders(res, filePath) {
+      if (filePath.replace(/\\/g, "/").endsWith("/data/agents.json")) {
+        res.setHeader("Cache-Control", "public, max-age=60");
+      }
+    },
   }),
 );
 
