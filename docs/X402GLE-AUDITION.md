@@ -9,6 +9,14 @@ cd C:\Users\mimra\x402-agent-suite
 npm run audition:x402gle          # full origin (may cooldown)
 npm run audition:x402gle:v2       # 3 Trust v2 routes only (~$0.51 USDC if all pay)
 npm run audition:x402gle:missing  # only routes not yet on skills.json (one-by-one)
+
+### Windows batch auditions
+
+Rapid `npx` + `execSync` in a loop can crash Node on Windows (`UV_HANDLE_CLOSING`). The missing-routes script uses **sequential spawn** with an **8s delay** between routes (override: `set AUDITION_DELAY_MS=12000` or `--delay-ms 12000`). Test one route first:
+
+```powershell
+npm run audition:x402gle:missing -- --limit 1
+```
 ```
 
 Saves `x402gle-audition-result.json` or `x402gle-v2-audition-result.json`.
