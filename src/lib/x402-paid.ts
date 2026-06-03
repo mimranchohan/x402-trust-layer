@@ -13,6 +13,7 @@ import {
 import { isTrustedPayTo } from "./payto-guard.js";
 import { enrichAcceptFromFacilitator, ensureFacilitatorExtras } from "./facilitator-extra.js";
 import { paymentRequestAls, type PaymentRequestStore } from "./payment-request-context.js";
+import { guardResponseWrites, isResponseLocked, lockResponse } from "./response-guard.js";
 
 function resolvePayTo(): string | Record<string, string> {
   if (!config.payToEvm) return config.payTo;
@@ -37,7 +38,7 @@ function syncResourceUrl(parsed: Record<string, unknown>, req: Request): void {
   }
 }
 
-const PAID_REQUEST_BUDGET_MS = Number(process.env.PAID_REQUEST_TIMEOUT_MS ?? 55_000);
+const PAID_REQUEST_BUDGET_MS = Number(process.env.PAID_REQUEST_TIMEOUT_MS ?? 70_000);
 
 const baseMiddleware = {
   payTo: resolvePayTo(),
@@ -52,24 +53,27 @@ type PaidMw = ReturnType<typeof x402Middleware>;
 
 function withPaidRequestBudget(handler: PaidMw): PaidMw {
   return async (req, res, next) => {
-    let settled = false;
+    guardResponseWrites(res);
+    let done = false;
     const timer = setTimeout(() => {
-      if (!settled && !res.headersSent) {
-        console.error("[x402-paid] request budget exceeded", PAID_REQUEST_BUDGET_MS, "ms", req.path);
-        res.status(504).json({
-          error: "Payment settlement or handler timed out",
-          code: "gateway_timeout",
-          budgetMs: PAID_REQUEST_BUDGET_MS,
-        });
-      }
+      if (done || isResponseLocked(res)) return;
+      console.error("[x402-paid] request budget exceeded", PAID_REQUEST_BUDGET_MS, "ms", req.path);
+      lockResponse(res);
+      res.status(504).json({
+        error: "Payment settlement or handler timed out",
+        code: "gateway_timeout",
+        budgetMs: PAID_REQUEST_BUDGET_MS,
+        hint: "Set X402_FACILITATOR_TIMEOUT_MS=25000 and X402_FACILITATOR_MAX_RETRIES=1 on Railway; or pay on Solana.",
+      });
     }, PAID_REQUEST_BUDGET_MS);
 
     try {
       await handler(req, res, next);
     } catch (err) {
-      next(err);
+      if (!isResponseLocked(res)) next(err);
+      else console.error("[x402-paid] error after response locked:", err);
     } finally {
-      settled = true;
+      done = true;
       clearTimeout(timer);
     }
   };
@@ -205,6 +209,7 @@ export function createPaidMiddleware(): (
 
       const origJson = res.json.bind(res);
       res.json = ((body?: unknown) => {
+        if (isResponseLocked(res)) return res;
         if (body && typeof body === "object") {
           const payload = body as Record<string, unknown>;
           if (
@@ -220,7 +225,6 @@ export function createPaidMiddleware(): (
           normalizeAccepts(payload);
           attachBazaarToPayload(payload, req);
           syncResourceUrl(payload, req);
-          // x402 HTTP transport v2: full envelope is in PAYMENT-REQUIRED header only.
           const message =
             typeof payload.error === "string" ? payload.error : "Payment required";
           const out: Record<string, unknown> = { error: message };
@@ -231,24 +235,22 @@ export function createPaidMiddleware(): (
       }) as typeof res.json;
 
       const origSetHeader = res.setHeader.bind(res);
-      const patchedSetHeader = (
-        name: string,
-        value: string | number | readonly string[],
-      ): Response => {
+      res.setHeader = ((name: string, value: string | number | readonly string[]) => {
+        if (isResponseLocked(res)) return res;
         let headerValue = value;
         if (name.toUpperCase() === PAYMENT_REQUIRED && typeof headerValue === "string") {
           headerValue = injectBazaarExtension(headerValue, req);
         }
         return origSetHeader(name, headerValue);
-      };
-      res.setHeader = patchedSetHeader as typeof res.setHeader;
+      }) as typeof res.setHeader;
 
       try {
         await paymentRequestAls.run(paymentReq, async () => {
           await inner(req, res, next);
         });
       } catch (err) {
-        next(err);
+        if (!isResponseLocked(res)) next(err);
+        else console.error("[x402-paid] inner error after response locked:", err);
       }
     };
 

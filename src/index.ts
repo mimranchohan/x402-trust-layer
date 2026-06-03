@@ -289,6 +289,10 @@ app.get("/api/agentic/validate-urls", (_req, res) => {
 });
 
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+  if (res.headersSent) {
+    console.error("[api error] after headers sent (ignored):", err);
+    return;
+  }
   console.error("[api error]", err);
   const expose =
     process.env.NODE_ENV !== "production" && !process.env.RAILWAY_ENVIRONMENT;

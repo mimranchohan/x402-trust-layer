@@ -38,6 +38,7 @@
     "test:golden": "tsx scripts/run-golden-tests.ts",
     "test:protocol": "tsx scripts/run-protocol-smoke.ts",
     "test:a2a": "tsx scripts/test-a2a-integration.ts",
+    "smoke:guard": "tsx scripts/smoke-guard-paid.ts",
     "openapi:generate": "tsx scripts/generate-openapi.ts",
     "docs:ai": "node scripts/generate-ai-docs.mjs",
     "build:packages": "npm run build --prefix packages/x402-preflight && npm run build --prefix packages/trust-layer-mcp",
