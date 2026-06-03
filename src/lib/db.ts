@@ -3,7 +3,14 @@ import path from "node:path";
 import { mkdirSync } from "node:fs";
 import { runMigrations } from "./migrations.js";
 
-const DB_PATH = process.env.DB_PATH?.trim() || path.join(process.cwd(), "data", "trust-layer.db");
+function resolveDbPath(): string {
+  const explicit = process.env.DB_PATH?.trim();
+  if (explicit) return explicit;
+  const dataDir = process.env.DATA_DIR?.trim() || path.join(process.cwd(), "data");
+  return path.join(dataDir, "trust-layer.db");
+}
+
+const DB_PATH = resolveDbPath();
 
 mkdirSync(path.dirname(DB_PATH), { recursive: true });
 

@@ -18,7 +18,9 @@ RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
 COPY openapi.json ./
 COPY public ./public
+RUN mkdir -p /app/data && chown -R app:app /app
 USER app
+ENV DATA_DIR=/app/data
 EXPOSE 3402
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s \
   CMD node -e "const http=require('http');const p=process.env.PORT||3402;http.get('http://127.0.0.1:'+p+'/health',r=>{process.exit(r.statusCode===200?0:1)}).on('error',()=>process.exit(1))"
