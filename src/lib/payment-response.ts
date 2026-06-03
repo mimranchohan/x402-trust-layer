@@ -22,7 +22,9 @@ export function parsePaymentResponseHeader(headerValue: string | null): ParsedPa
     let amountUsdc: number | undefined;
     if (typeof raw.amount === "number") amountUsdc = raw.amount;
     else if (typeof raw.amountUsdc === "number") amountUsdc = raw.amountUsdc;
-    else if (typeof raw.maxAmountRequired === "string") {
+    else if (typeof raw.amount === "string") {
+      amountUsdc = Number(raw.amount) / 1_000_000;
+    } else if (typeof raw.maxAmountRequired === "string") {
       amountUsdc = Number(raw.maxAmountRequired) / 1_000_000;
     }
     if (raw.success === true && !amountUsdc) amountUsdc = 1;
@@ -40,9 +42,6 @@ export function parsePaymentResponseHeader(headerValue: string | null): ParsedPa
 }
 
 export function paymentResponseFromHeaders(headers: Headers): ParsedPaymentResponse | null {
-  const h =
-    headers.get("payment-response") ??
-    headers.get("PAYMENT-RESPONSE") ??
-    headers.get("x-payment-response");
+  const h = headers.get("PAYMENT-RESPONSE") ?? headers.get("payment-response");
   return parsePaymentResponseHeader(h);
 }

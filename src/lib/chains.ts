@@ -52,6 +52,23 @@ export function caip2Networks(chains: ChainKey[]): string[] {
   return chains.map((c) => CHAIN_IDS[c]);
 }
 
+/** Human chain keys → CAIP-2 (x402 v2 discovery). */
+export const NETWORK_ALIAS_TO_CAIP2: Record<string, string> = {
+  base: CHAIN_IDS.base,
+  solana: CHAIN_IDS.solana,
+  polygon: CHAIN_IDS.polygon,
+  "base-sepolia": CHAIN_IDS.base_sepolia,
+  base_sepolia: CHAIN_IDS.base_sepolia,
+  "solana-devnet": CHAIN_IDS.solana_devnet,
+  solana_devnet: CHAIN_IDS.solana_devnet,
+};
+
+export function normalizeToCaip2(network: string): string {
+  const trimmed = network.trim();
+  if (trimmed.includes(":")) return trimmed;
+  return NETWORK_ALIAS_TO_CAIP2[trimmed.toLowerCase()] ?? trimmed;
+}
+
 export function isEvmChain(chain: ChainKey): boolean {
   return chain === "base" || chain === "polygon" || chain === "base_sepolia";
 }

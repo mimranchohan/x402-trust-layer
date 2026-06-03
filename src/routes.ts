@@ -33,6 +33,8 @@ import { runSemanticQualityEscrow } from "./agents/quality-escrow-semantic.js";
 import { runMandateDiff } from "./agents/mandate-diff.js";
 import { runSellerCertify, runBuyerGate, runBondSlash } from "./agents/trust-network.js";
 import { runPipelineTrustV2 } from "./agents/pipeline-trust-v2.js";
+import { handleA2APaymentRoute } from "./agents/a2a-payment.js";
+import { handleBedrockPreflight } from "./agents/bedrock-bridge.js";
 import { config, pricing } from "./config.js";
 import { SUITE_PRICES } from "./lib/suite-catalog.js";
 import { VERIFY_EXAMPLES } from "./lib/verify-examples.js";
@@ -75,6 +77,8 @@ const policySchema = z.object({
 
 export function listEndpoints() {
   return [
+    { path: "POST /api/a2a/execute", price: `$${pricing.a2aExecute}`, tier: "killer" },
+    { path: "POST /api/bedrock/preflight", price: `$${pricing.bedrockPreflight}`, tier: "orchestration" },
     { path: "POST /api/market/buy-advisor", price: `$${pricing.marketBuyAdvisor}`, tier: "killer" },
     { path: "POST /api/seller/audition-coach", price: `$${pricing.auditionCoach}`, tier: "killer" },
     { path: "POST /api/x402/proxy", price: `$${pricing.x402Proxy}`, tier: "killer" },
@@ -1584,6 +1588,24 @@ export function registerRoutes(
       );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runPipelineTrustV2(parsed.data));
+    },
+  );
+
+  post(
+    "/api/a2a/execute",
+    pricing.a2aExecute,
+    "Agent-to-agent x402 orchestration: trust preflight then paid call to seller endpoint",
+    async (req, res) => {
+      await handleA2APaymentRoute(req, res);
+    },
+  );
+
+  post(
+    "/api/bedrock/preflight",
+    pricing.bedrockPreflight,
+    "AWS Bedrock AgentCore action-group adapter for Trust Layer guard preflight",
+    async (req, res) => {
+      await handleBedrockPreflight(req, res);
     },
   );
 

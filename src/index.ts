@@ -2,6 +2,7 @@ import express, { type Request, type Response, type NextFunction } from "express
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { assertConfig, config } from "./config.js";
+import "./lib/db.js";
 import { createPaidMiddleware } from "./lib/x402-paid.js";
 import {
   buildDiscoverCatalog,

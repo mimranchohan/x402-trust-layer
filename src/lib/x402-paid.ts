@@ -1,9 +1,15 @@
 import type { Request, Response, NextFunction } from "express";
 import { USDC_BASE, x402Middleware } from "@dexterai/x402/server";
-import { config } from "../config.js";
+import { config, isAllowedNetwork } from "../config.js";
 import { CHAIN_IDS, usdcAssetForCaip2, type ChainKey } from "./chains.js";
 import { bazaarExtensionForRequest } from "./bazaar-extension.js";
 import { resolvePaidResourceUrl } from "./paid-resource-url.js";
+import { getPaymentSignatureHeader, PAYMENT_REQUIRED } from "./x402-headers.js";
+import {
+  checkAndConsumeNonce,
+  extractNonceFromPaymentHeader,
+} from "./x402-payment-replay.js";
+import { isTrustedPayTo } from "./payto-guard.js";
 
 function resolvePayTo(): string | Record<string, string> {
   if (!config.payToEvm) return config.payTo;
@@ -60,6 +66,8 @@ function normalizeAccepts(parsed: Record<string, unknown>): void {
 
   for (const accept of accepts) {
     if (!accept.network) continue;
+    if (!isAllowedNetwork(accept.network)) continue;
+    if (accept.payTo && !isTrustedPayTo(accept.payTo)) continue;
     if (accept.network === CHAIN_IDS.base) {
       accept.asset = USDC_BASE;
     } else if (accept.network.startsWith("solana:")) {
@@ -119,6 +127,25 @@ export function createPaidMiddleware(): (
     });
 
     return (req: Request, res: Response, next: NextFunction) => {
+      const paymentSig = getPaymentSignatureHeader(req);
+      if (paymentSig) {
+        const { nonce, network, payTo } = extractNonceFromPaymentHeader(paymentSig);
+        if (payTo && !isTrustedPayTo(payTo)) {
+          res.status(403).json({
+            error: "Payment address mismatch — possible payTo redirect attack",
+          });
+          return;
+        }
+        if (network && !isAllowedNetwork(network)) {
+          res.status(403).json({ error: `Network not allowed: ${network}` });
+          return;
+        }
+        if (nonce && !checkAndConsumeNonce(nonce, network ?? "unknown")) {
+          res.status(409).json({ error: "Replay attack detected: nonce already used" });
+          return;
+        }
+      }
+
       const origJson = res.json.bind(res);
       res.json = ((body?: unknown) => {
         if (bodyHasAccepts(body)) {
@@ -140,10 +167,7 @@ export function createPaidMiddleware(): (
         value: string | number | readonly string[],
       ): Response => {
         let headerValue = value;
-        if (
-          name.toUpperCase() === "PAYMENT-REQUIRED" &&
-          typeof headerValue === "string"
-        ) {
+        if (name.toUpperCase() === PAYMENT_REQUIRED && typeof headerValue === "string") {
           headerValue = injectBazaarExtension(headerValue, req);
         }
         return origSetHeader(name, headerValue);

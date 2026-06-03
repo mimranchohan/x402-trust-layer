@@ -1,6 +1,6 @@
 {
   "name": "@mimranakb/trust-layer-mcp",
-  "version": "3.0.0",
+  "version": "5.0.0",
   "description": "MCP server — Trust Layer v4 protocol tools (full-trust pipeline, trust v2, fraud, PoE, credit bureau, semantic settle)",
   "type": "module",
   "bin": {
@@ -26,7 +26,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mimranchohan/x402-agent-suite.git",
+    "url": "https://github.com/mimranchohan/x402-trust-layer.git",
     "directory": "packages/trust-layer-mcp"
   },
   "homepage": "https://x402trustlayer.xyz",
