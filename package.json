@@ -3,6 +3,20 @@
   "version": "5.1.0",
   "description": "x402 Trust Layer — 58 paid x402 APIs (Guard, Attest, Comply, Audit, Agent Trust Protocol v4). Live at x402trustlayer.xyz. Dexter facilitator, Base/Solana/Polygon.",
   "type": "module",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "public",
+    "openapi.json",
+    "README.md",
+    "LICENSE",
+    "DEPLOY.md",
+    "CHANGELOG.md",
+    "Dockerfile",
+    "railway.toml",
+    "scripts/patch-facilitator-timeout.mjs",
+    "scripts/docker-entrypoint.sh"
+  ],
   "author": "Mimran Chohan",
   "license": "MIT",
   "repository": {
@@ -30,6 +44,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
+    "prepublishOnly": "npm run build",
     "start": "node dist/index.js",
     "demo": "tsx src/client/demo.ts",
     "demo:tail": "tsx src/client/demo-tail.ts",
