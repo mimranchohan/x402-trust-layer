@@ -84,3 +84,14 @@ Logs show **Mounting volume** then this error → the volume is almost certainly
 The Docker image **does** include `dist/index.js` (see `Dockerfile` `COPY --from=build`). This error is runtime layout, not a failed TypeScript build.
 
 If there is **no** volume and the error persists, open the latest **Build** logs and confirm `npm run build` ran in the Docker build stage (builder must stay `DOCKERFILE` in `railway.toml`).
+
+## Troubleshooting: `SQLITE_CANTOPEN` / unable to open database file
+
+The app finds `dist/index.js` but SQLite cannot create `trust-layer.db`.
+
+**Common causes:**
+
+1. **`DATA_DIR` mismatch** — volume at `/app/data` but `DATA_DIR=/data` (or vice versa). Align them or remove `DATA_DIR`.
+2. **Volume permissions** — Railway mounts volumes as **root**; the container runs as user `app`. The image entrypoint (`scripts/docker-entrypoint.sh`) runs `chown app:app` on `DATA_DIR` before starting Node. Redeploy after pulling the fix commit.
+
+**Quick check:** Temporarily remove `DATA_DIR` from Railway variables (Dockerfile default is `/app/data`) and redeploy.

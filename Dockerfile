@@ -9,6 +9,7 @@ COPY src ./src
 RUN npm run build
 
 FROM node:22-alpine
+RUN apk add --no-cache su-exec
 RUN addgroup -S app && adduser -S app -G app
 WORKDIR /app
 ENV NODE_ENV=production
@@ -19,9 +20,11 @@ COPY --from=build /app/dist ./dist
 COPY openapi.json ./
 COPY public ./public
 RUN mkdir -p /app/data && chown -R app:app /app
-USER app
+COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 ENV DATA_DIR=/app/data
 EXPOSE 3402
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s \
   CMD node -e "const http=require('http');const p=process.env.PORT||3402;http.get('http://127.0.0.1:'+p+'/health',r=>{process.exit(r.statusCode===200?0:1)}).on('error',()=>process.exit(1))"
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["node", "dist/index.js"]

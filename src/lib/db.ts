@@ -3,7 +3,7 @@ import path from "node:path";
 import { mkdirSync } from "node:fs";
 import { runMigrations } from "./migrations.js";
 
-function resolveDbPath(): string {
+export function resolveDbPath(): string {
   const explicit = process.env.DB_PATH?.trim();
   if (explicit) return explicit;
   const dataDir = process.env.DATA_DIR?.trim() || path.join(process.cwd(), "data");
@@ -12,9 +12,39 @@ function resolveDbPath(): string {
 
 const DB_PATH = resolveDbPath();
 
-mkdirSync(path.dirname(DB_PATH), { recursive: true });
+function ensureDataDirWritable(): void {
+  const dir = path.dirname(DB_PATH);
+  try {
+    mkdirSync(dir, { recursive: true });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(
+      `Cannot create data directory ${dir} (${msg}). ` +
+        `On Railway, mount the volume at /app/data and set DATA_DIR=/app/data (or omit DATA_DIR). ` +
+        `SQLITE_CANTOPEN often means the volume is not writable by the app user.`,
+    );
+  }
+}
 
-export const db: SqliteDatabase = new Database(DB_PATH);
+ensureDataDirWritable();
+
+let db: SqliteDatabase;
+try {
+  db = new Database(DB_PATH);
+} catch (err) {
+  const code = err && typeof err === "object" && "code" in err ? String((err as { code: string }).code) : "";
+  if (code === "SQLITE_CANTOPEN") {
+    throw new Error(
+      `Cannot open SQLite database at ${DB_PATH}. ` +
+        `Check DATA_DIR matches the volume mount (use /app/data). ` +
+        `Redeploy with the docker entrypoint that chowns the volume, or fix volume permissions.`,
+      { cause: err },
+    );
+  }
+  throw err;
+}
+
+export { db };
 
 db.pragma("journal_mode = WAL");
 db.pragma("foreign_keys = ON");
