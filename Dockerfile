@@ -3,7 +3,7 @@ RUN apk add --no-cache python3 make g++
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY scripts/patch-facilitator-timeout.mjs scripts/patch-facilitator-timeout.mjs
-RUN --mount=type=cache,target=/root/.npm npm ci
+RUN npm ci
 COPY tsconfig.json openapi.json ./
 COPY src ./src
 RUN npm run build
@@ -13,7 +13,7 @@ RUN addgroup -S app && adduser -S app -G app
 WORKDIR /app
 ENV NODE_ENV=production
 COPY package.json package-lock.json scripts/patch-facilitator-timeout.mjs ./
-RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev
+RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
 COPY openapi.json ./
 COPY public ./public
