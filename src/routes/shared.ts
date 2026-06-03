@@ -34,6 +34,19 @@ export type RouteContext = {
   postHandlers: Map<string, RequestHandler>;
 };
 
+export function createGet(ctx: RouteContext) {
+  return (
+    path: string,
+    amount: string | number,
+    description: string,
+    handler: (req: Request, res: Response) => Promise<void>,
+  ): void => {
+    const core = ctx.asyncRoute(handler);
+    ctx.app.get(path, ctx.paid(String(amount), description), core);
+    ctx.postHandlers.set(path, core);
+  };
+}
+
 export function createPost(ctx: RouteContext) {
   return (
     path: string,

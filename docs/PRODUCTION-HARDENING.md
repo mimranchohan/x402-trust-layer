@@ -14,7 +14,7 @@ npm run ci
 | 2 Data | Done | `protocol_kv`, idempotency SQLite, webhooks SQLite, credit bureau writes |
 | 3 Protocol/SSRF | Done | DNS rebinding, probe micro-units, ZK transparency, payTo guard, rate limits |
 | 4 A2A/MCP | Done | `/.well-known/agent.json`, mandate VC, `ai-plugin.json`, MCP version in docs script |
-| 5 Architecture | Partial | Unified `escrows` table + sync; `routes/catalog.ts` + `shared.ts`; main routes still in `routes.ts` |
+| 5 Architecture | Partial | Unified `escrows` table + sync; routes in `src/routes/register-all.ts` + `schemas.ts` + `shared.ts`; thin `src/routes.ts` re-export |
 | 6 Observability | Partial | Vitest unit tests, structured `logger`, optional OTEL (`OTEL_ENABLED=1` + packages), ESLint config |
 | 7 Production | Done | Hardened Dockerfile, graceful shutdown, DB health, `/api/v1/*` rewrite, RFC 9457 errors |
 | 8 Discovery | Done | `/.well-known/x402/v2`, `robots.txt`, v2 fields on `/.well-known/x402` |

@@ -1,65 +1,21 @@
-# Next steps (x402 Agent Suite Pro)
+# Next steps (operator runbook)
 
-Production: `https://x402trustlayer.xyz`
+## Done in repo
 
-## Status (auto-checked)
+- [x] Production hardening Phases 1–8
+- [x] Docker non-root + `/app/data` permissions
+- [x] Routes organized under `src/routes/` (`register-all.ts`, `catalog`, `schemas`, `shared`)
+- [x] CI: `npm run ci` (typecheck, bazaar, vitest, golden, nonce, verifier smokes)
 
-| Check | Expected |
-|-------|----------|
-| `/health` `gitCommit` | Matches latest push (`fd3bc11` area) |
-| `agenticReady` / `agentCashDiscovery.ready` | `true` |
-| POST routes return **402** with Base + Solana USDC | Yes |
-| `X-X402GLE-VERIFY` | Set when `X402GLE_CHALLENGE_TOKEN` is on Railway |
+## You should do now
 
-## Commands
+1. **Railway volume** — mount `/data`, set `DATA_DIR=/data` (see `docs/RAILWAY-DEPLOY.md`)
+2. **Confirm env** — `ATTESTATION_HMAC_SECRET`, `PAY_TO_EVM`, `PUBLIC_BASE_URL`
+3. **x402gle** — wait for cooldown, then `npm run audition:x402gle:endpoints`
+4. **Register discovery** — x402scan / AgentCash with `/.well-known/x402/v2` URLs
 
-```powershell
-cd C:\Users\mimra\x402-agent-suite
+## Optional code follow-ups
 
-# Quick production probe (writes scripts/probe-production-result.json)
-npm run probe:production
-
-# AgentCash schema on one route
-npm run discovery:check -- https://x402trustlayer.xyz/api/x402/proxy
-
-# Full x402gle/Dexter audition (fails with cooldown_active ~24h after ingest)
-npm run audition:x402gle
-
-# All 22 paid routes (needs payer keys in .env)
-npm run demo
-```
-
-One-shot:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\run-next-steps.ps1
-```
-
-## While audition cooldown is active
-
-1. Open [x402gle host](https://x402gle.com/servers/x402trustlayer.xyz)
-2. **Test now** on failing routes (start with **pre-x402**, **proxy**, **attestation/verify**)
-3. Fix per `fixInstructions` → redeploy if code change → **Test now** again
-4. When stable → **Synthesize all**
-
-## Fund local OpenDexter wallet (optional)
-
-```powershell
-npx -y @dexterai/opendexter@latest wallet
-```
-
-Deposit USDC on **Base** or **Solana** to the printed address, then:
-
-```powershell
-npx -y @dexterai/opendexter@latest fetch "https://x402trustlayer.xyz/api/x402/proxy" --method POST
-```
-
-## Listings
-
-- x402scan: https://www.x402scan.com/resources/register
-- AgentCash: `npm run discovery:discover -- https://x402trustlayer.xyz`
-- Dexter seller: https://dexter.cash/sellers/9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt
-
-## Pass target
-
-x402gle: **22/22** routes `pass`, score **≥ 75** each.
+- Split `register-all.ts` into `guard.ts`, `trust.ts`, `market.ts`, … (scaffolding in `src/routes/shared.ts`)
+- Install OTEL: `@opentelemetry/sdk-node` + `OTEL_ENABLED=1`
+- Dependency upgrades for `uuid` / `glob` deprecation warnings
