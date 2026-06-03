@@ -6,18 +6,26 @@ const insertNonce = db.prepare(
 );
 const cleanOld = db.prepare("DELETE FROM used_nonces WHERE used_at < ?");
 
-export function checkAndConsumeNonce(nonce: string, network: string): boolean {
-  if (!nonce || nonce.length < 8) return true;
+/** True if this nonce was already used for a successful settlement. */
+export function isNonceAlreadyUsed(nonce: string): boolean {
+  if (!nonce || nonce.length < 8) return false;
+  return !!checkNonce.get(nonce);
+}
 
+/** Record nonce only after facilitator settlement succeeds. */
+export function markNonceUsed(nonce: string, network: string): void {
+  if (!nonce || nonce.length < 8) return;
   if (Math.random() < 0.02) {
     cleanOld.run(Math.floor(Date.now() / 1000) - 86_400);
   }
+  insertNonce.run(nonce, network || "unknown");
+}
 
-  const existing = checkNonce.get(nonce);
-  if (existing) return false;
-
-  const result = insertNonce.run(nonce, network || "unknown");
-  return result.changes > 0;
+export function checkAndConsumeNonce(nonce: string, network: string): boolean {
+  if (!nonce || nonce.length < 8) return true;
+  if (isNonceAlreadyUsed(nonce)) return false;
+  markNonceUsed(nonce, network);
+  return true;
 }
 
 export function extractNonceFromPaymentHeader(header: string): {

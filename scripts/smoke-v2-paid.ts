@@ -47,6 +47,13 @@ for (let attempt = 1; attempt <= 2; attempt++) {
     break;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    const extra =
+      err && typeof err === "object" && "responseBody" in err
+        ? String((err as { responseBody?: unknown }).responseBody)
+        : "";
+    if (extra) console.error("Server body:", extra.slice(0, 800));
+    const reasonMatch = msg.match(/"reason"\s*:\s*"([^"]+)"/) ?? extra.match(/"reason"\s*:\s*"([^"]+)"/);
+    if (reasonMatch) console.error("Facilitator reason:", reasonMatch[1]);
     if (attempt === 1 && /settlement failed|payment was rejected/i.test(msg)) {
       console.warn(`Retry in 4.5s after: ${msg}\n`);
       await new Promise((r) => setTimeout(r, 4500));

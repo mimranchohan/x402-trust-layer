@@ -6,8 +6,9 @@ import { bazaarExtensionForRequest } from "./bazaar-extension.js";
 import { resolvePaidResourceUrl } from "./paid-resource-url.js";
 import { getPaymentSignatureHeader, PAYMENT_REQUIRED } from "./x402-headers.js";
 import {
-  checkAndConsumeNonce,
   extractNonceFromPaymentHeader,
+  isNonceAlreadyUsed,
+  markNonceUsed,
 } from "./x402-payment-replay.js";
 import { isTrustedPayTo } from "./payto-guard.js";
 
@@ -34,6 +35,10 @@ function syncResourceUrl(parsed: Record<string, unknown>, req: Request): void {
   }
 }
 
+type PaymentReq = Request & {
+  x402PendingNonce?: { nonce: string; network: string };
+};
+
 const baseMiddleware = {
   payTo: resolvePayTo(),
   facilitatorUrl: config.facilitatorUrl,
@@ -42,6 +47,8 @@ const baseMiddleware = {
     console.log(`[x402] settled tx=${info.transaction} payer=${info.payer} network=${info.network}`);
   },
 };
+
+let activePaymentReq: PaymentReq | undefined;
 
 type PaidMw = ReturnType<typeof x402Middleware>;
 
@@ -124,9 +131,22 @@ export function createPaidMiddleware(): (
       verbose: process.env.X402_VERBOSE === "1",
       timeoutSeconds: 120,
       getResourceUrl: (req) => resolvePaidResourceUrl(req),
+      onSettlement: (info) => {
+        const pending = activePaymentReq?.x402PendingNonce;
+        if (pending) markNonceUsed(pending.nonce, pending.network);
+        baseMiddleware.onSettlement(info);
+      },
     });
 
     return (req: Request, res: Response, next: NextFunction) => {
+      const paymentReq = req as PaymentReq;
+      activePaymentReq = paymentReq;
+      const clearActive = () => {
+        if (activePaymentReq === paymentReq) activePaymentReq = undefined;
+      };
+      res.once("finish", clearActive);
+      res.once("close", clearActive);
+
       const paymentSig = getPaymentSignatureHeader(req);
       if (paymentSig) {
         const { nonce, network, payTo } = extractNonceFromPaymentHeader(paymentSig);
@@ -140,14 +160,27 @@ export function createPaidMiddleware(): (
           res.status(403).json({ error: `Network not allowed: ${network}` });
           return;
         }
-        if (nonce && !checkAndConsumeNonce(nonce, network ?? "unknown")) {
-          res.status(409).json({ error: "Replay attack detected: nonce already used" });
-          return;
+        if (nonce) {
+          if (isNonceAlreadyUsed(nonce)) {
+            res.status(409).json({ error: "Replay attack detected: nonce already used" });
+            return;
+          }
+          paymentReq.x402PendingNonce = { nonce, network: network ?? "unknown" };
         }
       }
 
       const origJson = res.json.bind(res);
       res.json = ((body?: unknown) => {
+        if (body && typeof body === "object") {
+          const payload = body as Record<string, unknown>;
+          if (
+            res.statusCode === 402 &&
+            payload.error === "Payment settlement failed" &&
+            payload.reason
+          ) {
+            console.error("[x402] settlement failed:", payload.reason);
+          }
+        }
         if (bodyHasAccepts(body)) {
           const payload = body as Record<string, unknown>;
           normalizeAccepts(payload);
@@ -156,7 +189,9 @@ export function createPaidMiddleware(): (
           // x402 HTTP transport v2: full envelope is in PAYMENT-REQUIRED header only.
           const message =
             typeof payload.error === "string" ? payload.error : "Payment required";
-          return origJson({ error: message });
+          const out: Record<string, unknown> = { error: message };
+          if (typeof payload.reason === "string") out.reason = payload.reason;
+          return origJson(out);
         }
         return origJson(body);
       }) as typeof res.json;
