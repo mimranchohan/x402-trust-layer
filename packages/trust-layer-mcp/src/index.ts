@@ -40,7 +40,7 @@ const policySchema = z.object({
 
 const server = new McpServer({
   name: "x402-trust-layer",
-  version: "3.0.0",
+  version: "5.0.0",
 });
 
 server.tool(
