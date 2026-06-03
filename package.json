@@ -28,6 +28,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "demo": "tsx src/client/demo.ts",
+    "demo:tail": "tsx src/client/demo-tail.ts",
     "demo:alchemy": "tsx src/client/demo-alchemy-live.ts",
     "demo:alchemy:enterprise": "tsx src/client/demo-alchemy-live.ts --enterprise",
     "alchemy:doctor": "tsx scripts/alchemy-doctor.ts",

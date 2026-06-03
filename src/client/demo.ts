@@ -3,6 +3,8 @@
  */
 import dotenv from "dotenv";
 import { CHAIN_IDS } from "../lib/chains.js";
+
+const BASE = CHAIN_IDS.base;
 import {
   assertDemoPayerNotReceiveWallet,
   assertPayerKeys,
@@ -44,27 +46,38 @@ if (wrapOpts.preferredNetwork) {
   console.log(`Preferred payment network: ${wrapOpts.preferredNetwork}\n`);
 }
 
-const PAYMENT_RETRY_DELAY_MS = 4500;
 const PAYMENT_RETRY_MATCH =
-  /settlement failed|payment was rejected|insufficient balance|verification failed/i;
+  /settlement failed|payment was rejected|insufficient balance|verification failed|facilitator/i;
+const PAYMENT_MAX_ATTEMPTS = Number(process.env.DEMO_PAYMENT_MAX_ATTEMPTS ?? 3);
+const PAYMENT_RETRY_BASE_MS = Number(process.env.DEMO_PAYMENT_RETRY_MS ?? 6_000);
+const stepDelay = (ms = Number(process.env.DEMO_STEP_DELAY_MS ?? 3_500)) => sleep(ms);
 
 async function paidFetch(path: string, init: RequestInit, label = path): Promise<Response | null> {
-  for (let attempt = 1; attempt <= 2; attempt++) {
+  for (let attempt = 1; attempt <= PAYMENT_MAX_ATTEMPTS; attempt++) {
     try {
       return await x402Fetch(`${base}${path}`, init);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      if (attempt === 1 && PAYMENT_RETRY_MATCH.test(msg)) {
-        console.warn(`--- ${label} payment retry in ${PAYMENT_RETRY_DELAY_MS}ms ---`, msg);
-        await sleep(PAYMENT_RETRY_DELAY_MS);
+      const retryable = PAYMENT_RETRY_MATCH.test(msg);
+      if (retryable && attempt < PAYMENT_MAX_ATTEMPTS) {
+        const wait = PAYMENT_RETRY_BASE_MS * attempt;
+        console.warn(`--- ${label} payment retry ${attempt}/${PAYMENT_MAX_ATTEMPTS - 1} in ${wait}ms ---`, msg);
+        await sleep(wait);
         continue;
       }
       console.error(`--- ${label} FAILED ---`, msg);
-      if (msg.includes("verification failed")) {
+      if (retryable) {
         console.error(
-          "  Hint: transient facilitator glitch during long demo runs — retry usually succeeds.",
+          "  Hint: long demo runs can hit transient Dexter facilitator limits. Retry one route:",
         );
-        console.error("  Server: X402_VERBOSE=1 logs invalidReason. Client: X402_VERBOSE=1 for payment trace.\n");
+        console.error(`  npm run demo:tail   (or wait 30s and re-run)\n`);
+        console.error(
+          "  Check Base wallet: USDC for payments + small ETH for Permit2 gas. X402_VERBOSE=1 for payment trace.\n",
+        );
+      } else if (msg.includes("verification failed")) {
+        console.error(
+          "  Hint: transient facilitator glitch — retry usually succeeds (X402_VERBOSE=1 on server/client).\n",
+        );
       } else {
         console.error();
       }
@@ -235,7 +248,7 @@ await post("/api/payment-intent/compile", {
   externalCallEstimateUsdc: 0.05,
 });
 
-await sleep(2000);
+await stepDelay(5_000);
 
 await post("/api/spend-governor/check", {
   agentId: "demo-fleet-1",
@@ -243,34 +256,36 @@ await post("/api/spend-governor/check", {
   policy: { dailyCapUsdc: 10, perCallCapUsdc: 1 },
 });
 
-await sleep(1500);
+await stepDelay();
 
 await post("/api/identity-gate/check", {
   walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
 });
 
-await sleep(1500);
+await stepDelay();
 
 await post("/api/risk-gate/scan", {
   targetUrl: "https://x402trustlayer.xyz/health",
 });
 
-await sleep(1500);
+await stepDelay(8_000);
 
 await post("/api/facilitator/failover", {
   targetUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
-  preferNetwork: "solana",
+  preferNetwork: BASE,
+  fastProbe: true,
 });
 
-await sleep(1500);
+await stepDelay();
 
 await post("/api/router/route", {
   query: "ETH USD spot price oracle",
   maxPriceUsdc: 0.1,
-  preferNetwork: "solana",
+  preferNetwork: BASE,
+  skipProbes: true,
 });
 
-await sleep(1500);
+await stepDelay();
 
 await post("/api/mpp/session-plan", {
   action: "estimate",
@@ -278,36 +293,37 @@ await post("/api/mpp/session-plan", {
   avgPricePerCallUsdc: 0.03,
 });
 
-await sleep(1500);
+await stepDelay();
 
 await post("/api/receipt-auditor/verify", {
-  network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-  expectedAmountUsdc: 0.03,
+  network: BASE,
+  expectedAmountUsdc: 0.05,
   transactionHash:
-    "5VERv8NMvzbJMEkV8xnrLkEbWRPnf7wDQUJwo9aH7H9f3aDu4xfVVbmAJnW9MJz6HTWu7jnQvuKv4W4vKMnBiix",
+    "0x0000000000000000000000000000000000000000000000000000000000000001",
   settlement: {
     transaction:
-      "5VERv8NMvzbJMEkV8xnrLkEbWRPnf7wDQUJwo9aH7H9f3aDu4xfVVbmAJnW9MJz6HTWu7jnQvuKv4W4vKMnBiix",
-    amountUsdc: 0.03,
-    network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+      "0x0000000000000000000000000000000000000000000000000000000000000001",
+    amountUsdc: 0.05,
+    network: BASE,
+    payer: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
   },
 });
 
-await sleep(1500);
+await stepDelay();
 
 await post("/api/settlement-graph/next", {
   lastEndpointPath: "/api/spend-governor/check",
   lastTopic: "budget policy",
 });
 
-await sleep(1500);
+await stepDelay();
 
 await post("/api/refund-arbiter/evaluate", {
   verificationScore: 82,
   endpointReachable: true,
 });
 
-await sleep(1500);
+await stepDelay();
 
 await post("/api/budget-allocator/run", {
   fleetId: "fleet-alpha",
