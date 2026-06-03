@@ -12,7 +12,8 @@ FROM node:22-alpine
 RUN addgroup -S app && adduser -S app -G app
 WORKDIR /app
 ENV NODE_ENV=production
-COPY package.json package-lock.json scripts/patch-facilitator-timeout.mjs ./
+COPY package.json package-lock.json ./
+COPY scripts/patch-facilitator-timeout.mjs scripts/patch-facilitator-timeout.mjs
 RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
 COPY openapi.json ./
