@@ -3,6 +3,7 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { config } from "../config.js";
 import { SUITE_VERSION } from "./version.js";
+import { db } from "./db.js";
 
 export type AttestationRecord = {
   attestationId: string;
@@ -36,9 +37,29 @@ async function loadStore(): Promise<AttestationRecord[]> {
   }
 }
 
+const upsertAttestation = db.prepare(`
+  INSERT INTO attestations (id, agent_id, wallet_address, payload, hmac_signature, expires_at)
+  VALUES (?, ?, ?, ?, ?, ?)
+  ON CONFLICT(id) DO UPDATE SET
+    payload = excluded.payload,
+    hmac_signature = excluded.hmac_signature,
+    expires_at = excluded.expires_at
+`);
+
 async function saveStore(rows: AttestationRecord[]): Promise<void> {
   await mkdir(path.dirname(storePath), { recursive: true });
   await writeFile(storePath, JSON.stringify(rows.slice(-500), null, 2), "utf8");
+  for (const row of rows.slice(-500)) {
+    const expiresAt = Math.floor(new Date(row.expiresAt).getTime() / 1000);
+    upsertAttestation.run(
+      row.attestationId,
+      row.agentId,
+      row.walletAddress,
+      JSON.stringify(row),
+      row.signature,
+      expiresAt,
+    );
+  }
 }
 
 function signPayload(payload: string): string {
