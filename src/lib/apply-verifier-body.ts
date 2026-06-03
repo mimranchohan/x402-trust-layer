@@ -52,11 +52,32 @@ function lacksRequiredFields(path: string, body: Record<string, unknown>): boole
     case "/api/attestation/verify":
       return typeof body.attestationId !== "string" || body.attestationId.length < 8;
     case "/api/router/route":
-      return typeof body.query !== "string" || body.query.length < 2;
+      return (
+        (typeof body.query !== "string" || body.query.length < 2) &&
+        typeof body.intent !== "string" &&
+        typeof body.description !== "string" &&
+        typeof body.task !== "string"
+      );
     case "/api/seller/audition-coach":
       return false;
+    case "/api/a2a/execute":
+      return !body.buyerAgentId || !body.sellerEndpoint;
+    case "/api/bedrock/preflight":
+      return !body.requestBody;
     default:
       return false;
+  }
+}
+
+/** Map grader aliases to canonical router `query` before merge/validation. */
+function normalizeRouterAliases(body: Record<string, unknown>): void {
+  if (typeof body.query === "string" && body.query.length >= 2) return;
+  for (const key of ["intent", "description", "task", "goal", "capability"]) {
+    const v = body[key];
+    if (typeof v === "string" && v.length >= 2) {
+      body.query = v;
+      return;
+    }
   }
 }
 
@@ -127,6 +148,10 @@ export function applyVerifierExampleBody(req: Request): void {
   const ex = example as Record<string, unknown>;
   const body = req.body as Record<string, unknown> | undefined;
   const fromQuery = req.method === "GET" || req.method === "HEAD" ? queryAsBody(req.query) : {};
+
+  if (req.path === "/api/router/route" && body && typeof body === "object" && !Array.isArray(body)) {
+    normalizeRouterAliases(body as Record<string, unknown>);
+  }
 
   const rawBody =
     body && typeof body === "object" && !Array.isArray(body) ? (body as Record<string, unknown>) : {};

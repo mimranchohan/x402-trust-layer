@@ -90,9 +90,9 @@ export const VERIFY_EXAMPLES: Record<string, unknown> = {
     policy: { dailyCapUsdc: 10, perCallCapUsdc: 0.5 },
   },
   "/api/router/route": {
-    query: "ETH USD spot price oracle",
-    preferNetwork: "solana",
-    maxPriceUsdc: 0.1,
+    query: "Dexter USDC route from Arbitrum to Ethereum",
+    preferNetwork: "arbitrum",
+    maxPriceUsdc: 0.9985,
     skipProbes: true,
   },
   "/api/research/brief": {
@@ -356,5 +356,85 @@ export const VERIFY_EXAMPLES: Record<string, unknown> = {
     walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
     settlementCount: 12,
     disputeCount: 0,
+  },
+  "/api/a2a/execute": {
+    buyerAgentId: "dexter-verifier-probe",
+    sellerAgentId: "seller-oracle-1",
+    sellerEndpoint: "https://x402trustlayer.xyz/api/guard/pre-x402",
+    taskDescription: "Preflight guard check for ETH oracle call under $0.10",
+    maxBudgetUsdc: 0.1,
+  },
+  "/api/bedrock/preflight": {
+    actionGroup: "TrustLayerGuard",
+    apiPath: "/guard/pre-x402",
+    requestBody: {
+      content: {
+        "application/json": {
+          properties: {
+            agentId: "bedrock-agent",
+            walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
+            targetUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
+            estimatedCostUsdc: 0.05,
+          },
+        },
+      },
+    },
+  },
+  "/api/protocol/passport/verify": {
+    did: "did:agent:dexter_verifier_probe:0000000000000001",
+  },
+  "/api/protocol/oracle/consensus": {
+    subjectType: "agent",
+    subjectId: "dexter-verifier-probe",
+    claims: { trustScore: 82, deliveryQuality: 85 },
+    minQuorum: 3,
+  },
+  "/api/protocol/execution/verify": {
+    receiptId: "poe_verifier_probe_example",
+  },
+  "/api/protocol/reasoning/commit": {
+    agentId: "dexter-verifier-probe",
+    sessionId: "sess_verifier_probe",
+    toolCalls: [{ name: "x402_fetch", argsHash: "abc123" }],
+    policyChecks: ["spend_cap_ok", "host_allowed"],
+    promptHashes: ["prompt_hash_verifier_probe"],
+    riskAnalysis: "low",
+  },
+  "/api/protocol/reasoning/disclose": {
+    auditId: "aud_verifier_probe_example",
+    leafIndices: [0, 1],
+  },
+  "/api/protocol/escrow/create": {
+    payerAgentId: "dexter-verifier-probe",
+    payeeMerchant: "api.myceliasignal.com",
+    amountUsdc: 0.05,
+    resourceHash: "res_verifier_probe",
+  },
+  "/api/protocol/escrow/transition": {
+    escrowId: "00000000-0000-4000-8000-000000000001",
+    nextState: "FUNDED",
+    note: "verifier probe transition",
+  },
+  "/api/protocol/escrow/status": {
+    escrowId: "00000000-0000-4000-8000-000000000001",
+  },
+  "/api/protocol/replay/verify": {
+    bindingId: "rb_verifier_probe_example",
+    resourceUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
+    requestBody: { estimatedCostUsdc: 0.05 },
+  },
+  "/api/protocol/zk/prove": {
+    proofType: "authorization",
+    agentId: "dexter-verifier-probe",
+    witness: { dailyCapUsdc: 10, spentTodayUsdc: 0 },
+    publicInputs: { agentId: "dexter-verifier-probe" },
+  },
+  "/api/protocol/compliance/assess": {
+    organizationId: "verifier-org",
+    agentId: "dexter-verifier-probe",
+    jurisdiction: "US",
+    monthlyVolumeUsdc: 500,
+    rails: ["base-x402", "solana-x402"],
+    requiresKyc: false,
   },
 };

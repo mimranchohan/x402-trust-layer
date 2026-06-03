@@ -144,16 +144,18 @@ export function registerProtocolRoutes(
     pricing.protocolPassportIssue,
     "Issue W3C-style Agent Passport DID credential with capabilities and permissions",
     async (req, res) => {
-      const parsed = z
-        .object({
+      const parsed = parseWithVerifierFallback(
+        "/api/protocol/passport/issue",
+        z.object({
           agentId: z.string().min(1),
           publicKey: z.string().optional(),
           walletAddress: z.string().optional(),
           ownerIdentity: z.string().optional(),
           capabilities: z.array(z.string()).optional(),
           permissions: z.array(z.string()).optional(),
-        })
-        .safeParse(req.body);
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       const passport = await issueAgentPassport(parsed.data);
       res.json(
@@ -170,7 +172,11 @@ export function registerProtocolRoutes(
     pricing.protocolPassportVerify,
     "Verify Agent Passport DID credential signature",
     async (req, res) => {
-      const parsed = z.object({ did: z.string().min(10) }).safeParse(req.body);
+      const parsed = parseWithVerifierFallback(
+        "/api/protocol/passport/verify",
+        z.object({ did: z.string().min(10) }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await verifyAgentPassport(parsed.data.did));
     },
@@ -181,8 +187,9 @@ export function registerProtocolRoutes(
     pricing.protocolTrustScoreV2,
     "Multi-factor tamper-resistant TrustScore v2 with cryptographic proof",
     async (req, res) => {
-      const parsed = z
-        .object({
+      const parsed = parseWithVerifierFallback(
+        "/api/protocol/trust-score/v2",
+        z.object({
           agentId: z.string().min(1),
           walletAddress: z.string().min(16),
           disputeRatePct: z.coerce.number().optional(),
@@ -191,8 +198,9 @@ export function registerProtocolRoutes(
           deliveryQualityScore: z.coerce.number().optional(),
           stakeWeightUsdc: z.coerce.number().optional(),
           counterpartyCount: z.coerce.number().optional(),
-        })
-        .safeParse(req.body);
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(
         withAgentTrust(
@@ -208,16 +216,18 @@ export function registerProtocolRoutes(
     pricing.protocolFraudScan,
     "Graph-based fraud scan: Sybil clusters, wash trading, circular payments",
     async (req, res) => {
-      const parsed = z
-        .object({
+      const parsed = parseWithVerifierFallback(
+        "/api/protocol/fraud/scan",
+        z.object({
           agentId: z.string().optional(),
           walletAddress: z.string().optional(),
           merchantHost: z.string().optional(),
           transactionHashes: z.array(z.string()).optional(),
           amountUsdc: z.coerce.number().optional(),
           peerWallets: z.array(z.string()).optional(),
-        })
-        .safeParse(req.body);
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(withAgentTrust({ status: "ok", ...(await runFraudScan(parsed.data)) }, agentTrustMeta(["fraud_scan"])));
     },
@@ -228,14 +238,16 @@ export function registerProtocolRoutes(
     pricing.protocolOracleConsensus,
     "Trust oracle quorum consensus (4 validators, BFT-style quorum)",
     async (req, res) => {
-      const parsed = z
-        .object({
+      const parsed = parseWithVerifierFallback(
+        "/api/protocol/oracle/consensus",
+        z.object({
           subjectType: z.enum(["agent", "merchant", "receipt"]),
           subjectId: z.string().min(1),
           claims: z.record(z.unknown()),
           minQuorum: z.coerce.number().int().min(2).max(4).optional(),
-        })
-        .safeParse(req.body);
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(
         withAgentTrust(
@@ -251,8 +263,9 @@ export function registerProtocolRoutes(
     pricing.protocolExecutionIssue,
     "Proof of Execution: task receipt, execution hash, tool trace, settlement proof",
     async (req, res) => {
-      const parsed = z
-        .object({
+      const parsed = parseWithVerifierFallback(
+        "/api/protocol/execution/issue",
+        z.object({
           agentId: z.string().min(1),
           taskId: z.string().optional(),
           targetUrl: z.string().url().optional(),
@@ -274,8 +287,9 @@ export function registerProtocolRoutes(
             })
             .optional(),
           responseSummary: z.string().optional(),
-        })
-        .safeParse(req.body);
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       const receipt = await issueExecutionReceipt(parsed.data, config.publicBaseUrl);
       res.json(withAgentTrust({ status: "ok", receipt }, agentTrustMeta(["poe_issued"])));
@@ -287,7 +301,11 @@ export function registerProtocolRoutes(
     pricing.protocolExecutionVerify,
     "Third-party verify Proof of Execution receipt",
     async (req, res) => {
-      const parsed = z.object({ receiptId: z.string().min(8) }).safeParse(req.body);
+      const parsed = parseWithVerifierFallback(
+        "/api/protocol/execution/verify",
+        z.object({ receiptId: z.string().min(8) }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await verifyExecutionReceipt(parsed.data.receiptId));
     },
@@ -298,8 +316,9 @@ export function registerProtocolRoutes(
     pricing.protocolReasoningCommit,
     "Commit reasoning audit log to Merkle tree (tool calls, prompt hashes, policy checks)",
     async (req, res) => {
-      const parsed = z
-        .object({
+      const parsed = parseWithVerifierFallback(
+        "/api/protocol/reasoning/commit",
+        z.object({
           agentId: z.string().min(1),
           sessionId: z.string().optional(),
           toolCalls: z.array(z.object({ name: z.string(), argsHash: z.string().optional() })),
@@ -307,8 +326,9 @@ export function registerProtocolRoutes(
           promptHashes: z.array(z.string()),
           riskAnalysis: z.string().optional(),
           decisionGraph: z.record(z.unknown()).optional(),
-        })
-        .safeParse(req.body);
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(withAgentTrust({ status: "ok", ...(await commitReasoningAudit(parsed.data)) }, agentTrustMeta(["reasoning_commit"])));
     },
@@ -319,12 +339,14 @@ export function registerProtocolRoutes(
     pricing.protocolReasoningDisclose,
     "Selective disclosure of reasoning audit Merkle leaves",
     async (req, res) => {
-      const parsed = z
-        .object({
+      const parsed = parseWithVerifierFallback(
+        "/api/protocol/reasoning/disclose",
+        z.object({
           auditId: z.string().min(8),
           leafIndices: z.array(z.coerce.number().int().nonnegative()),
-        })
-        .safeParse(req.body);
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await selectiveDisclose(parsed.data.auditId, parsed.data.leafIndices));
     },
@@ -335,15 +357,17 @@ export function registerProtocolRoutes(
     pricing.protocolEscrowCreate,
     "Create protocol escrow FSM in CREATED state",
     async (req, res) => {
-      const parsed = z
-        .object({
+      const parsed = parseWithVerifierFallback(
+        "/api/protocol/escrow/create",
+        z.object({
           payerAgentId: z.string().min(1),
           payeeMerchant: z.string().min(1),
           amountUsdc: z.coerce.number().positive(),
           resourceHash: z.string().optional(),
           sessionId: z.string().optional(),
-        })
-        .safeParse(req.body);
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json({ status: "ok", escrow: await createProtocolEscrow(parsed.data), validStates: ESCROW_STATES });
     },
@@ -354,13 +378,15 @@ export function registerProtocolRoutes(
     pricing.protocolEscrowTransition,
     "Transition escrow FSM state (atomic settlement path)",
     async (req, res) => {
-      const parsed = z
-        .object({
+      const parsed = parseWithVerifierFallback(
+        "/api/protocol/escrow/transition",
+        z.object({
           escrowId: z.string().uuid(),
           nextState: z.enum(ESCROW_STATES),
           note: z.string().optional(),
-        })
-        .safeParse(req.body);
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       const result = await transitionEscrow(parsed.data.escrowId, parsed.data.nextState, parsed.data.note);
       if (!result.ok) return void res.status(409).json({ error: result.error });
@@ -373,7 +399,11 @@ export function registerProtocolRoutes(
     pricing.protocolEscrowStatus,
     "Query protocol escrow FSM status and history",
     async (req, res) => {
-      const parsed = z.object({ escrowId: z.string().uuid() }).safeParse(req.body);
+      const parsed = parseWithVerifierFallback(
+        "/api/protocol/escrow/status",
+        z.object({ escrowId: z.string().uuid() }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       const escrow = await getEscrowStatus(parsed.data.escrowId);
       if (!escrow) return void res.status(404).json({ error: "Escrow not found" });
@@ -386,15 +416,17 @@ export function registerProtocolRoutes(
     pricing.protocolReplayBind,
     "Bind nonce + resource hash + request hash for replay-safe x402 pay",
     async (req, res) => {
-      const parsed = z
-        .object({
+      const parsed = parseWithVerifierFallback(
+        "/api/protocol/replay/bind",
+        z.object({
           agentId: z.string().min(1),
           sessionId: z.string().optional(),
           resourceUrl: z.string().url(),
           requestBody: z.record(z.unknown()).optional(),
           ttlSeconds: z.coerce.number().int().positive().optional(),
-        })
-        .safeParse(req.body);
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       const binding = await createReplayBinding(parsed.data);
       res.json({
@@ -410,14 +442,16 @@ export function registerProtocolRoutes(
     pricing.protocolReplayVerify,
     "Verify and consume replay binding (one-time nonce)",
     async (req, res) => {
-      const parsed = z
-        .object({
+      const parsed = parseWithVerifierFallback(
+        "/api/protocol/replay/verify",
+        z.object({
           bindingId: z.string().min(8),
           nonce: z.string().optional(),
           resourceUrl: z.string().url().optional(),
           requestBody: z.record(z.unknown()).optional(),
-        })
-        .safeParse(req.body);
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await verifyReplayBinding(parsed.data.bindingId, parsed.data));
     },
@@ -428,14 +462,16 @@ export function registerProtocolRoutes(
     pricing.protocolZkProve,
     "Generate zk-style proof of authorization, budget, reputation, or compliance",
     async (req, res) => {
-      const parsed = z
-        .object({
+      const parsed = parseWithVerifierFallback(
+        "/api/protocol/zk/prove",
+        z.object({
           proofType: z.enum(["authorization", "creditworthiness", "reputation", "budget", "compliance"]),
           agentId: z.string().min(1),
           witness: z.record(z.unknown()),
           publicInputs: z.record(z.unknown()).optional(),
-        })
-        .safeParse(req.body);
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(withAgentTrust({ status: "ok", proof: generateZkProof(parsed.data) }, agentTrustMeta(["zk_prove"])));
     },
@@ -446,15 +482,17 @@ export function registerProtocolRoutes(
     pricing.protocolCreditScore,
     "AI Agent Credit Bureau score 300-900 with spend limit suggestions",
     async (req, res) => {
-      const parsed = z
-        .object({
+      const parsed = parseWithVerifierFallback(
+        "/api/protocol/credit/score",
+        z.object({
           agentId: z.string().min(1),
           walletAddress: z.string().min(16),
           disputeCount: z.coerce.number().int().nonnegative().optional(),
           settlementCount: z.coerce.number().int().nonnegative().optional(),
           uptimePct: z.coerce.number().optional(),
-        })
-        .safeParse(req.body);
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(
         withAgentTrust(
@@ -470,16 +508,18 @@ export function registerProtocolRoutes(
     pricing.protocolComplianceAssess,
     "Enterprise compliance assess: AML risk, KYC gate, audit trail refs",
     async (req, res) => {
-      const parsed = z
-        .object({
+      const parsed = parseWithVerifierFallback(
+        "/api/protocol/compliance/assess",
+        z.object({
           organizationId: z.string().min(1),
           agentId: z.string().min(1),
           jurisdiction: z.string().optional(),
           monthlyVolumeUsdc: z.coerce.number().optional(),
           rails: z.array(z.string()).optional(),
           requiresKyc: z.coerce.boolean().optional(),
-        })
-        .safeParse(req.body);
+        }),
+        req.body,
+      );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(withAgentTrust({ status: "ok", ...assessCompliance(parsed.data) }, agentTrustMeta(["compliance_assess"])));
     },

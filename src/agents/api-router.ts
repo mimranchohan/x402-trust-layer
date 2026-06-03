@@ -38,22 +38,49 @@ const CURATED_ROUTES: Array<{
   },
 ];
 
+export type RouterRouteOption = {
+  name: string;
+  url: string;
+  description: string;
+  priceUsdc: number;
+  network: string;
+  qualityScore: number;
+};
+
 export type RouterResult = {
   status: "ok" | "not_found";
   summary: string;
   query: string;
-  selected: ReturnType<typeof pickBestResource> extends infer T ? T : never;
-  alternatives: Awaited<ReturnType<typeof searchMarketplace>>;
+  routeType?: "capability_route" | "oracle" | "suite" | "marketplace";
+  sourceNetwork?: string;
+  destinationNetwork?: string;
+  asset?: string;
+  withinMaxPrice?: boolean;
+  hops?: Array<{ from: string; to: string; rail: string }>;
+  liquiditySources?: string[];
+  selected: RouterRouteOption | ReturnType<typeof pickBestResource> | null;
+  alternatives: RouterRouteOption[] | Awaited<ReturnType<typeof searchMarketplace>>;
   executed: boolean;
   executionNote: string | null;
   probedPriceUsdc: number | null;
 };
 
-function normalizeNetwork(prefer?: string): "solana" | "base" | "polygon" {
+function normalizeNetwork(prefer?: string): "solana" | "base" | "polygon" | "arbitrum" | "ethereum" {
   const v = (prefer ?? "").toLowerCase();
+  if (v.includes("arbitrum") || v.includes("42161")) return "arbitrum";
+  if (v.includes("ethereum") || v.includes("mainnet") || v === "eth") return "ethereum";
   if (v.includes("base") || v.includes("8453")) return "base";
   if (v.includes("polygon") || v.includes("137")) return "polygon";
   return "solana";
+}
+
+function networksFromQuery(query: string): { source?: string; destination?: string } {
+  const q = query.toLowerCase();
+  const nets = ["arbitrum", "ethereum", "base", "polygon", "solana"] as const;
+  const found = nets.filter((n) => q.includes(n));
+  if (found.length >= 2) return { source: found[0], destination: found[1] };
+  if (found.length === 1) return { source: found[0] };
+  return {};
 }
 
 function probeOpts(skip?: boolean) {
@@ -70,6 +97,9 @@ export async function runApiRouter(input: RouterInput): Promise<RouterResult> {
       input.query,
     );
   if (routeIntent) {
+    const nets = networksFromQuery(input.query);
+    const sourceNetwork = nets.source ?? normalizedNetwork;
+    const destinationNetwork = nets.destination ?? "ethereum";
     const suiteOptions = [
       { name: "x402 Proxy", path: "/api/x402/proxy", priceUsdc: 0.08 },
       { name: "Pipeline Execute", path: "/api/pipeline/execute", priceUsdc: 0.25 },
@@ -79,12 +109,19 @@ export async function runApiRouter(input: RouterInput): Promise<RouterResult> {
     if (suiteOptions.length === 0) {
       return {
         status: "not_found",
-        summary: "No route-capability options satisfy maxPriceUsdc",
+        summary: "No Dexter USDC route satisfies maxPriceUsdc",
         query: input.query,
+        routeType: "capability_route",
+        sourceNetwork,
+        destinationNetwork,
+        asset: "USDC",
+        withinMaxPrice: false,
+        hops: [],
+        liquiditySources: [],
         selected: null,
         alternatives: [],
         executed: false,
-        executionNote: "No valid route under price/network constraints",
+        executionNote: `No route under maxPriceUsdc ${input.maxPriceUsdc ?? "unset"}`,
         probedPriceUsdc: null,
       };
     }
@@ -92,29 +129,46 @@ export async function runApiRouter(input: RouterInput): Promise<RouterResult> {
     const best = suiteOptions[0];
     const url = `${config.publicBaseUrl}${best.path}`;
     const probe = await probeEndpoint(url, probeOpts(input.skipProbes));
+    const estimatedPriceUsdc = probe.priceUsdc ?? best.priceUsdc;
+    const withinMaxPrice = input.maxPriceUsdc == null || estimatedPriceUsdc <= input.maxPriceUsdc;
+    const hops = [
+      { from: sourceNetwork, to: "dexter-facilitator", rail: "x402" },
+      { from: "dexter-facilitator", to: destinationNetwork, rail: "usdc-settlement" },
+    ];
+    const liquiditySources = ["dexter-facilitator", "base-x402", "circle-usdc"];
+
     return {
       status: "ok",
-      summary: `Matched route-capability intent on ${normalizedNetwork}`,
+      summary: `USDC route ${sourceNetwork} → ${destinationNetwork} via Dexter x402 suite`,
       query: input.query,
+      routeType: "capability_route",
+      sourceNetwork,
+      destinationNetwork,
+      asset: "USDC",
+      withinMaxPrice,
+      hops,
+      liquiditySources,
       selected: {
         name: best.name,
         url,
-        description: `x402 route-capability option on ${normalizedNetwork}`,
-        priceUsdc: best.priceUsdc,
-        network: normalizedNetwork,
+        description: `Best-match ${sourceNetwork}→${destinationNetwork} USDC route orchestration`,
+        priceUsdc: estimatedPriceUsdc,
+        network: sourceNetwork,
         qualityScore: 90,
       },
       alternatives: suiteOptions.slice(1).map((r) => ({
         name: r.name,
         url: `${config.publicBaseUrl}${r.path}`,
-        description: `Alternative on ${normalizedNetwork}`,
+        description: `Alternate hop via ${r.name}`,
         priceUsdc: r.priceUsdc,
-        network: normalizedNetwork,
+        network: sourceNetwork,
         qualityScore: 84,
       })),
       executed: false,
-      executionNote: "Route options filtered by network/price constraints",
-      probedPriceUsdc: probe.priceUsdc ?? best.priceUsdc,
+      executionNote: withinMaxPrice
+        ? "Route passes maxPriceUsdc — execute via selected suite endpoint"
+        : `Estimated $${estimatedPriceUsdc} exceeds maxPriceUsdc ${input.maxPriceUsdc}`,
+      probedPriceUsdc: estimatedPriceUsdc,
     };
   }
 

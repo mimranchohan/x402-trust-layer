@@ -131,7 +131,37 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "buyerAgentId": {
+                    "type": "string"
+                  },
+                  "sellerAgentId": {
+                    "type": "string"
+                  },
+                  "sellerEndpoint": {
+                    "type": "string"
+                  },
+                  "taskDescription": {
+                    "type": "string"
+                  },
+                  "maxBudgetUsdc": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "buyerAgentId",
+                  "sellerAgentId",
+                  "sellerEndpoint",
+                  "taskDescription",
+                  "maxBudgetUsdc"
+                ]
+              },
+              "example": {
+                "buyerAgentId": "dexter-verifier-probe",
+                "sellerAgentId": "seller-oracle-1",
+                "sellerEndpoint": "https://x402trustlayer.xyz/api/guard/pre-x402",
+                "taskDescription": "Preflight guard check for ETH oracle call under $0.10",
+                "maxBudgetUsdc": 0.1
               }
             }
           }
@@ -220,7 +250,82 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "actionGroup": {
+                    "type": "string"
+                  },
+                  "apiPath": {
+                    "type": "string"
+                  },
+                  "requestBody": {
+                    "type": "object",
+                    "properties": {
+                      "content": {
+                        "type": "object",
+                        "properties": {
+                          "application/json": {
+                            "type": "object",
+                            "properties": {
+                              "properties": {
+                                "type": "object",
+                                "properties": {
+                                  "agentId": {
+                                    "type": "string"
+                                  },
+                                  "walletAddress": {
+                                    "type": "string"
+                                  },
+                                  "targetUrl": {
+                                    "type": "string"
+                                  },
+                                  "estimatedCostUsdc": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "agentId",
+                                  "walletAddress",
+                                  "targetUrl",
+                                  "estimatedCostUsdc"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "properties"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "application/json"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "content"
+                    ]
+                  }
+                },
+                "required": [
+                  "actionGroup",
+                  "apiPath",
+                  "requestBody"
+                ]
+              },
+              "example": {
+                "actionGroup": "TrustLayerGuard",
+                "apiPath": "/guard/pre-x402",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "properties": {
+                        "agentId": "bedrock-agent",
+                        "walletAddress": "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
+                        "targetUrl": "https://api.myceliasignal.com/oracle/price/eth/usd",
+                        "estimatedCostUsdc": 0.05
+                      }
+                    }
+                  }
+                }
               }
             }
           }
@@ -2522,9 +2627,9 @@
                 ]
               },
               "example": {
-                "query": "ETH USD spot price oracle",
-                "preferNetwork": "solana",
-                "maxPriceUsdc": 0.1,
+                "query": "Dexter USDC route from Arbitrum to Ethereum",
+                "preferNetwork": "arbitrum",
+                "maxPriceUsdc": 0.9985,
                 "skipProbes": true
               }
             }
@@ -3374,7 +3479,7 @@
                     "endpoint": "/api/spend-governor/check",
                     "amountUsdc": 0.03,
                     "network": "solana",
-                    "timestamp": "2026-06-03T00:07:03.044Z"
+                    "timestamp": "2026-06-03T02:39:19.962Z"
                   }
                 ]
               }
@@ -4244,7 +4349,7 @@
                     "category": "oracle",
                     "agentId": "dexter-verifier-probe",
                     "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
-                    "timestamp": "2026-06-03T00:07:03.044Z"
+                    "timestamp": "2026-06-03T02:39:19.963Z"
                   }
                 ],
                 "policy": {
@@ -5977,7 +6082,17 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "did": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "did"
+                ]
+              },
+              "example": {
+                "did": "did:agent:dexter_verifier_probe:0000000000000001"
               }
             }
           }
@@ -6297,7 +6412,47 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "subjectType": {
+                    "type": "string"
+                  },
+                  "subjectId": {
+                    "type": "string"
+                  },
+                  "claims": {
+                    "type": "object",
+                    "properties": {
+                      "trustScore": {
+                        "type": "number"
+                      },
+                      "deliveryQuality": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "trustScore",
+                      "deliveryQuality"
+                    ]
+                  },
+                  "minQuorum": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "subjectType",
+                  "subjectId",
+                  "claims",
+                  "minQuorum"
+                ]
+              },
+              "example": {
+                "subjectType": "agent",
+                "subjectId": "dexter-verifier-probe",
+                "claims": {
+                  "trustScore": 82,
+                  "deliveryQuality": 85
+                },
+                "minQuorum": 3
               }
             }
           }
@@ -6539,7 +6694,17 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "receiptId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "receiptId"
+                ]
+              },
+              "example": {
+                "receiptId": "poe_verifier_probe_example"
               }
             }
           }
@@ -6630,7 +6795,73 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "agentId": {
+                    "type": "string"
+                  },
+                  "sessionId": {
+                    "type": "string"
+                  },
+                  "toolCalls": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "argsHash": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "argsHash"
+                      ]
+                    }
+                  },
+                  "policyChecks": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "promptHashes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "riskAnalysis": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "agentId",
+                  "sessionId",
+                  "toolCalls",
+                  "policyChecks",
+                  "promptHashes",
+                  "riskAnalysis"
+                ]
+              },
+              "example": {
+                "agentId": "dexter-verifier-probe",
+                "sessionId": "sess_verifier_probe",
+                "toolCalls": [
+                  {
+                    "name": "x402_fetch",
+                    "argsHash": "abc123"
+                  }
+                ],
+                "policyChecks": [
+                  "spend_cap_ok",
+                  "host_allowed"
+                ],
+                "promptHashes": [
+                  "prompt_hash_verifier_probe"
+                ],
+                "riskAnalysis": "low"
               }
             }
           }
@@ -6721,7 +6952,28 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "auditId": {
+                    "type": "string"
+                  },
+                  "leafIndices": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "required": [
+                  "auditId",
+                  "leafIndices"
+                ]
+              },
+              "example": {
+                "auditId": "aud_verifier_probe_example",
+                "leafIndices": [
+                  0,
+                  1
+                ]
               }
             }
           }
@@ -6811,7 +7063,32 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "payerAgentId": {
+                    "type": "string"
+                  },
+                  "payeeMerchant": {
+                    "type": "string"
+                  },
+                  "amountUsdc": {
+                    "type": "number"
+                  },
+                  "resourceHash": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "payerAgentId",
+                  "payeeMerchant",
+                  "amountUsdc",
+                  "resourceHash"
+                ]
+              },
+              "example": {
+                "payerAgentId": "dexter-verifier-probe",
+                "payeeMerchant": "api.myceliasignal.com",
+                "amountUsdc": 0.05,
+                "resourceHash": "res_verifier_probe"
               }
             }
           }
@@ -6901,7 +7178,27 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "escrowId": {
+                    "type": "string"
+                  },
+                  "nextState": {
+                    "type": "string"
+                  },
+                  "note": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "escrowId",
+                  "nextState",
+                  "note"
+                ]
+              },
+              "example": {
+                "escrowId": "00000000-0000-4000-8000-000000000001",
+                "nextState": "FUNDED",
+                "note": "verifier probe transition"
               }
             }
           }
@@ -6991,7 +7288,17 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "escrowId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "escrowId"
+                ]
+              },
+              "example": {
+                "escrowId": "00000000-0000-4000-8000-000000000001"
               }
             }
           }
@@ -7202,7 +7509,37 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "bindingId": {
+                    "type": "string"
+                  },
+                  "resourceUrl": {
+                    "type": "string"
+                  },
+                  "requestBody": {
+                    "type": "object",
+                    "properties": {
+                      "estimatedCostUsdc": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "estimatedCostUsdc"
+                    ]
+                  }
+                },
+                "required": [
+                  "bindingId",
+                  "resourceUrl",
+                  "requestBody"
+                ]
+              },
+              "example": {
+                "bindingId": "rb_verifier_probe_example",
+                "resourceUrl": "https://api.myceliasignal.com/oracle/price/eth/usd",
+                "requestBody": {
+                  "estimatedCostUsdc": 0.05
+                }
               }
             }
           }
@@ -7292,7 +7629,57 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "proofType": {
+                    "type": "string"
+                  },
+                  "agentId": {
+                    "type": "string"
+                  },
+                  "witness": {
+                    "type": "object",
+                    "properties": {
+                      "dailyCapUsdc": {
+                        "type": "number"
+                      },
+                      "spentTodayUsdc": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "dailyCapUsdc",
+                      "spentTodayUsdc"
+                    ]
+                  },
+                  "publicInputs": {
+                    "type": "object",
+                    "properties": {
+                      "agentId": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "agentId"
+                    ]
+                  }
+                },
+                "required": [
+                  "proofType",
+                  "agentId",
+                  "witness",
+                  "publicInputs"
+                ]
+              },
+              "example": {
+                "proofType": "authorization",
+                "agentId": "dexter-verifier-probe",
+                "witness": {
+                  "dailyCapUsdc": 10,
+                  "spentTodayUsdc": 0
+                },
+                "publicInputs": {
+                  "agentId": "dexter-verifier-probe"
+                }
               }
             }
           }
@@ -7497,7 +7884,48 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "organizationId": {
+                    "type": "string"
+                  },
+                  "agentId": {
+                    "type": "string"
+                  },
+                  "jurisdiction": {
+                    "type": "string"
+                  },
+                  "monthlyVolumeUsdc": {
+                    "type": "number"
+                  },
+                  "rails": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "requiresKyc": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "organizationId",
+                  "agentId",
+                  "jurisdiction",
+                  "monthlyVolumeUsdc",
+                  "rails",
+                  "requiresKyc"
+                ]
+              },
+              "example": {
+                "organizationId": "verifier-org",
+                "agentId": "dexter-verifier-probe",
+                "jurisdiction": "US",
+                "monthlyVolumeUsdc": 500,
+                "rails": [
+                  "base-x402",
+                  "solana-x402"
+                ],
+                "requiresKyc": false
               }
             }
           }

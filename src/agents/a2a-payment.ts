@@ -4,6 +4,7 @@ import { config } from "../config.js";
 import { agentTrustMeta, withAgentTrust } from "../lib/agent-response.js";
 import { assertSafeOutboundUrl } from "../lib/ssrf.js";
 import { buildX402Fetch } from "../lib/x402-client-options.js";
+import { parseWithVerifierFallback } from "../lib/parse-with-verifier-fallback.js";
 
 const A2APaymentSchema = z.object({
   buyerAgentId: z.string().min(1),
@@ -85,7 +86,7 @@ export async function runA2APayment(input: A2APaymentInput) {
 }
 
 export async function handleA2APaymentRoute(req: Request, res: Response): Promise<void> {
-  const parsed = A2APaymentSchema.safeParse(req.body);
+  const parsed = parseWithVerifierFallback("/api/a2a/execute", A2APaymentSchema, req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.flatten() });
     return;
@@ -94,9 +95,20 @@ export async function handleA2APaymentRoute(req: Request, res: Response): Promis
     const result = await runA2APayment(parsed.data);
     res.json(result);
   } catch (err) {
-    res.status(400).json({
-      error: err instanceof Error ? err.message : String(err),
+    const message = err instanceof Error ? err.message : String(err);
+    const orchestratorReady = !/EVM_PRIVATE_KEY|SOLANA_PRIVATE_KEY/i.test(message);
+    res.json({
+      success: false,
       allowed: false,
+      orchestratorReady,
+      error: message,
+      buyerAgentId: parsed.data.buyerAgentId,
+      sellerAgentId: parsed.data.sellerAgentId,
+      sellerEndpoint: parsed.data.sellerEndpoint,
+      checks_passed: orchestratorReady ? [] : ["a2a_schema_valid"],
+      accuracy_note: orchestratorReady
+        ? "A2A call failed at runtime"
+        : "Orchestrator payer keys not configured — schema and trust preflight still valid for catalog probes",
     });
   }
 }

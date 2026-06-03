@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
 import { config } from "../config.js";
+import { parseWithVerifierFallback } from "../lib/parse-with-verifier-fallback.js";
 
 const bedrockSchema = z.object({
   actionGroup: z.string().optional(),
@@ -27,7 +28,7 @@ function extractBedrockProperties(body: z.infer<typeof bedrockSchema>): Record<s
 
 /** AWS Bedrock AgentCore action-group → Trust Layer guard preflight. */
 export async function handleBedrockPreflight(req: Request, res: Response): Promise<void> {
-  const parsed = bedrockSchema.safeParse(req.body);
+  const parsed = parseWithVerifierFallback("/api/bedrock/preflight", bedrockSchema, req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.flatten() });
     return;

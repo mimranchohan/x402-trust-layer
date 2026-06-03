@@ -19,6 +19,7 @@ import { KILLER_SELLER_ENDPOINTS, PRIMARY_ENTRYPOINTS } from "./lib/suite-catalo
 import { listEndpoints, registerRoutes } from "./routes.js";
 import { registerX402gleHostVerification } from "./lib/x402gle-host-verify.js";
 import { ensureVerifierProbeMandate } from "./lib/mandate.js";
+import { ensureVerifierProbeProtocol } from "./lib/verifier-probe-protocol.js";
 import { SUITE_VERSION } from "./lib/version.js";
 import { refreshFacilitatorExtras, startFacilitatorExtrasRefresh } from "./lib/facilitator-extra.js";
 import { rateLimitPerMinute, rateLimitUnpaidProbes, rateLimitAgentLookup } from "./lib/rate-limit.js";
@@ -37,6 +38,10 @@ startFacilitatorExtrasRefresh();
 
 void ensureVerifierProbeMandate().catch((err) => {
   console.warn("[startup] verifier probe mandate seed skipped:", err instanceof Error ? err.message : err);
+});
+
+void ensureVerifierProbeProtocol().catch((err) => {
+  console.warn("[startup] verifier probe protocol seed skipped:", err instanceof Error ? err.message : err);
 });
 
 const app = express();

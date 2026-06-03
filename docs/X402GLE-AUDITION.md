@@ -8,6 +8,7 @@ Origin: `https://x402trustlayer.xyz`
 cd C:\Users\mimra\x402-agent-suite
 npm run audition:x402gle          # full origin (may cooldown)
 npm run audition:x402gle:v2       # 3 Trust v2 routes only (~$0.51 USDC if all pay)
+npm run audition:x402gle:missing  # only routes not yet on skills.json (one-by-one)
 ```
 
 Saves `x402gle-audition-result.json` or `x402gle-v2-audition-result.json`.
@@ -33,6 +34,12 @@ Use until retry:
 ## Pass criteria
 
 Each route: `status: "pass"`, `score >= 75`, `fixInstructions: null`.
+
+## Current catalog (check live)
+
+- Listed skills: https://x402gle.com/servers/x402trustlayer.xyz/skills.json (25+ routes with `verification_status: pass` when scored)
+- Manifest stays `failed` until every paid OpenAPI path is scored and passing
+- Unscored routes: run `npm run audition:x402gle:missing` after deploy (stops on `cooldown_active`)
 
 ## Grader-safe handlers (deploy before re-audition)
 
