@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { createHash } from "node:crypto";
+import { hasPaymentSignatureHeader } from "./x402-headers.js";
 import { mkdirSync, readFileSync, writeFileSync, existsSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 
@@ -76,11 +77,7 @@ function bodyHash(req: Request): string {
 }
 
 function hasPaymentHeader(req: Request): boolean {
-  return Boolean(
-    req.headers["payment-signature"] ||
-      req.headers["x-payment"] ||
-      req.headers["x402-payment"],
-  );
+  return hasPaymentSignatureHeader(req);
 }
 
 /** Return cached paid response when Idempotency-Key matches (CDP-style safe retries). */

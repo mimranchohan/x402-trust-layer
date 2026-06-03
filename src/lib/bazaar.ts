@@ -299,13 +299,20 @@ export function buildServicesManifest() {
 }
 
 export function buildWellKnownX402() {
+  const payToMap: Record<string, string> = {};
+  for (const network of config.networks) {
+    if (network.startsWith("solana:")) payToMap[network] = config.payTo;
+    else payToMap[network] = config.payToEvm || config.payTo;
+  }
   return {
+    x402Version: 2,
     name: SERVICE_NAME,
     version: SUITE_VERSION,
     description: SERVICE_DESCRIPTION,
     baseUrl: config.publicBaseUrl,
+    paymentRequired: true,
     facilitator: config.facilitatorUrl,
-    payTo: config.payTo,
+    payTo: payToMap,
     networks: config.networks,
     discovery: {
       services: `${config.publicBaseUrl}/x402/api/services.json`,
