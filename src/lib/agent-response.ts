@@ -9,7 +9,7 @@ export type AgentTrustMeta = {
 export type WithAgentTrust<T> = T & AgentTrustMeta;
 
 const DEFAULT_NOTE =
-  "Heuristic preflight only — not a guarantee of downstream API quality or settlement success.";
+  "Heuristic preflight only — not 100% accurate; not a guarantee of downstream API quality, merchant honesty, or settlement success.";
 
 export function agentTrustMeta(
   checks_passed: string[],

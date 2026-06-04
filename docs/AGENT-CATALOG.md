@@ -59,7 +59,7 @@ flowchart TB
 - **Paywall-first** — no business logic runs on unpaid `/api/*` (except canonical verifier example bodies for marketplace probes).
 - **Composable agents** — bundles (`pre-x402-guard`, `x402-proxy`, `pipeline/execute`) reuse the same sub-agents; pay once per layer.
 - **Tamper-evident** — HMAC-signed attestations and mandates, SHA-256 ledger hashes.
-- **Pluggable persistence** — JSON under `data/`; swap for Postgres at fleet scale.
+- **Pluggable persistence** — SQLite (`trust-layer.db`) primary; some legacy JSON; Postgres at fleet scale. See [LIMITATIONS.md](./LIMITATIONS.md).
 
 ---
 

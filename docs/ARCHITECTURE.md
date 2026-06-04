@@ -43,7 +43,7 @@ src/
 - **Paywall-first** — no business logic on unpaid `/api/*` (except verifier example body injection for marketplace probes).
 - **Composable agents** — `pre-x402-guard`, `x402-proxy`, `pipeline/execute` share sub-agents; buy once per layer.
 - **Discovery split** — OpenAPI lists paid ops only; free catalog at `GET /.well-known/x402`.
-- **Persistence** — JSON files under `data/` (attestations, spend ledger, MPP). Replace with Postgres when fleet scale demands it.
+- **Persistence** — **SQLite** (`trust-layer.db` under `DATA_DIR`) for mandates, spend, attestations, MPP, escrow, idempotency, webhooks, protocol KV. Some legacy JSON remains (`certified-sellers.json`, optional `escrow-ledger.json`). **Postgres** when multi-replica fleet scale demands it. See [LIMITATIONS.md](./LIMITATIONS.md).
 
 ## Extension points
 

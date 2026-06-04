@@ -288,6 +288,7 @@ npm publish   # maintainers only, after version bump
 | [INTEGRATE.md](docs/INTEGRATE.md) | Fleet flow, attestation, the 3-line rule |
 | [MARKETPLACES.md](docs/MARKETPLACES.md) | Dexter + x402scan + Agentic listing |
 | [CHANGELOG.md](CHANGELOG.md) | Release notes |
+| [LIMITATIONS.md](docs/LIMITATIONS.md) | Persistence, accuracy, centralization, HMAC, wash-trade (GitHub FAQ) |
 
 ---
 
