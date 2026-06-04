@@ -1,6 +1,11 @@
 import { z } from "zod";
 import type { Request, Response } from "express";
 import { config } from "../config.js";
+import { hostOf } from "../lib/probe.js";
+import { dispatchSuitePost, isSuiteOrigin } from "../lib/internal-suite-dispatch.js";
+import { runMerchantTrust } from "./merchant-trust.js";
+import { VERIFY_EXAMPLES } from "../lib/verify-examples.js";
+import { mergeCompatibleProbeInput } from "../lib/apply-verifier-body.js";
 
 function isProduction(): boolean {
   return process.env.NODE_ENV === "production" || !!process.env.RAILWAY_ENVIRONMENT;
@@ -47,16 +52,33 @@ export async function executeA2APayment(params: A2APaymentInput) {
   const validated = A2APaymentSchema.parse(params);
   assertSafeOutboundUrl(validated.sellerEndpoint);
 
-  const trustRes = await fetch(`${config.publicBaseUrl}/api/merchant-trust/score`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ targetUrl: validated.sellerEndpoint }),
+  const trust = await runMerchantTrust({
+    host: hostOf(validated.sellerEndpoint) ?? new URL(validated.sellerEndpoint).hostname,
+    targetUrl: validated.sellerEndpoint,
+    probe: false,
   });
-  const trust = (await trustRes.json()) as { recommendation?: string; score?: number };
   if (trust.recommendation === "avoid") {
     throw new Error(
-      `A2A payment blocked: seller trust too low (score=${trust.score ?? "unknown"})`,
+      `A2A payment blocked: seller trust too low (score=${trust.trustScore ?? "unknown"})`,
     );
+  }
+
+  if (isSuiteOrigin(validated.sellerEndpoint)) {
+    const sellerPath = new URL(validated.sellerEndpoint).pathname;
+    const example = VERIFY_EXAMPLES[sellerPath];
+    const sellerBody =
+      example && typeof example === "object" && !Array.isArray(example)
+        ? mergeCompatibleProbeInput(example as Record<string, unknown>, {
+            agentId: validated.buyerAgentId,
+          })
+        : { agentId: validated.buyerAgentId, task: validated.taskDescription };
+    const sellerResponse = await dispatchSuitePost(sellerPath, sellerBody);
+    return {
+      success: true,
+      sellerResponse,
+      paymentReceipt: null,
+      orchestration: "in-process",
+    };
   }
 
   const agentFetch = await payerFetch(validated.maxBudgetUsdc);
@@ -78,6 +100,7 @@ export async function executeA2APayment(params: A2APaymentInput) {
     success: true,
     sellerResponse: await response.json(),
     paymentReceipt: response.headers.get("PAYMENT-RESPONSE"),
+    orchestration: "x402-fetch",
   };
 }
 

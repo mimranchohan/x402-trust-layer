@@ -92,11 +92,24 @@ export function defaultOutputExample(path: string): Record<string, unknown> {
       ok: true,
       status: "ok",
       allowed: true,
-      summary: "Compiled 5-step plan ($0.32 est.) within $1 budget",
+      summary: "Compiled 4-step plan ($0.27 est.) within $1 budget",
       withinBudget: true,
-      totalEstimatedUsdc: 0.45,
-      steps: [{ step: 1, path: "/api/guard/pre-x402", priceUsdc: 0.05 }],
-      executionOrder: [`POST ${path}`],
+      totalEstimatedUsdc: 0.27,
+      maxBudgetUsdc: 1,
+      recommendedFirstStep: "POST https://x402trustlayer.xyz/api/guard/pre-x402",
+      planSummary:
+        "Step 1: Compile plan; Step 2: Guard preflight; Step 3: Route marketplace; Step 4: Verify receipt",
+      steps: [
+        { step: 1, path: "/api/payment-intent/compile", priceUsdc: 0.15, purpose: "Compile plan" },
+        { step: 2, path: "/api/guard/pre-x402", priceUsdc: 0.05, purpose: "Spend policy + risk" },
+        { step: 3, path: "/api/router/route", priceUsdc: 0.02, purpose: "Pick marketplace API" },
+        { step: 4, path: "/api/receipt-auditor/verify", priceUsdc: 0.05, purpose: "Verify settlement" },
+      ],
+      executionOrder: [
+        "POST https://x402trustlayer.xyz/api/guard/pre-x402",
+        "POST https://x402trustlayer.xyz/api/router/route",
+      ],
+      suiteBaseUrl: "https://x402trustlayer.xyz",
     };
   }
   if (path.includes("mandate/verify")) {
@@ -235,6 +248,36 @@ export function defaultOutputExample(path: string): Record<string, unknown> {
       securityGrade: "A",
       riskScore: 12,
       targetProbe: { status: 402, requiresPayment: true, priceUsdc: 0.05 },
+    };
+  }
+  if (path.includes("bedrock/preflight")) {
+    return {
+      messageVersion: "1.0",
+      response: {
+        actionGroup: "TrustLayerGuard",
+        apiPath: "/guard/pre-x402",
+        httpMethod: "POST",
+        httpStatusCode: 200,
+        responseBody: {
+          "application/json": {
+            body: JSON.stringify({
+              ok: true,
+              allowed: true,
+              summary: "Spend policy allows call — proceed to x402 payment",
+            }),
+          },
+        },
+      },
+    };
+  }
+  if (path.includes("a2a/execute")) {
+    return {
+      success: true,
+      allowed: true,
+      orchestratorReady: true,
+      orchestration: "in-process",
+      sellerResponse: { ok: true, allowed: true, summary: "Guard preflight passed for A2A seller call" },
+      checks_passed: ["a2a_schema_valid", "trust_score", "seller_dispatch"],
     };
   }
   return { ok: true, allowed: true, summary: "Paid response after x402 settlement" };

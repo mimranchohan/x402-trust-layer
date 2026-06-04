@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
-import { config } from "../config.js";
 import { parseWithVerifierFallback } from "../lib/parse-with-verifier-fallback.js";
+import { dispatchSuitePost } from "../lib/internal-suite-dispatch.js";
 
 const bedrockSchema = z.object({
   actionGroup: z.string().optional(),
@@ -35,30 +35,27 @@ export async function handleBedrockPreflight(req: Request, res: Response): Promi
   }
 
   const params = extractBedrockProperties(parsed.data);
-  const upstream = await fetch(`${config.publicBaseUrl}/api/guard/pre-x402`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      agentId: String(params.agentId ?? "bedrock-agent"),
-      walletAddress: String(params.walletAddress ?? config.payToEvm ?? config.payTo),
-      targetUrl: String(params.targetUrl ?? config.publicBaseUrl),
-      estimatedCostUsdc: Number(params.estimatedCostUsdc ?? 0.05),
-      policy: (params.policy as Record<string, unknown>) ?? {
-        dailyCapUsdc: 50,
-        perCallCapUsdc: 1,
-        allowedHosts: ["*"],
-      },
-    }),
-  });
+  const guardBody = {
+    agentId: String(params.agentId ?? "bedrock-agent"),
+    walletAddress: String(params.walletAddress ?? "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt"),
+    targetUrl: String(params.targetUrl ?? "https://api.myceliasignal.com/oracle/price/eth/usd"),
+    estimatedCostUsdc: Number(params.estimatedCostUsdc ?? 0.05),
+    network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+    policy: (params.policy as Record<string, unknown>) ?? {
+      dailyCapUsdc: 50,
+      perCallCapUsdc: 1,
+      allowedHosts: ["myceliasignal.com"],
+    },
+  };
 
-  const result = await upstream.json();
+  const result = await dispatchSuitePost("/api/guard/pre-x402", guardBody);
   res.json({
     messageVersion: "1.0",
     response: {
       actionGroup: parsed.data.actionGroup ?? "TrustLayerGuard",
       apiPath: parsed.data.apiPath ?? "/guard/pre-x402",
       httpMethod: "POST",
-      httpStatusCode: upstream.status,
+      httpStatusCode: 200,
       responseBody: {
         "application/json": { body: JSON.stringify(result) },
       },

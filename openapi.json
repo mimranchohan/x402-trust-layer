@@ -12,7 +12,7 @@
   },
   "info": {
     "title": "x402 Trust Layer",
-    "version": "5.0.0",
+    "version": "5.1.0",
     "description": "36 paid x402 trust infrastructure APIs: guard, semantic escrow, mandate diff, certified seller network, KYM, mandates, compliance, disputes, and orchestration.",
     "x-guidance": "x402 Trust Layer — 58 paid agent payment infrastructure APIs on Base, Solana, and Polygon via Dexter facilitator.\n\nTypical flow:\n1. POST /api/guard/pre-x402 or POST /api/x402/proxy before any downstream x402 payment.\n2. POST /api/merchant-trust/score for Know-Your-Merchant preflight on unknown hosts.\n3. POST /api/mandate/compile for AP2-style signed intent; POST /api/mandate/diff + /api/mandate/verify before spend.\n4. POST /api/trust-network/buyer-gate when paying certified sellers; POST /api/merchant-trust/certify to join network.\n5. POST /api/quality-escrow/semantic-settle after delivery for auto-refund on bad responses.\n6. POST /api/payment-intent/compile or POST /api/pipeline/execute for multi-step orchestration.\n7. POST /api/mpp/session with action open|voucher|close for batch settlement savings.\n8. POST /api/attestation/issue then pass X-Suite-Attestation on partner calls.\n9. POST /api/receipt-auditor/verify after external settlements; POST /api/compliance/ledger for audit.\n\nPay with x402 (USDC). Unpaid GET probes return 402; send Payment-Signature on POST for full JSON responses.\n\nFree (not in this catalog): GET /health — monitoring only, returns 200 without payment."
   },
@@ -108,9 +108,20 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "ok": true,
+                  "success": true,
                   "allowed": true,
-                  "summary": "Paid response after x402 settlement"
+                  "orchestratorReady": true,
+                  "orchestration": "in-process",
+                  "sellerResponse": {
+                    "ok": true,
+                    "allowed": true,
+                    "summary": "Guard preflight passed for A2A seller call"
+                  },
+                  "checks_passed": [
+                    "a2a_schema_valid",
+                    "trust_score",
+                    "seller_dispatch"
+                  ]
                 }
               }
             }
@@ -229,9 +240,18 @@
                   "additionalProperties": true
                 },
                 "example": {
-                  "ok": true,
-                  "allowed": true,
-                  "summary": "Paid response after x402 settlement"
+                  "messageVersion": "1.0",
+                  "response": {
+                    "actionGroup": "TrustLayerGuard",
+                    "apiPath": "/guard/pre-x402",
+                    "httpMethod": "POST",
+                    "httpStatusCode": 200,
+                    "responseBody": {
+                      "application/json": {
+                        "body": "{\"ok\":true,\"allowed\":true,\"summary\":\"Spend policy allows call — proceed to x402 payment\"}"
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -1819,19 +1839,43 @@
                   "ok": true,
                   "status": "ok",
                   "allowed": true,
-                  "summary": "Compiled 5-step plan ($0.32 est.) within $1 budget",
+                  "summary": "Compiled 4-step plan ($0.27 est.) within $1 budget",
                   "withinBudget": true,
-                  "totalEstimatedUsdc": 0.45,
+                  "totalEstimatedUsdc": 0.27,
+                  "maxBudgetUsdc": 1,
+                  "recommendedFirstStep": "POST https://x402trustlayer.xyz/api/guard/pre-x402",
+                  "planSummary": "Step 1: Compile plan; Step 2: Guard preflight; Step 3: Route marketplace; Step 4: Verify receipt",
                   "steps": [
                     {
                       "step": 1,
+                      "path": "/api/payment-intent/compile",
+                      "priceUsdc": 0.15,
+                      "purpose": "Compile plan"
+                    },
+                    {
+                      "step": 2,
                       "path": "/api/guard/pre-x402",
-                      "priceUsdc": 0.05
+                      "priceUsdc": 0.05,
+                      "purpose": "Spend policy + risk"
+                    },
+                    {
+                      "step": 3,
+                      "path": "/api/router/route",
+                      "priceUsdc": 0.02,
+                      "purpose": "Pick marketplace API"
+                    },
+                    {
+                      "step": 4,
+                      "path": "/api/receipt-auditor/verify",
+                      "priceUsdc": 0.05,
+                      "purpose": "Verify settlement"
                     }
                   ],
                   "executionOrder": [
-                    "POST /api/payment-intent/compile"
-                  ]
+                    "POST https://x402trustlayer.xyz/api/guard/pre-x402",
+                    "POST https://x402trustlayer.xyz/api/router/route"
+                  ],
+                  "suiteBaseUrl": "https://x402trustlayer.xyz"
                 }
               }
             }
@@ -3483,7 +3527,7 @@
                     "endpoint": "/api/spend-governor/check",
                     "amountUsdc": 0.03,
                     "network": "solana",
-                    "timestamp": "2026-06-03T16:42:32.961Z"
+                    "timestamp": "2026-06-04T22:27:30.903Z"
                   }
                 ]
               }
@@ -4353,7 +4397,7 @@
                     "category": "oracle",
                     "agentId": "dexter-verifier-probe",
                     "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
-                    "timestamp": "2026-06-03T16:42:32.961Z"
+                    "timestamp": "2026-06-04T22:27:30.903Z"
                   }
                 ],
                 "policy": {

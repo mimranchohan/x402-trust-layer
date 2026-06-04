@@ -63,15 +63,20 @@ Each route: `status: "pass"`, `score >= 75`, `fixInstructions: null`.
 
 ## Current catalog (check live)
 
-- Listed skills: https://x402gle.com/servers/x402trustlayer.xyz/skills.json (25+ routes with `verification_status: pass` when scored)
-- Manifest stays `failed` until every paid OpenAPI path is scored and passing
-- Unscored routes: run `npm run audition:x402gle:missing` after deploy (stops on `cooldown_active`)
+- Listed skills: https://x402gle.com/servers/x402trustlayer.xyz/skills.json — **25 / 58** paid paths (33 unscored on index)
+- Full-origin `audition https://x402trustlayer.xyz --json` can **register all 58** as `pending` (background paid score)
+- Per-URL auditions may return `status: "skipped"` with `incompleteReason` settlement on Dexter grader — retry later or use x402gle **Test now**
+- Manifest stays `failed` until every paid OpenAPI path is scored **≥75**
+- Batch missing: `npm run audition:x402gle:missing` (stops on `cooldown_active`)
 
 ## Grader-safe handlers (deploy before re-audition)
 
 - `parseWithVerifierFallback` on guard, proxy, pipeline, router (partial grader bodies → canonical `VERIFY_EXAMPLES` merge)
 - MPP `close` auto-opens a session when `agentId` is present (no `session:null` dead ends)
 - Router route-intent queries (Arbitrum→Ethereum USDC route) return suite route options, not unrelated oracles
+- **Bedrock** `/api/bedrock/preflight` — in-process `runPreX402Guard` (no unpaid nested 402)
+- **A2A** `/api/a2a/execute` — same-origin seller calls use in-process dispatch; trust via `runMerchantTrust`
+- **Payment intent** — `trimStepsToBudget` + `planSummary` / `recommendedFirstStep` for clearer paid responses
 
 ## Discovery (Step 1 — already done)
 

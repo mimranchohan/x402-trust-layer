@@ -19,7 +19,23 @@ export type CompilerResult = {
   steps: SuiteStep[];
   executionOrder: string[];
   suiteBaseUrl: string;
+  recommendedFirstStep: string;
+  planSummary: string;
 };
+
+function trimStepsToBudget(steps: SuiteStep[], maxBudgetUsdc: number): SuiteStep[] {
+  const out = [...steps];
+  const total = () => out.reduce((sum, s) => sum + s.priceUsdc, 0);
+  const dropAgents = new Set(["research-brief", "external-x402", "receipt-auditor", "api-router"]);
+
+  while (total() > maxBudgetUsdc && out.length > 2) {
+    const dropIdx = out.findIndex((s) => dropAgents.has(s.agent) || s.path.includes("marketplace"));
+    if (dropIdx >= 0) out.splice(dropIdx, 1);
+    else out.pop();
+  }
+
+  return out.map((s, i) => ({ ...s, step: i + 1 }));
+}
 
 export function runPaymentIntentCompiler(input: CompilerInput): WithAgentTrust<CompilerResult> {
   const taskLower = input.task.toLowerCase();
@@ -48,8 +64,13 @@ export function runPaymentIntentCompiler(input: CompilerInput): WithAgentTrust<C
     s.step = i + 1;
   });
 
-  const total = steps.reduce((sum, s) => sum + s.priceUsdc, 0);
+  const fitted = trimStepsToBudget(steps, input.maxBudgetUsdc);
+  const total = fitted.reduce((sum, s) => sum + s.priceUsdc, 0);
   const withinBudget = total <= input.maxBudgetUsdc;
+  const firstHop = fitted.find((s) => s.path.startsWith("/api/"));
+  const recommendedFirstStep = firstHop
+    ? `${firstHop.method} ${suiteUrl(firstHop.path)}`
+    : suiteUrl("/api/guard/pre-x402");
 
   return withAgentTrust(
     {
@@ -57,15 +78,17 @@ export function runPaymentIntentCompiler(input: CompilerInput): WithAgentTrust<C
       ok: true,
       allowed: withinBudget,
       summary: withinBudget
-        ? `Compiled ${steps.length}-step plan ($${total.toFixed(2)} est.) within $${input.maxBudgetUsdc} budget`
+        ? `Compiled ${fitted.length}-step plan ($${total.toFixed(2)} est.) within $${input.maxBudgetUsdc} budget`
         : `Plan exceeds budget: $${total.toFixed(2)} est. vs $${input.maxBudgetUsdc} cap`,
       task: input.task,
       withinBudget,
       totalEstimatedUsdc: Number(total.toFixed(4)),
       maxBudgetUsdc: input.maxBudgetUsdc,
-      steps,
-      executionOrder: steps.map((s) => `${s.method} ${suiteUrl(s.path)}`),
+      steps: fitted,
+      executionOrder: fitted.map((s) => `${s.method} ${suiteUrl(s.path)}`),
       suiteBaseUrl: suiteUrl(""),
+      recommendedFirstStep,
+      planSummary: fitted.map((s) => `Step ${s.step}: ${s.purpose} (${s.path}, $${s.priceUsdc})`).join("; "),
     },
     agentTrustMeta(["plan_compiled", withinBudget ? "within_budget" : "over_budget"], {
       confidence: withinBudget ? 0.88 : 0.72,
