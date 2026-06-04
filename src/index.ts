@@ -173,7 +173,6 @@ function healthPayload() {
     },
     documentation: {
       github: GITHUB_REPO,
-      limitations: `${GITHUB_REPO}/blob/main/docs/LIMITATIONS.md`,
       railwayDeploy: `${GITHUB_REPO}/blob/main/docs/RAILWAY-DEPLOY.md`,
       productionHardening: `${GITHUB_REPO}/blob/main/docs/PRODUCTION-HARDENING.md`,
       npm: "https://www.npmjs.com/package/x402-trust-layer",
@@ -361,7 +360,6 @@ app.get("/", (req, res) => {
     discovery: `${config.publicBaseUrl}/x402/api/discover`,
     bazaar: `${config.publicBaseUrl}/x402/api/services.json`,
     deployDocs: `${GITHUB_REPO}/blob/main/docs/RAILWAY-DEPLOY.md`,
-    limitationsDoc: `${GITHUB_REPO}/blob/main/docs/LIMITATIONS.md`,
     agenticMarket: "https://agentic.market/",
     agentCash: "https://agentcash.dev/",
     x402scanRegister: "https://www.x402scan.com/resources/register",
