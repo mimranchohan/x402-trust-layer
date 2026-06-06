@@ -65,18 +65,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.100000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -138,6 +126,18 @@
             }
           }
         },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.100000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
         "requestBody": {
           "required": true,
           "content": {
@@ -197,18 +197,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.050000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -267,6 +255,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.050000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -373,18 +373,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.080000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -458,6 +446,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.080000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -560,18 +560,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.060000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -664,6 +652,18 @@
             }
           }
         },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.060000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
         "requestBody": {
           "required": true,
           "content": {
@@ -709,18 +709,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.080000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -778,6 +766,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.080000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -858,25 +858,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.030000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            },
-            {
-              "mpp": {
-                "method": "POST",
-                "intent": "session",
-                "currency": "0x20c000000000000000000000b9537d11c60e8b50"
-              }
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -963,6 +944,25 @@
             }
           }
         },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.030000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            },
+            {
+              "mpp": {
+                "method": "POST",
+                "intent": "session",
+                "currency": "0x20c000000000000000000000b9537d11c60e8b50"
+              }
+            }
+          ]
+        },
         "requestBody": {
           "required": true,
           "content": {
@@ -1022,18 +1022,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.040000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -1085,6 +1073,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.040000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -1159,18 +1159,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.020000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -1223,6 +1211,18 @@
             }
           }
         },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.020000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
         "requestBody": {
           "required": true,
           "content": {
@@ -1261,18 +1261,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.020000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Registry records after payment",
@@ -1323,6 +1311,18 @@
             }
           }
         },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.020000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
         "parameters": [
           {
             "name": "minGrade",
@@ -1367,18 +1367,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.050000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -1428,6 +1416,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.050000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -1518,18 +1518,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.040000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -1579,6 +1567,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.040000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -1644,18 +1644,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.040000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -1705,6 +1693,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.040000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -1749,18 +1749,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.250000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -1810,6 +1798,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.250000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -1919,18 +1919,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.050000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -1980,6 +1968,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.050000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -2029,18 +2029,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.020000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -2090,6 +2078,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.020000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -2144,18 +2144,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.200000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -2205,6 +2193,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.200000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -2255,18 +2255,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.050000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -2316,6 +2304,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.050000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -2395,18 +2395,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.080000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -2456,6 +2444,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.080000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -2510,18 +2510,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.030000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -2571,6 +2559,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.030000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -2650,18 +2650,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.020000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -2711,6 +2699,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.020000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -2755,18 +2755,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.030000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -2816,6 +2804,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.030000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -2860,18 +2860,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.100000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -2921,6 +2909,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.100000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -2971,7 +2971,7 @@
                     "endpoint": "/api/spend-governor/check",
                     "amountUsdc": 0.03,
                     "network": "solana",
-                    "timestamp": "2026-06-06T18:04:44.745Z"
+                    "timestamp": "2026-06-06T21:12:22.833Z"
                   }
                 ]
               }
@@ -2995,18 +2995,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.120000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -3056,6 +3044,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.120000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -3117,18 +3117,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.060000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -3178,6 +3166,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.060000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -3259,18 +3259,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.080000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -3320,6 +3308,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.080000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -3421,18 +3421,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.040000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -3482,6 +3470,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.040000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -3538,18 +3538,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.120000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -3599,6 +3587,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.120000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -3694,7 +3694,7 @@
                     "category": "oracle",
                     "agentId": "dexter-verifier-probe",
                     "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
-                    "timestamp": "2026-06-06T18:04:44.746Z"
+                    "timestamp": "2026-06-06T21:12:22.834Z"
                   }
                 ],
                 "policy": {
@@ -3725,18 +3725,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.100000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -3786,6 +3774,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.100000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -3862,18 +3862,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.100000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -3934,6 +3922,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.100000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -4057,18 +4057,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.120000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -4125,6 +4113,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.120000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -4272,18 +4272,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.040000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -4337,6 +4325,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.040000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -4457,18 +4457,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.150000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -4525,6 +4513,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.150000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -4651,18 +4651,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.030000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -4714,6 +4702,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.030000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -4772,18 +4772,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.050000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -4833,6 +4821,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.050000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -4863,18 +4863,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.060000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -4924,6 +4912,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.060000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -4977,18 +4977,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.050000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -5038,6 +5026,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.050000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -5066,18 +5066,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.010000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -5127,6 +5115,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.010000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -5155,18 +5155,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.050000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -5216,6 +5204,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.050000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -5244,18 +5244,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.020000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -5305,6 +5293,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.020000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -5323,73 +5323,25 @@
       "get": {
         "operationId": "get_dashboard_summary",
         "summary": "/api/dashboard/summary",
-        "description": "/api/dashboard/summary — Free/Paid USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "/api/dashboard/summary — Free endpoint.",
         "tags": [
           "core",
           "x402"
         ],
-        "security": [
-          {
-            "x402": []
-          }
-        ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.010000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
+        "security": [],
         "responses": {
           "200": {
-            "description": "Successful response after x402 settlement",
+            "description": "Successful response",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "description": "Successful response after x402 settlement",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean"
-                    },
-                    "allowed": {
-                      "type": "boolean"
-                    },
-                    "summary": {
-                      "type": "string"
-                    },
-                    "confidence": {
-                      "type": "number"
-                    },
-                    "checks_passed": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  },
                   "additionalProperties": true
                 },
                 "example": {
                   "ok": true,
                   "allowed": true,
                   "summary": "Paid response after x402 settlement"
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "Payment Required (x402 v2). Unpaid requests must receive HTTP 402 with Payment-Required header and non-empty accepts.",
-            "headers": {
-              "Payment-Required": {
-                "description": "Base64-encoded x402 payment requirements (v2)",
-                "schema": {
-                  "type": "string"
                 }
               }
             }
@@ -5413,18 +5365,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.350000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -5474,6 +5414,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.350000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -5614,18 +5566,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.030000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -5675,6 +5615,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.030000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -5730,18 +5682,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.450000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -5791,6 +5731,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.450000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -5881,18 +5833,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.060000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -5942,6 +5882,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.060000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -5998,18 +5950,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.020000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -6059,6 +5999,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.020000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -6098,18 +6050,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.080000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -6159,6 +6099,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.080000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -6213,18 +6165,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.100000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -6274,6 +6214,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.100000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -6328,18 +6280,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.120000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -6389,6 +6329,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.120000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -6458,18 +6410,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.050000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -6519,6 +6459,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.050000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -6610,18 +6562,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.030000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -6671,6 +6611,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.030000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -6711,18 +6663,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.080000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -6772,6 +6712,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.080000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -6868,18 +6820,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.040000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -6929,6 +6869,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.040000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -6980,18 +6932,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.020000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -7041,6 +6981,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.020000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -7100,18 +7052,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.020000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -7161,6 +7101,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.020000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -7220,18 +7172,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.150000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -7281,6 +7221,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.150000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -7360,18 +7312,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.060000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -7421,6 +7361,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.060000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,
@@ -7475,18 +7427,6 @@
             "x402": []
           }
         ],
-        "x-payment-info": {
-          "price": {
-            "mode": "fixed",
-            "currency": "USD",
-            "amount": "0.100000"
-          },
-          "protocols": [
-            {
-              "x402": {}
-            }
-          ]
-        },
         "responses": {
           "200": {
             "description": "Successful response after x402 settlement",
@@ -7536,6 +7476,18 @@
               }
             }
           }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.100000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
         },
         "requestBody": {
           "required": true,

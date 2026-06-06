@@ -130,22 +130,38 @@ function buildOperation(
   const priceUsd = formatUsdAmount(priceDisplay);
   const upper = method.toUpperCase();
   const example = VERIFY_EXAMPLES[path];
+  const isFree = priceDisplay.toLowerCase().includes("free");
 
   const op: Record<string, unknown> = {
     operationId: operationId(path, method),
     summary: meta.summary,
-    description: `${meta.summary} — ${priceDisplay} USDC via x402 (Dexter facilitator ${config.facilitatorUrl}).`,
+    description: isFree
+      ? `${meta.summary} — Free endpoint.`
+      : `${meta.summary} — ${priceDisplay} USDC via x402 (Dexter facilitator ${config.facilitatorUrl}).`,
     tags: [tier, ...(meta.tags ?? [])],
-    security: [{ x402: [] }],
-    "x-payment-info": {
-      price: { mode: "fixed", currency: "USD", amount: priceUsd },
-      protocols: paymentProtocols(path),
-    },
+    security: isFree ? [] : [{ x402: [] }],
     responses: {
-      "200": paid200Response(path),
-      "402": paymentRequiredResponse(),
+      "200": isFree
+        ? {
+            description: "Successful response",
+            content: {
+              "application/json": {
+                schema: { type: "object", additionalProperties: true },
+                example: defaultOutputExample(path),
+              },
+            },
+          }
+        : paid200Response(path),
     },
   };
+
+  if (!isFree) {
+    op["x-payment-info"] = {
+      price: { mode: "fixed", currency: "USD", amount: priceUsd },
+      protocols: paymentProtocols(path),
+    };
+    (op.responses as Record<string, unknown>)["402"] = paymentRequiredResponse();
+  }
 
   if (upper === "GET") {
     if (path === "/api/attestation/registry") {
@@ -167,25 +183,27 @@ function buildOperation(
         "402": paymentRequiredResponse(),
       };
     }
-  } else if (example && typeof example === "object") {
-    op.requestBody = {
-      required: true,
-      content: {
-        "application/json": {
-          schema: exampleToSchema(example),
-          example,
+  } else if (!isFree) {
+    if (example && typeof example === "object") {
+      op.requestBody = {
+        required: true,
+        content: {
+          "application/json": {
+            schema: exampleToSchema(example),
+            example,
+          },
         },
-      },
-    };
-  } else {
-    op.requestBody = {
-      required: true,
-      content: {
-        "application/json": {
-          schema: { type: "object", additionalProperties: true },
+      };
+    } else {
+      op.requestBody = {
+        required: true,
+        content: {
+          "application/json": {
+            schema: { type: "object", additionalProperties: true },
+          },
         },
-      },
-    };
+      };
+    }
   }
 
   return op;
