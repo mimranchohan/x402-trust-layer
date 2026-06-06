@@ -387,4 +387,15 @@ export const VERIFY_EXAMPLES: Record<string, unknown> = {
     rails: ["base-x402", "solana-x402"],
     requiresKyc: false,
   },
+  "/api/guard/payload-sandbox": {
+    agentId: "dexter-verifier-probe",
+    payload: { task: "query token price", action: "execute" },
+    targetUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
+  },
+  "/api/trust-network/insurance/attest": {
+    buyerWallet: "0x0000000000000000000000000000000000000001",
+    sellerHost: "api.myceliasignal.com",
+    amountUsdc: 0.05,
+    agentId: "dexter-verifier-probe",
+  },
 };

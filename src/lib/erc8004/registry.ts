@@ -120,27 +120,62 @@ export function reputationRegistryAddress(): Address {
   return (config.erc8004ReputationRegistry || DEFAULT_REPUTATION_REGISTRY) as Address;
 }
 
+const erc8004Cache = new Map<string, { value: any; expiresAt: number }>();
+
+function getCached<T>(key: string): { hit: boolean; value: T | null } {
+  const item = erc8004Cache.get(key);
+  if (item && Date.now() < item.expiresAt) {
+    return { hit: true, value: item.value as T };
+  }
+  return { hit: false, value: null };
+}
+
+function setCached<T>(key: string, value: T): void {
+  const ttlMs = (config.trustScoreCacheTtlSec || 120) * 1000;
+  erc8004Cache.set(key, { value, expiresAt: Date.now() + ttlMs });
+}
+
+export function clearErc8004Cache(): void {
+  erc8004Cache.clear();
+}
+
 export async function readOwnerOf(agentId: bigint): Promise<Address | null> {
+  const cacheKey = `ownerOf:${agentId}`;
+  const cached = getCached<Address | null>(cacheKey);
+  if (cached.hit) return cached.value;
+
   const data = encodeFunctionData({
     abi: identityRegistryAbi,
     functionName: "ownerOf",
     args: [agentId],
   });
   const result = await ethCall(identityRegistryAddress(), data);
-  return result ? decodeAddress(result) : null;
+  const value = result ? decodeAddress(result) : null;
+  setCached(cacheKey, value);
+  return value;
 }
 
 export async function readTokenUri(agentId: bigint): Promise<string | null> {
+  const cacheKey = `tokenUri:${agentId}`;
+  const cached = getCached<string | null>(cacheKey);
+  if (cached.hit) return cached.value;
+
   const data = encodeFunctionData({
     abi: identityRegistryAbi,
     functionName: "tokenURI",
     args: [agentId],
   });
   const result = await ethCall(identityRegistryAddress(), data);
-  return result ? decodeString(result) : null;
+  const value = result ? decodeString(result) : null;
+  setCached(cacheKey, value);
+  return value;
 }
 
 export async function readAgentWallet(agentId: bigint): Promise<Address | null> {
+  const cacheKey = `agentWallet:${agentId}`;
+  const cached = getCached<Address | null>(cacheKey);
+  if (cached.hit) return cached.value;
+
   const data = encodeFunctionData({
     abi: identityRegistryAbi,
     functionName: "getAgentWallet",
@@ -148,18 +183,25 @@ export async function readAgentWallet(agentId: bigint): Promise<Address | null> 
   });
   const result = await ethCall(identityRegistryAddress(), data);
   const wallet = result ? decodeAddress(result) : null;
-  if (!wallet || wallet === "0x0000000000000000000000000000000000000000") return null;
-  return wallet;
+  const value = !wallet || wallet === "0x0000000000000000000000000000000000000000" ? null : wallet;
+  setCached(cacheKey, value);
+  return value;
 }
 
 export async function readBalanceOf(wallet: Address): Promise<bigint> {
+  const cacheKey = `balanceOf:${wallet.toLowerCase()}`;
+  const cached = getCached<bigint>(cacheKey);
+  if (cached.hit && cached.value !== null) return cached.value;
+
   const data = encodeFunctionData({
     abi: identityRegistryAbi,
     functionName: "balanceOf",
     args: [wallet],
   });
   const result = await ethCall(identityRegistryAddress(), data);
-  return result ? decodeUint256(result) : 0n;
+  const value = result ? decodeUint256(result) : 0n;
+  setCached(cacheKey, value);
+  return value;
 }
 
 export type ReputationSummary = {
@@ -169,13 +211,19 @@ export type ReputationSummary = {
 };
 
 export async function readReputationSummary(agentId: bigint): Promise<ReputationSummary | null> {
+  const cacheKey = `reputationSummary:${agentId}`;
+  const cached = getCached<ReputationSummary | null>(cacheKey);
+  if (cached.hit) return cached.value;
+
   const data = encodeFunctionData({
     abi: reputationRegistryAbi,
     functionName: "getSummary",
     args: [agentId, [], "", ""],
   });
   const result = await ethCall(reputationRegistryAddress(), data);
-  return result ? decodeSummary(result) : null;
+  const value = result ? decodeSummary(result) : null;
+  setCached(cacheKey, value);
+  return value;
 }
 
 export function chainMeta() {

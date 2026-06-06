@@ -2,7 +2,7 @@
 
 ## Product Summary
 
-x402 Trust Layer is the **control plane** between AI agents and the open x402 marketplace. 55 paid HTTP APIs decide whether to pay, whom to trust, which rail to use, and how to audit or dispute settlements. No API keys — USDC micropayments on Base, Solana, and Polygon.
+x402 Trust Layer is the **control plane** between AI agents and the open x402 marketplace. 57 paid HTTP APIs decide whether to pay, whom to trust, which rail to use, and how to audit or dispute settlements. No API keys — USDC micropayments on Base, Solana, and Polygon.
 
 - **Base URL:** https://x402trustlayer.xyz
 - **OpenAPI:** https://x402trustlayer.xyz/openapi.json
@@ -35,6 +35,7 @@ x402 Trust Layer is the **control plane** between AI agents and the open x402 ma
 |------|-------|----------|
 | POST /api/x402/proxy | $0.08 | Default all-in-one preflight |
 | POST /api/guard/pre-x402 | $0.05 | Lightweight allow/deny |
+| POST /api/guard/payload-sandbox | $0.04 | Audit payloads for prompt injection |
 | POST /api/pipeline/execute | $0.25 | NL task + marketplace routing |
 
 ### Tier-1 enterprise
@@ -43,7 +44,7 @@ x402 Trust Layer is the **control plane** between AI agents and the open x402 ma
 |------|-------|----------|
 | POST /api/merchant-trust/score | $0.06 | KYM trust — pay/caution/avoid |
 | POST /api/mandate/compile | $0.08 | Signed AP2 payment mandate |
-| POST /api/mandate/verify | $0.02 | Verify payment within mandate |
+| POST /api/trust-network/insurance/attest | $0.06 | Sign transaction liability insurance |
 | POST /api/rail-optimizer/route | $0.04 | Visa CLI vs MPP vs Base/Solana |
 | POST /api/compliance/ledger | $0.12 | CFO/SOC2 reconciliation |
 | POST /api/dispute/resolve | $0.10 | Chargeback dossier / refund claim |
@@ -103,10 +104,21 @@ Alchemy skill: `npx skills add alchemyplatform/skills --yes`
 | trust_preflight_proxy | POST /api/x402/proxy |
 | trust_guard_preflight | POST /api/guard/pre-x402 |
 | trust_merchant_score | POST /api/merchant-trust/score |
-| trust_mandate_verify | POST /api/mandate/verify |
+| trust_payload_sandbox | POST /api/guard/payload-sandbox |
+| trust_insurance_attest | POST /api/trust-network/insurance/attest |
 | trust_receipt_verify | POST /api/receipt-auditor/verify |
 
 Setup: `EVM_PRIVATE_KEY` or `SOLANA_PRIVATE_KEY` in env. Run: `npx @mimranakb/trust-layer-mcp@1.2.0`
+
+## Replay-Guard SDK Integration (Strict Nonce Binding)
+
+To protect your agent's wallet from transaction replay draining attacks, configure the Replay-Guard middleware in your x402 client wrapper:
+1. Before requesting a paid API, call:
+   `POST /api/protocol/replay/bind` with `{ agentId, resourceUrl, requestBody }` to register a unique transaction nonce.
+2. In your request headers to the merchant, pass:
+   - `X-Trust-Replay-Binding: <bindingId>`
+   - `X-Trust-Replay-Nonce: <nonce>`
+3. The merchant or trust layer consumes and verifies the nonce via `POST /api/protocol/replay/verify` automatically, guaranteeing zero double-spends.
 
 ## npm helper
 

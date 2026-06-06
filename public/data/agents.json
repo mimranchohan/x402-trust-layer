@@ -304,6 +304,28 @@
       ]
     },
     {
+      "id": "guard-payload-sandbox",
+      "name": "Payload Sandbox",
+      "tier": "bundle",
+      "tierLabel": "Bundles",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/guard/payload-sandbox",
+      "price": 0.04,
+      "summary": "Payload sandbox to check request schemas for prompt injections and malicious commands",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "bundle",
+        "x402"
+      ]
+    },
+    {
       "id": "agent-verify",
       "name": "Agent Verify (ERC-8004)",
       "tier": "identity",
@@ -921,6 +943,28 @@
       "path": "/api/trust-network/transaction-auth",
       "price": 0.05,
       "summary": "/api/trust-network/transaction-auth",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "tier1",
+        "x402"
+      ]
+    },
+    {
+      "id": "trust-network-insurance-attest",
+      "name": "Attest",
+      "tier": "tier1",
+      "tierLabel": "Tier-1 Enterprise",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/trust-network/insurance/attest",
+      "price": 0.06,
+      "summary": "Cryptographically sign transaction liability insurance based on active merchant bonds",
       "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
       "inputs": [
         "see OpenAPI"

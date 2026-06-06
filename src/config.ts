@@ -222,6 +222,8 @@ export const pricing = {
   escrowCharge: "0.01",
   escrowClose: "0.05",
   mcpCall: "0.02",
+  payloadSandbox: "0.04",
+  insuranceAttest: "0.06",
 } as const;
 
 function isProductionEnv(): boolean {

@@ -1,25 +1,25 @@
 {
   "origin": "http://127.0.0.1:3402",
-  "at": "2026-06-06T17:23:39.852Z",
-  "expectedPaidRoutes": 53,
+  "at": "2026-06-06T18:15:09.571Z",
+  "expectedPaidRoutes": 55,
   "checks": {
     "health": {
       "status": 200,
-      "endpointCount": 55,
+      "endpointCount": 57,
       "gitCommit": null,
       "agenticReady": false,
       "agentCashReady": false
     },
     "wellKnown": {
       "status": 200,
-      "resourceCount": 55,
+      "resourceCount": 57,
       "syncOk": true,
       "ownershipProofs": 2
     },
     "openapi": {
       "status": 200,
-      "pathCount": 55,
-      "postRouteCount": 53,
+      "pathCount": 57,
+      "postRouteCount": 55,
       "hasHealth": false,
       "hasGuidance": true
     }
@@ -131,6 +131,14 @@
     },
     {
       "path": "/api/facilitator/failover",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/guard/payload-sandbox",
       "status": 402,
       "pass402": true,
       "keys": [
@@ -434,6 +442,14 @@
       ]
     },
     {
+      "path": "/api/trust-network/insurance/attest",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
       "path": "/api/trust-network/transaction-auth",
       "status": 402,
       "pass402": true,
@@ -451,8 +467,8 @@
     }
   ],
   "summary": {
-    "total": 53,
-    "pass402Count": 53,
+    "total": 55,
+    "pass402Count": 55,
     "fail402Paths": [],
     "discoveryInSync": true
   }

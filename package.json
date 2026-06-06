@@ -1,7 +1,7 @@
 {
   "name": "x402-trust-layer",
   "version": "5.1.0",
-  "description": "x402 Trust Layer — 55 paid x402 APIs (Guard, Attest, Comply, Audit, Agent Trust Protocol v4). Live at x402trustlayer.xyz. Dexter facilitator, Base/Solana/Polygon.",
+  "description": "x402 Trust Layer — 57 paid x402 APIs (Guard, Attest, Comply, Audit, Agent Trust Protocol v4). Live at x402trustlayer.xyz. Dexter facilitator, Base/Solana/Polygon.",
   "type": "module",
   "main": "dist/index.js",
   "files": [

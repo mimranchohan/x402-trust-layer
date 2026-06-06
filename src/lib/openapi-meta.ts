@@ -196,4 +196,12 @@ export const ENDPOINT_META: Record<string, { summary: string; tags: string[] }> 
     summary: "Enterprise AML/KYC compliance assess",
     tags: ["protocol", "compliance"],
   },
+  "/api/guard/payload-sandbox": {
+    summary: "Payload sandbox to check request schemas for prompt injections and malicious commands",
+    tags: ["guard", "preflight", "security"],
+  },
+  "/api/trust-network/insurance/attest": {
+    summary: "Cryptographically sign transaction liability insurance based on active merchant bonds",
+    tags: ["trust-network", "insurance", "gate"],
+  },
 };

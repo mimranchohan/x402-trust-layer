@@ -1,6 +1,6 @@
 # x402 Trust Layer
 
-> 55 paid x402 trust infrastructure APIs for AI agent fleets. Guard, attest, comply and audit every payment — before the money moves.
+> 57 paid trust APIs enabling x402 standard payment check, Coinbase CDP wallet guardrail spend controls, and automated transaction auditing for AI agent fleets before the money moves.
 
 - Website: https://x402trustlayer.xyz
 - OpenAPI: https://x402trustlayer.xyz/openapi.json
@@ -38,10 +38,11 @@
 | POST | /api/merchant-trust/certify | $0.15 | Certify seller with KYM pass, badge, buyer policy, optional virtual bond. |
 | POST | /api/trust-network/buyer-gate | $0.03 | Verify buyer attestation and tier against certified seller policy. |
 | POST | /api/trust-network/transaction-auth | $0.05 | /api/trust-network/transaction-auth |
+| POST | /api/trust-network/insurance/attest | $0.06 | Cryptographically sign transaction liability insurance based on active merchant bonds |
 | POST | /api/pipeline/trust-v2 | $0.35 | One-shot: mandate diff + KYM ingest + guard + certified buyer gate. |
 | POST | /api/trust-network/bond/slash | $0.03 | Slash certified seller virtual bond after failed delivery. |
 
-## All 55 paid routes
+## All 57 paid routes
 
 | Method | Path | Price | Summary |
 |--------|------|-------|---------|
@@ -55,6 +56,7 @@
 | POST | /api/attestation/verify | $0.02 | Verifies attestation signature, expiry and registry lookup. |
 | GET | /api/attestation/registry | $0.02 | Query trust registry of valid agent attestations. |
 | POST | /api/guard/pre-x402 | $0.05 | Spend governor + identity gate + risk gate in one lightweight call. |
+| POST | /api/guard/payload-sandbox | $0.04 | Payload sandbox to check request schemas for prompt injections and malicious commands |
 | POST | /api/agent/verify | $0.04 | ERC-8004 TrustScore on Base mainnet — registration, reputation, wallet binding, agent card, domain. |
 | POST | /api/pipeline/execute | $0.25 | One-shot orchestration: guard, NL plan, facilitator routing and marketplace pick. |
 | POST | /api/facilitator/failover | $0.05 | Ranks x402 facilitators and recommends a healthy failover route. |
@@ -78,6 +80,7 @@
 | POST | /api/merchant-trust/certify | $0.15 | Certify seller with KYM pass, badge, buyer policy, optional virtual bond. |
 | POST | /api/trust-network/buyer-gate | $0.03 | Verify buyer attestation and tier against certified seller policy. |
 | POST | /api/trust-network/transaction-auth | $0.05 | /api/trust-network/transaction-auth |
+| POST | /api/trust-network/insurance/attest | $0.06 | Cryptographically sign transaction liability insurance based on active merchant bonds |
 | POST | /api/escrow/metered/open | $0.05 | /api/escrow/metered/open |
 | POST | /api/escrow/metered/charge | $0.01 | /api/escrow/metered/charge |
 | POST | /api/escrow/metered/close | $0.05 | /api/escrow/metered/close |
