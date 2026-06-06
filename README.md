@@ -17,7 +17,7 @@
 
 ---
 
-> **x402 Trust Layer** *(x402 Agent Suite Pro)* — **57 paid x402 APIs** for guard,
+> **x402 Trust Layer** *(x402 Agent Suite Pro)* — **57 paid x402 APIs** (63 total endpoints) for guard,
 > attestation, caching, compliance, settlement, and **Agent Trust Protocol v4**. Live at **https://x402trustlayer.xyz**
 
 A control plane for autonomous agent commerce. Fifty-seven paid x402 APIs that an
@@ -38,6 +38,20 @@ few cents a call.
 | **03. Performance** | Tamper-Proof 10x faster caching for on-chain identity & reputation | `/api/agent/verify` (uses memory registry TTL cache) |
 | **04. Compliance** | Ledgers, evidence bundles, dispute resolution, refund auditing | `/api/compliance/ledger` · `/api/dispute/resolve` · `/api/refund-arbiter/evaluate` |
 | **05. Settlement Ops** | Rail optimization, metered sessions, escrows, receipt auditing | `/api/rail-optimizer/route` · `/api/escrow/metered/*` · `/api/receipt-auditor/verify` |
+
+---
+
+## What's New (v5.2.0)
+
+- **63 Live Endpoints (57 Paid, 6 Free)** — Native support for the Alchemy platform, including preset guard rails, inbound webhooks, transaction simulation audits, and custom RPC configurations.
+- **Native Alchemy Developer Suite Integrations** —
+  - `POST /api/guard/pre-x402-alchemy` ($0.05): Preset preflight guard using custom Alchemy mainnet Solana RPC.
+  - `POST /api/alchemy/paymaster-policy` (Free): Decodes ERC-4337 UserOperation callData and checks gas/prompt safety.
+  - `POST /api/alchemy/notify-webhook` (Free): Audits address activity postflight and logs to DB ledger.
+  - `POST /api/alchemy/simulate-shield` (Free): Preflight simulation via Alchemy Simulation APIs (returns A-F security grade).
+- **Solana Action (Blink) Support** —
+  - `GET/POST /api/solana-pay/action/agent-verify` (Free): Query wallet trust scores directly via Action-aware clients. Built-in fallback to caller's signing address if target parameter is omitted, and public RPC fallback for resilience.
+- **Bypassed Free Route Webhooks** — Webhook and simulation routes bypass x402 payment checks using direct Express router mounting.
 
 ---
 
@@ -64,11 +78,12 @@ This suite is the missing *judgement and security plane* for autonomous agent co
 
 ---
 
-## The Complete Catalog — 57 Paid APIs
+## The Complete Catalog — 57 Paid APIs & 6 Free Utilities
 
 ### 1. Guard & Preflight
 - `POST /api/x402/proxy` ($0.08) — All-in-one preflight: policy check, threat scan, and optional downstream probe.
 - `POST /api/guard/pre-x402` ($0.05) — Spend governor, identity verification, and URL risk scan.
+- `POST /api/guard/pre-x402-alchemy` ($0.05) — Spend governor preset using Alchemy mainnet RPC.
 - `POST /api/guard/payload-sandbox` ($0.04) — Sandbox audit for prompt injections and malicious shell commands.
 - `POST /api/pipeline/execute` ($0.25) — Multi-step pipeline: guard check, natural language planner, routing, and selection.
 - `POST /api/pipeline/trust-v2` ($0.35) — Aggregates mandate diffing, KYM ingestion, guardrail checks, and certified gates.
@@ -127,6 +142,14 @@ This suite is the missing *judgement and security plane* for autonomous agent co
 - `POST /api/protocol/zk/prove` ($0.15) — Generates zero-knowledge proof of authorization or compliance.
 - `POST /api/protocol/credit/score` ($0.06) — Agent credit score bureau index.
 - `POST /api/protocol/compliance/assess` ($0.10) — Enterprise compliance assessment.
+
+### 7. Free Utility Endpoints
+- `POST /api/alchemy/paymaster-policy` (Free) — Decodes ERC-4337 UserOperation callData and checks gas/prompt safety.
+- `POST /api/alchemy/notify-webhook` (Free) — Audits address activity postflight and logs to DB ledger.
+- `POST /api/alchemy/simulate-shield` (Free) — 2026 super-advanced simulation shield for asset change analysis.
+- `GET /api/solana-pay/action/agent-verify` (Free) — Solana Blink GET metadata for wallet trust score lookup.
+- `POST /api/solana-pay/action/agent-verify` (Free) — Solana Blink POST transaction payload for trust score lookup.
+- `GET /api/dashboard/summary` (Free) — Dynamic system status dashboard data.
 
 ---
 
