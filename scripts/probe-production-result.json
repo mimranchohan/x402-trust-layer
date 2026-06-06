@@ -1,25 +1,25 @@
 {
-  "origin": "https://x402trustlayer.xyz",
-  "at": "2026-06-06T21:06:07.042Z",
-  "expectedPaidRoutes": 55,
+  "origin": "http://127.0.0.1:3402",
+  "at": "2026-06-06T23:09:35.511Z",
+  "expectedPaidRoutes": 60,
   "checks": {
     "health": {
       "status": 200,
-      "endpointCount": 57,
-      "gitCommit": "3f0fd66",
-      "agenticReady": true,
-      "agentCashReady": true
+      "endpointCount": 63,
+      "gitCommit": null,
+      "agenticReady": false,
+      "agentCashReady": false
     },
     "wellKnown": {
       "status": 200,
-      "resourceCount": 57,
+      "resourceCount": 63,
       "syncOk": true,
       "ownershipProofs": 2
     },
     "openapi": {
       "status": 200,
-      "pathCount": 57,
-      "postRouteCount": 55,
+      "pathCount": 62,
+      "postRouteCount": 60,
       "hasHealth": false,
       "hasGuidance": true
     }
@@ -47,6 +47,36 @@
       "pass402": true,
       "keys": [
         "error"
+      ]
+    },
+    {
+      "path": "/api/alchemy/notify-webhook",
+      "status": 200,
+      "pass402": true,
+      "keys": [
+        "ok",
+        "processedCount"
+      ]
+    },
+    {
+      "path": "/api/alchemy/paymaster-policy",
+      "status": 200,
+      "pass402": true,
+      "keys": [
+        "approved"
+      ]
+    },
+    {
+      "path": "/api/alchemy/simulate-shield",
+      "status": 200,
+      "pass402": true,
+      "keys": [
+        "safe",
+        "reverted",
+        "summary",
+        "assetChanges",
+        "detectedThreats",
+        "securityGrade"
       ]
     },
     {
@@ -147,6 +177,14 @@
     },
     {
       "path": "/api/guard/pre-x402",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/guard/pre-x402-alchemy",
       "status": 402,
       "pass402": true,
       "keys": [
@@ -426,6 +464,15 @@
       ]
     },
     {
+      "path": "/api/solana-pay/action/agent-verify",
+      "status": 200,
+      "pass402": true,
+      "keys": [
+        "transaction",
+        "message"
+      ]
+    },
+    {
       "path": "/api/trust-network/bond/slash",
       "status": 402,
       "pass402": true,
@@ -467,8 +514,8 @@
     }
   ],
   "summary": {
-    "total": 55,
-    "pass402Count": 55,
+    "total": 60,
+    "pass402Count": 60,
     "fail402Paths": [],
     "discoveryInSync": true
   }

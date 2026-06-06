@@ -88,7 +88,13 @@ async function probe() {
   };
 
   for (const path of POST_ROUTES) {
-    result.routes.push(await probePost(path));
+    const probeRes = await probePost(path);
+    const op = openapi.paths?.[path]?.post;
+    const isFree = op?.security && Array.isArray(op.security) && op.security.length === 0;
+    if (isFree) {
+      probeRes.pass402 = probeRes.status === 200 || probeRes.status === 400 || probeRes.status === 403;
+    }
+    result.routes.push(probeRes);
   }
 
   const fail402 = result.routes.filter((r) => !r.pass402);

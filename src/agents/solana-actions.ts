@@ -95,9 +95,7 @@ export async function postSolanaVerifyAction(
   if (!userAccount) {
     throw new Error("Missing user account address");
   }
-  if (!targetAddress) {
-    throw new Error("Missing target address to verify");
-  }
+  const target = targetAddress || userAccount;
 
   const fromPubkey = new PublicKey(userAccount);
   const toPubkey = new PublicKey(config.payTo); // 9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt (or set by environment)
@@ -112,8 +110,21 @@ export async function postSolanaVerifyAction(
     })
   );
 
-  // Fetch blockhash & set fee payer
-  const { blockhash } = await connection.getLatestBlockhash("confirmed");
+  // Fetch blockhash & set fee payer with fallback
+  let blockhash: string;
+  try {
+    const res = await connection.getLatestBlockhash("confirmed");
+    blockhash = res.blockhash;
+  } catch (err) {
+    console.warn("[solana-actions] Custom RPC blockhash fetch failed, trying public fallback...", err);
+    try {
+      const fallbackConnection = new Connection("https://api.mainnet-beta.solana.com");
+      const res = await fallbackConnection.getLatestBlockhash("confirmed");
+      blockhash = res.blockhash;
+    } catch (fallbackErr) {
+      throw new Error(`Failed to retrieve Solana blockhash from both custom and public RPCs: ${fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr)}`);
+    }
+  }
   transaction.recentBlockhash = blockhash;
   transaction.feePayer = fromPubkey;
 
@@ -127,6 +138,6 @@ export async function postSolanaVerifyAction(
 
   return {
     transaction: base64Transaction,
-    message: `Payment authorized for checking agent trust score of ${targetAddress}`,
+    message: `Payment authorized for checking agent trust score of ${target}`,
   };
 }

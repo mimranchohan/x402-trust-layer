@@ -443,7 +443,8 @@ app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
     logger.error({ err }, "API error after headers sent");
     return;
   }
-  logger.error({ err }, "API error");
+  const errObj = err instanceof Error ? { message: err.message, stack: err.stack } : { details: String(err) };
+  logger.error({ err: errObj }, "API error");
   const expose =
     process.env.NODE_ENV !== "production" && !process.env.RAILWAY_ENVIRONMENT;
   if (expose && err instanceof Error) {
