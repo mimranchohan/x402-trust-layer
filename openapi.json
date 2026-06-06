@@ -3222,7 +3222,7 @@
                     "endpoint": "/api/spend-governor/check",
                     "amountUsdc": 0.03,
                     "network": "solana",
-                    "timestamp": "2026-06-06T23:19:03.360Z"
+                    "timestamp": "2026-06-06T23:25:10.809Z"
                   }
                 ]
               }
@@ -3945,7 +3945,7 @@
                     "category": "oracle",
                     "agentId": "dexter-verifier-probe",
                     "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
-                    "timestamp": "2026-06-06T23:19:03.360Z"
+                    "timestamp": "2026-06-06T23:25:10.810Z"
                   }
                 ],
                 "policy": {

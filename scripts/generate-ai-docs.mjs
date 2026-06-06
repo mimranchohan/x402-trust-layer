@@ -5,7 +5,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const MCP_VERSION = "5.1.0";
+const MCP_VERSION = "5.2.0";
 const agentsPath = join(root, "public", "data", "agents.json");
 const catalog = JSON.parse(readFileSync(agentsPath, "utf8"));
 const agents = catalog.agents;

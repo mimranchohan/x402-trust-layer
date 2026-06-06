@@ -108,7 +108,7 @@ Alchemy skill: `npx skills add alchemyplatform/skills --yes`
 | trust_insurance_attest | POST /api/trust-network/insurance/attest |
 | trust_receipt_verify | POST /api/receipt-auditor/verify |
 
-Setup: `EVM_PRIVATE_KEY` or `SOLANA_PRIVATE_KEY` in env. Run: `npx @mimranakb/trust-layer-mcp@5.1.0`
+Setup: `EVM_PRIVATE_KEY` or `SOLANA_PRIVATE_KEY` in env. Run: `npx @mimranakb/trust-layer-mcp@5.2.0`
 
 ## Replay-Guard SDK Integration (Strict Nonce Binding)
 
