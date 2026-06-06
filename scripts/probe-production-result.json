@@ -1,25 +1,25 @@
 {
-  "origin": "https://x402trustlayer.xyz",
-  "at": "2026-06-03T16:16:32.504Z",
-  "expectedPaidRoutes": 57,
+  "origin": "http://127.0.0.1:3402",
+  "at": "2026-06-06T16:51:20.073Z",
+  "expectedPaidRoutes": 62,
   "checks": {
     "health": {
       "status": 200,
-      "endpointCount": 58,
-      "gitCommit": "815e8e0",
-      "agenticReady": true,
-      "agentCashReady": true
+      "endpointCount": 64,
+      "gitCommit": null,
+      "agenticReady": false,
+      "agentCashReady": false
     },
     "wellKnown": {
       "status": 200,
-      "resourceCount": 58,
+      "resourceCount": 64,
       "syncOk": true,
       "ownershipProofs": 2
     },
     "openapi": {
       "status": 200,
-      "pathCount": 58,
-      "postRouteCount": 57,
+      "pathCount": 64,
+      "postRouteCount": 62,
       "hasHealth": false,
       "hasGuidance": true
     }
@@ -98,6 +98,30 @@
       ]
     },
     {
+      "path": "/api/escrow/metered/charge",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/escrow/metered/close",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/escrow/metered/open",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
       "path": "/api/evidence-locker/export",
       "status": 402,
       "pass402": true,
@@ -155,6 +179,14 @@
     },
     {
       "path": "/api/market/buy-advisor",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/mcp/tools/call",
       "status": 402,
       "pass402": true,
       "keys": [
@@ -474,6 +506,14 @@
       ]
     },
     {
+      "path": "/api/trust-network/transaction-auth",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
       "path": "/api/x402/proxy",
       "status": 402,
       "pass402": true,
@@ -483,8 +523,8 @@
     }
   ],
   "summary": {
-    "total": 57,
-    "pass402Count": 57,
+    "total": 62,
+    "pass402Count": 62,
     "fail402Paths": [],
     "discoveryInSync": true
   }

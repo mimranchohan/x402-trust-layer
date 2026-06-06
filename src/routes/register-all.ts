@@ -32,6 +32,7 @@ import { runQualityEscrow } from "../agents/quality-escrow.js";
 import { runSemanticQualityEscrow } from "../agents/quality-escrow-semantic.js";
 import { runMandateDiff } from "../agents/mandate-diff.js";
 import { runSellerCertify, runBuyerGate, runBondSlash } from "../agents/trust-network.js";
+import { runTransactionAuth } from "../agents/transaction-auth.js";
 import { runPipelineTrustV2 } from "../agents/pipeline-trust-v2.js";
 import { handleA2APaymentRoute } from "../agents/a2a-payment.js";
 import { handleBedrockPreflight } from "../agents/bedrock-bridge.js";
@@ -1453,6 +1454,29 @@ export function registerRoutes(
       );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(await runBuyerGate(parsed.data));
+    },
+  );
+
+  post(
+    "/api/trust-network/transaction-auth",
+    pricing.transactionAuth,
+    "Certified seller transaction authorization pre-flight validation",
+    async (req, res) => {
+      const parsed = parseWithVerifierFallback(
+        "/api/trust-network/transaction-auth",
+        z.object({
+          buyerWallet: z.string().min(16),
+          sellerHost: z.string().min(1),
+          amountUsdc: z.coerce.number().positive(),
+          agentId: z.string().optional(),
+          attestationId: z.string().optional(),
+          network: z.string().optional(),
+          requestHeaders: z.record(z.unknown()).optional(),
+        }),
+        req.body,
+      );
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(await runTransactionAuth(parsed.data));
     },
   );
 
