@@ -176,6 +176,7 @@ export const pricing = {
   evidenceLocker: "0.10",
   agentEscrow: "0.12",
   preX402Guard: "0.05",
+  preX402GuardAlchemy: "0.05",
   pipelineExecute: "0.25",
   x402Proxy: "0.08",
   attestationIssue: "0.04",

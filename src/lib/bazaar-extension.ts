@@ -281,6 +281,22 @@ export function defaultOutputExample(path: string): Record<string, unknown> {
       checks_passed: ["a2a_schema_valid", "trust_score", "seller_dispatch"],
     };
   }
+  if (path.includes("alchemy/paymaster-policy")) {
+    return { approved: true };
+  }
+  if (path.includes("alchemy/notify-webhook")) {
+    return { ok: true, processedCount: 1 };
+  }
+  if (path.includes("alchemy/simulate-shield")) {
+    return {
+      safe: true,
+      reverted: false,
+      summary: "Transaction simulation succeeded. No potential drain or threat vectors detected.",
+      assetChanges: [],
+      detectedThreats: [],
+      securityGrade: "A",
+    };
+  }
   return { ok: true, allowed: true, summary: "Paid response after x402 settlement" };
 }
 

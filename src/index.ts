@@ -465,6 +465,54 @@ const server = app.listen(config.port, host, () => {
     },
     "x402 Trust Layer listening",
   );
+
+  // Self-Registration Bootstrapper (Zero-Marketing Autonomous Discovery)
+  const isProduction =
+    config.publicBaseUrl.startsWith("https://") &&
+    !config.publicBaseUrl.includes("localhost") &&
+    !config.publicBaseUrl.includes("127.0.0.1");
+
+  if (isProduction) {
+    setTimeout(() => {
+      logger.info({}, "Triggering autonomous registry pings (Self-Advertising)...");
+
+      // 1. Ping x402scan
+      const x402scanUrl = `https://www.x402scan.com/api/trpc/public.resources.registerFromOrigin`;
+      fetch(x402scanUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ json: { origin: config.publicBaseUrl } }),
+      })
+        .then(async (res) => {
+          const text = await res.text();
+          logger.info({ status: res.status, response: text.slice(0, 100) }, "x402scan autonomous registration ping complete");
+        })
+        .catch((err) => logger.error({ err: err instanceof Error ? err.message : err }, "x402scan autonomous registration ping failed"));
+
+      // 2. Ping Agent.market
+      const manifest = {
+        name: "x402 Trust Layer",
+        description: "Guard, Attest, Comply, Audit — paid x402 APIs for autonomous agent payment safety and agent-to-agent orchestration.",
+        url: config.publicBaseUrl,
+        openapi: `${config.publicBaseUrl.replace(/\/$/, "")}/openapi.json`,
+        x402Discovery: `${config.publicBaseUrl.replace(/\/$/, "")}/.well-known/x402`,
+        categories: ["trust", "compliance", "payments", "identity"],
+        priceRange: { min: 0.02, max: 0.45, currency: "USDC" },
+        networks: ["eip155:8453", "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp", "eip155:137"],
+      };
+      const agentMarketUrl = process.env.AGENT_MARKET_REGISTER_URL || "https://agent.market/api/register";
+      fetch(agentMarketUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(manifest),
+      })
+        .then(async (res) => {
+          const text = await res.text();
+          logger.info({ status: res.status, response: text.slice(0, 100) }, "Agent.market autonomous registration ping complete");
+        })
+        .catch((err) => logger.error({ err: err instanceof Error ? err.message : err }, "Agent.market autonomous registration ping failed"));
+    }, 15000);
+  }
 });
 
 async function shutdown(signal: string): Promise<void> {

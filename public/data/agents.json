@@ -271,6 +271,94 @@
       ]
     },
     {
+      "id": "guard-pre-x402-alchemy",
+      "name": "Pre X402 Alchemy",
+      "tier": "bundle",
+      "tierLabel": "Bundles",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/guard/pre-x402-alchemy",
+      "price": 0.05,
+      "summary": "Pre-x402 guard optimized for Alchemy: spend + identity + risk",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "bundle",
+        "x402"
+      ]
+    },
+    {
+      "id": "alchemy-paymaster-policy",
+      "name": "Paymaster Policy",
+      "tier": "security",
+      "tierLabel": "Core Gates",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/alchemy/paymaster-policy",
+      "price": null,
+      "summary": "Alchemy Paymaster Custom Webhook Policy for sponsored transactions",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "security",
+        "x402"
+      ]
+    },
+    {
+      "id": "alchemy-notify-webhook",
+      "name": "Notify Webhook",
+      "tier": "security",
+      "tierLabel": "Core Gates",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/alchemy/notify-webhook",
+      "price": null,
+      "summary": "Alchemy Notify Webhook Receiver for transaction audit logging",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "security",
+        "x402"
+      ]
+    },
+    {
+      "id": "alchemy-simulate-shield",
+      "name": "Simulate Shield",
+      "tier": "intelligence",
+      "tierLabel": "Intelligence",
+      "layer": "settlement",
+      "method": "POST",
+      "path": "/api/alchemy/simulate-shield",
+      "price": null,
+      "summary": "Alchemy-powered 2026 Transaction simulation and safety shield",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "intelligence",
+        "x402"
+      ]
+    },
+    {
       "id": "pre-x402-guard",
       "name": "Pre-x402 Guard",
       "tier": "bundle",

@@ -45,6 +45,59 @@ export const VERIFY_EXAMPLES: Record<string, unknown> = {
     network: "eip155:8453",
     policy: { dailyCapUsdc: 20, perCallCapUsdc: 2, allowedHosts: ["x402.alchemy.com"] },
   },
+  "/api/alchemy/paymaster-policy": {
+    userOperation: {
+      sender: "0x1234567890123456789012345678901234567890",
+      nonce: "0x01",
+      initCode: "0x",
+      callData: "0xb61d27f600000000000000000000000020c000000000000000000000b9537d11c60e8b500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000041234567800000000000000000000000000000000000000000000000000000000",
+      callGasLimit: "0x5208",
+      verificationGasLimit: "0x5208",
+      preVerificationGas: "0x5208",
+      maxFeePerGas: "0x3b9aca00",
+      maxPriorityFeePerGas: "0x3b9aca00",
+      paymasterAndData: "0x",
+      signature: "0x"
+    },
+    policyId: "policy_example_123",
+    chainId: 8453,
+    webhookData: "test-metadata"
+  },
+  "/api/alchemy/notify-webhook": {
+    webhookId: "wh_test_123",
+    id: "whevt_test_456",
+    createdAt: "2026-06-07T00:00:00.000Z",
+    type: "ADDRESS_ACTIVITY",
+    event: {
+      network: "BASE_MAINNET",
+      activity: [
+        {
+          blockNum: "0x123",
+          hash: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+          fromAddress: "0x0000000000000000000000000000000000000001",
+          toAddress: "0x1234567890123456789012345678901234567890",
+          value: 10.5,
+          asset: "USDC",
+          category: "token",
+          rawContract: {
+            rawValue: "0xa0000",
+            address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+            decimal: 6
+          }
+        }
+      ]
+    }
+  },
+  "/api/alchemy/simulate-shield": {
+    agentId: "alchemy-agent-1",
+    transaction: {
+      from: "0x1234567890123456789012345678901234567890",
+      to: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      data: "0xa9059cbb00000000000000000000000009c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt00000000000000000000000000000000000000000000000000000000000f4240",
+      value: "0x0"
+    },
+    chainId: 8453
+  },
   "/api/pipeline/execute": {
     agentId: "dexter-verifier-probe",
     walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",

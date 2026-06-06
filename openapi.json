@@ -40,8 +40,8 @@
   },
   "x-x402scan": {
     "discoveryMode": "openapi-first",
-    "paidRouteCount": 59,
-    "note": "OpenAPI lists 59 paid /api/* operations. Free routes documented under x-discovery.freeEndpoints."
+    "paidRouteCount": 63,
+    "note": "OpenAPI lists 63 paid /api/* operations. Free routes documented under x-discovery.freeEndpoints."
   },
   "servers": [
     {
@@ -1349,6 +1349,257 @@
             "required": false
           }
         ]
+      }
+    },
+    "/api/guard/pre-x402-alchemy": {
+      "post": {
+        "operationId": "post_guard_pre_x402_alchemy",
+        "summary": "Pre-x402 guard optimized for Alchemy: spend + identity + risk",
+        "description": "Pre-x402 guard optimized for Alchemy: spend + identity + risk — $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "tags": [
+          "bundle",
+          "guard",
+          "preflight",
+          "policy",
+          "alchemy"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response after x402 settlement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Successful response after x402 settlement",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "allowed": {
+                      "type": "boolean"
+                    },
+                    "summary": {
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "type": "number"
+                    },
+                    "checks_passed": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": true
+                },
+                "example": {
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment Required (x402 v2). Unpaid requests must receive HTTP 402 with Payment-Required header and non-empty accepts.",
+            "headers": {
+              "Payment-Required": {
+                "description": "Base64-encoded x402 payment requirements (v2)",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.050000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "agentId": {
+                    "type": "string"
+                  },
+                  "walletAddress": {
+                    "type": "string"
+                  },
+                  "targetUrl": {
+                    "type": "string"
+                  },
+                  "estimatedCostUsdc": {
+                    "type": "number"
+                  },
+                  "network": {
+                    "type": "string"
+                  },
+                  "policy": {
+                    "type": "object",
+                    "properties": {
+                      "dailyCapUsdc": {
+                        "type": "number"
+                      },
+                      "perCallCapUsdc": {
+                        "type": "number"
+                      },
+                      "allowedHosts": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "dailyCapUsdc",
+                      "perCallCapUsdc",
+                      "allowedHosts"
+                    ]
+                  }
+                },
+                "required": [
+                  "agentId",
+                  "walletAddress",
+                  "targetUrl",
+                  "estimatedCostUsdc",
+                  "network",
+                  "policy"
+                ]
+              },
+              "example": {
+                "agentId": "alchemy-live-demo-1",
+                "walletAddress": "0x0000000000000000000000000000000000000001",
+                "targetUrl": "https://x402.alchemy.com/base-mainnet/v2",
+                "estimatedCostUsdc": 1,
+                "network": "eip155:8453",
+                "policy": {
+                  "dailyCapUsdc": 20,
+                  "perCallCapUsdc": 2,
+                  "allowedHosts": [
+                    "x402.alchemy.com"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/alchemy/paymaster-policy": {
+      "post": {
+        "operationId": "post_alchemy_paymaster_policy",
+        "summary": "Alchemy Paymaster Custom Webhook Policy for sponsored transactions",
+        "description": "Alchemy Paymaster Custom Webhook Policy for sponsored transactions — Free endpoint.",
+        "tags": [
+          "security",
+          "alchemy",
+          "paymaster",
+          "security",
+          "policy"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "approved": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/alchemy/notify-webhook": {
+      "post": {
+        "operationId": "post_alchemy_notify_webhook",
+        "summary": "Alchemy Notify Webhook Receiver for transaction audit logging",
+        "description": "Alchemy Notify Webhook Receiver for transaction audit logging — Free endpoint.",
+        "tags": [
+          "security",
+          "alchemy",
+          "notify",
+          "webhook",
+          "audit"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "ok": true,
+                  "processedCount": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/alchemy/simulate-shield": {
+      "post": {
+        "operationId": "post_alchemy_simulate_shield",
+        "summary": "Alchemy-powered 2026 Transaction simulation and safety shield",
+        "description": "Alchemy-powered 2026 Transaction simulation and safety shield — Free endpoint.",
+        "tags": [
+          "intelligence",
+          "alchemy",
+          "simulation",
+          "shield",
+          "security"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "safe": true,
+                  "reverted": false,
+                  "summary": "Transaction simulation succeeded. No potential drain or threat vectors detected.",
+                  "assetChanges": [],
+                  "detectedThreats": [],
+                  "securityGrade": "A"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/guard/pre-x402": {
@@ -2971,7 +3222,7 @@
                     "endpoint": "/api/spend-governor/check",
                     "amountUsdc": 0.03,
                     "network": "solana",
-                    "timestamp": "2026-06-06T22:28:00.289Z"
+                    "timestamp": "2026-06-06T22:59:02.245Z"
                   }
                 ]
               }
@@ -3694,7 +3945,7 @@
                     "category": "oracle",
                     "agentId": "dexter-verifier-probe",
                     "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
-                    "timestamp": "2026-06-06T22:28:00.289Z"
+                    "timestamp": "2026-06-06T22:59:02.245Z"
                   }
                 ],
                 "policy": {

@@ -20,6 +20,22 @@ export const ENDPOINT_META: Record<string, { summary: string; tags: string[] }> 
     summary: "Query attestation registry",
     tags: ["attestation", "registry"],
   },
+  "/api/guard/pre-x402-alchemy": {
+    summary: "Pre-x402 guard optimized for Alchemy: spend + identity + risk",
+    tags: ["guard", "preflight", "policy", "alchemy"],
+  },
+  "/api/alchemy/paymaster-policy": {
+    summary: "Alchemy Paymaster Custom Webhook Policy for sponsored transactions",
+    tags: ["alchemy", "paymaster", "security", "policy"],
+  },
+  "/api/alchemy/notify-webhook": {
+    summary: "Alchemy Notify Webhook Receiver for transaction audit logging",
+    tags: ["alchemy", "notify", "webhook", "audit"],
+  },
+  "/api/alchemy/simulate-shield": {
+    summary: "Alchemy-powered 2026 Transaction simulation and safety shield",
+    tags: ["alchemy", "simulation", "shield", "security"],
+  },
   "/api/guard/pre-x402": {
     summary: "Pre-x402 guard: spend + identity + risk in one call",
     tags: ["guard", "preflight", "policy"],

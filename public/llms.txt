@@ -1,6 +1,6 @@
 # x402 Trust Layer
 
-> 59 paid trust APIs enabling x402 standard payment check, Coinbase CDP wallet guardrail spend controls, and automated transaction auditing for AI agent fleets before the money moves.
+> 63 paid trust APIs enabling x402 standard payment check, Coinbase CDP wallet guardrail spend controls, and automated transaction auditing for AI agent fleets before the money moves.
 
 - Website: https://x402trustlayer.xyz
 - OpenAPI: https://x402trustlayer.xyz/openapi.json
@@ -42,7 +42,7 @@
 | POST | /api/pipeline/trust-v2 | $0.35 | One-shot: mandate diff + KYM ingest + guard + certified buyer gate. |
 | POST | /api/trust-network/bond/slash | $0.03 | Slash certified seller virtual bond after failed delivery. |
 
-## All 59 paid routes
+## All 63 paid routes
 
 | Method | Path | Price | Summary |
 |--------|------|-------|---------|
@@ -55,6 +55,10 @@
 | POST | /api/attestation/issue | $0.04 | Issues HMAC-signed preflight attestation for partner agent networks. |
 | POST | /api/attestation/verify | $0.02 | Verifies attestation signature, expiry and registry lookup. |
 | GET | /api/attestation/registry | $0.02 | Query trust registry of valid agent attestations. |
+| POST | /api/guard/pre-x402-alchemy | $0.05 | Pre-x402 guard optimized for Alchemy: spend + identity + risk |
+| POST | /api/alchemy/paymaster-policy | Free | Alchemy Paymaster Custom Webhook Policy for sponsored transactions |
+| POST | /api/alchemy/notify-webhook | Free | Alchemy Notify Webhook Receiver for transaction audit logging |
+| POST | /api/alchemy/simulate-shield | Free | Alchemy-powered 2026 Transaction simulation and safety shield |
 | POST | /api/guard/pre-x402 | $0.05 | Spend governor + identity gate + risk gate in one lightweight call. |
 | POST | /api/guard/payload-sandbox | $0.04 | Payload sandbox to check request schemas for prompt injections and malicious commands |
 | POST | /api/agent/verify | $0.04 | ERC-8004 TrustScore on Base mainnet — registration, reputation, wallet binding, agent card, domain. |
