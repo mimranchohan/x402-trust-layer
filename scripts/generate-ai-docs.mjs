@@ -12,9 +12,16 @@ const agents = catalog.agents;
 
 const byTier = (t) => agents.filter((a) => a.tier === t);
 
+function fmtPrice(p) {
+  if (p === null || p === undefined || typeof p !== "number" || Number.isNaN(p)) {
+    return "Free";
+  }
+  return `$${p.toFixed(2)}`;
+}
+
 function routeTable(filter) {
   return filter
-    .map((a) => `| ${a.method} | ${a.path} | $${a.price.toFixed(2)} | ${a.summary} |`)
+    .map((a) => `| ${a.method} | ${a.path} | ${fmtPrice(a.price)} | ${a.summary} |`)
     .join("\n");
 }
 
@@ -227,7 +234,7 @@ ${agents
     (a, i) => `## ${i + 1}. ${a.name}
 
 - **Route:** ${a.method} ${a.path}
-- **Price:** $${a.price.toFixed(2)} USDC
+- **Price:** ${fmtPrice(a.price)} USDC
 - **Tier:** ${a.tierLabel}
 - **Summary:** ${a.summary}
 - **Why:** ${a.why}

@@ -12,15 +12,15 @@ const MPP_SESSION_PROTOCOLS = [
   { mpp: { method: "POST", intent: "session", currency: "0x20c000000000000000000000b9537d11c60e8b50" } },
 ];
 
-const AGENT_GUIDANCE = `x402 Trust Layer — 58 paid agent payment infrastructure APIs on Base, Solana, and Polygon via Dexter facilitator.
+const AGENT_GUIDANCE = `x402 Trust Layer — 55 paid agent payment infrastructure APIs on Base, Solana, and Polygon via Dexter facilitator.
 
 Typical flow:
 1. POST /api/guard/pre-x402 or POST /api/x402/proxy before any downstream x402 payment.
 2. POST /api/merchant-trust/score for Know-Your-Merchant preflight on unknown hosts.
-3. POST /api/mandate/compile for AP2-style signed intent; POST /api/mandate/diff + /api/mandate/verify before spend.
+3. POST /api/mandate/compile for AP2-style signed intent; POST /api/mandate/diff before spend.
 4. POST /api/trust-network/buyer-gate when paying certified sellers; POST /api/merchant-trust/certify to join network.
 5. POST /api/quality-escrow/semantic-settle after delivery for auto-refund on bad responses.
-6. POST /api/payment-intent/compile or POST /api/pipeline/execute for multi-step orchestration.
+6. POST /api/pipeline/execute for multi-step orchestration.
 7. POST /api/mpp/session with action open|voucher|close for batch settlement savings.
 8. POST /api/attestation/issue then pass X-Suite-Attestation on partner calls.
 9. POST /api/receipt-auditor/verify after external settlements; POST /api/compliance/ledger for audit.
@@ -227,7 +227,7 @@ export function buildAgentCashOpenApi(): Record<string, unknown> {
       title: "x402 Trust Layer",
       version: SUITE_VERSION,
       description:
-        "36 paid x402 trust infrastructure APIs: guard, semantic escrow, mandate diff, certified seller network, KYM, mandates, compliance, disputes, and orchestration.",
+        "55 paid x402 trust infrastructure APIs: guard, semantic escrow, mandate diff, certified seller network, KYM, mandates, compliance, disputes, and orchestration.",
       "x-guidance": AGENT_GUIDANCE,
     },
     "x-discovery": {

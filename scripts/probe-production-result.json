@@ -1,25 +1,25 @@
 {
   "origin": "http://127.0.0.1:3402",
-  "at": "2026-06-06T16:51:20.073Z",
-  "expectedPaidRoutes": 62,
+  "at": "2026-06-06T17:23:39.852Z",
+  "expectedPaidRoutes": 53,
   "checks": {
     "health": {
       "status": 200,
-      "endpointCount": 64,
+      "endpointCount": 55,
       "gitCommit": null,
       "agenticReady": false,
       "agentCashReady": false
     },
     "wellKnown": {
       "status": 200,
-      "resourceCount": 64,
+      "resourceCount": 55,
       "syncOk": true,
       "ownershipProofs": 2
     },
     "openapi": {
       "status": 200,
-      "pathCount": 64,
-      "postRouteCount": 62,
+      "pathCount": 55,
+      "postRouteCount": 53,
       "hasHealth": false,
       "hasGuidance": true
     }
@@ -146,14 +146,6 @@
       ]
     },
     {
-      "path": "/api/identity-gate/check",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error"
-      ]
-    },
-    {
       "path": "/api/mandate/compile",
       "status": 402,
       "pass402": true,
@@ -163,14 +155,6 @@
     },
     {
       "path": "/api/mandate/diff",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error"
-      ]
-    },
-    {
-      "path": "/api/mandate/verify",
       "status": 402,
       "pass402": true,
       "keys": [
@@ -218,22 +202,6 @@
       ]
     },
     {
-      "path": "/api/mpp/session-plan",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error"
-      ]
-    },
-    {
-      "path": "/api/payment-intent/compile",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error"
-      ]
-    },
-    {
       "path": "/api/pipeline/execute",
       "status": 402,
       "pass402": true,
@@ -259,30 +227,6 @@
     },
     {
       "path": "/api/protocol/credit/score",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error"
-      ]
-    },
-    {
-      "path": "/api/protocol/escrow/create",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error"
-      ]
-    },
-    {
-      "path": "/api/protocol/escrow/status",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error"
-      ]
-    },
-    {
-      "path": "/api/protocol/escrow/transition",
       "status": 402,
       "pass402": true,
       "keys": [
@@ -450,14 +394,6 @@
       ]
     },
     {
-      "path": "/api/risk-gate/scan",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error"
-      ]
-    },
-    {
       "path": "/api/router/route",
       "status": 402,
       "pass402": true,
@@ -475,14 +411,6 @@
     },
     {
       "path": "/api/settlement-graph/next",
-      "status": 402,
-      "pass402": true,
-      "keys": [
-        "error"
-      ]
-    },
-    {
-      "path": "/api/spend-governor/check",
       "status": 402,
       "pass402": true,
       "keys": [
@@ -523,8 +451,8 @@
     }
   ],
   "summary": {
-    "total": 62,
-    "pass402Count": 62,
+    "total": 53,
+    "pass402Count": 53,
     "fail402Paths": [],
     "discoveryInSync": true
   }

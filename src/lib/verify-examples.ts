@@ -57,37 +57,10 @@ export const VERIFY_EXAMPLES: Record<string, unknown> = {
     marketplaceQuery: "ETH USD spot price oracle",
     preferNetwork: "solana",
   },
-  "/api/payment-intent/compile": {
-    task: "Verify spend policy for ETH oracle call under one dollar budget",
-    maxBudgetUsdc: 1,
-    agentId: "dexter-verifier-probe",
-    externalCallEstimateUsdc: 0.05,
-  },
   "/api/facilitator/failover": {
     targetUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
     preferNetwork: "solana",
     fastProbe: true,
-  },
-  "/api/mpp/session-plan": {
-    action: "estimate",
-    expectedCalls: 25,
-    avgPricePerCallUsdc: 0.03,
-  },
-  "/api/spend-governor/check": {
-    agentId: "dexter-verifier-probe",
-    estimatedCostUsdc: 0.03,
-    targetUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
-    network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-    policy: { dailyCapUsdc: 10, perCallCapUsdc: 0.5, allowedHosts: ["myceliasignal.com"] },
-  },
-  "/api/identity-gate/check": {
-    walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
-    maxTierSpendUsdc: 10,
-  },
-  "/api/risk-gate/scan": {
-    targetUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
-    estimatedCostUsdc: 0.05,
-    policy: { dailyCapUsdc: 10, perCallCapUsdc: 0.5 },
   },
   "/api/router/route": {
     query: "Dexter USDC route from Arbitrum to Ethereum",
@@ -186,15 +159,6 @@ export const VERIFY_EXAMPLES: Record<string, unknown> = {
     allowedCategories: ["market-data", "oracle"],
     allowedRails: ["base-x402", "solana-x402", "visa-cli"],
     ttlMinutes: 1440,
-  },
-  "/api/mandate/verify": {
-    mandateId: "mdt_verifier_probe_example",
-    proposed: {
-      amountUsdc: 0.05,
-      merchant: "api.myceliasignal.com",
-      category: "oracle",
-      rail: "base-x402",
-    },
   },
   "/api/rail-optimizer/route": {
     amountUsdc: 1.5,
@@ -403,20 +367,6 @@ export const VERIFY_EXAMPLES: Record<string, unknown> = {
   "/api/protocol/reasoning/disclose": {
     auditId: "aud_verifier_probe_example",
     leafIndices: [0, 1],
-  },
-  "/api/protocol/escrow/create": {
-    payerAgentId: "dexter-verifier-probe",
-    payeeMerchant: "api.myceliasignal.com",
-    amountUsdc: 0.05,
-    resourceHash: "res_verifier_probe",
-  },
-  "/api/protocol/escrow/transition": {
-    escrowId: "00000000-0000-4000-8000-000000000001",
-    nextState: "FUNDED",
-    note: "verifier probe transition",
-  },
-  "/api/protocol/escrow/status": {
-    escrowId: "00000000-0000-4000-8000-000000000001",
   },
   "/api/protocol/replay/verify": {
     bindingId: "rb_verifier_probe_example",

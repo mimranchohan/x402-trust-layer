@@ -83,13 +83,13 @@ async function seedEscrow(): Promise<void> {
   const store = await readProtocolStore<EscrowStore>("escrow-fsm", {});
   if (store[VERIFIER_PROBE_ESCROW_ID]) return;
 
-  const ex = VERIFY_EXAMPLES["/api/protocol/escrow/create"] as Record<string, unknown>;
+  const ex = (VERIFY_EXAMPLES["/api/protocol/escrow/create"] || {}) as Record<string, unknown>;
   const now = new Date().toISOString();
   store[VERIFIER_PROBE_ESCROW_ID] = {
     escrowId: VERIFIER_PROBE_ESCROW_ID,
     payerAgentId: String(ex.payerAgentId ?? "dexter-verifier-probe"),
     payeeMerchant: String(ex.payeeMerchant ?? "api.myceliasignal.com"),
-    amountUsdc: Number(ex.amountUsdc ?? 0.05),
+    amountUsdc: Number(ex.amountUsdc ?? 0.08),
     state: "CREATED",
     resourceHash: String(ex.resourceHash ?? "res_verifier_probe"),
     history: [{ state: "CREATED", at: now }],

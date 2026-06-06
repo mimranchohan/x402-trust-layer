@@ -120,17 +120,7 @@
 - **Inputs:** agentId, walletAddress, targetUrl, task, maxBudgetUsdc, marketplaceQuery
 - **Outputs:** allowed, plan, facilitator, route, recommendedNextCalls
 
-## 13. Payment-Intent Compiler
-
-- **Route:** POST /api/payment-intent/compile
-- **Price:** $0.15 USDC
-- **Tier:** Orchestration
-- **Summary:** Compiles natural-language task + budget into a multi-step x402 execution plan.
-- **Why:** Deterministic planning layer for autonomous spend within budget.
-- **Inputs:** task, maxBudgetUsdc, agentId, externalCallEstimateUsdc?
-- **Outputs:** steps, totalEstimatedUsdc, withinBudget, executionOrder
-
-## 14. Facilitator Failover
+## 13. Facilitator Failover
 
 - **Route:** POST /api/facilitator/failover
 - **Price:** $0.05 USDC
@@ -140,47 +130,7 @@
 - **Inputs:** targetUrl, preferNetwork?
 - **Outputs:** recommendedFacilitator, facilitators, targetProbe
 
-## 15. MPP Session Plan
-
-- **Route:** POST /api/mpp/session-plan
-- **Price:** $0.02 USDC
-- **Tier:** Orchestration
-- **Summary:** Estimates MPP batch session savings vs per-call settlement.
-- **Why:** Quantifies when Stripe MPP / Dexter sessions beat individual settlements.
-- **Inputs:** action, expectedCalls, avgPricePerCallUsdc
-- **Outputs:** estimatedSavingsUSDC, recommendation, breakEvenCallCount
-
-## 16. Spend Governor
-
-- **Route:** POST /api/spend-governor/check
-- **Price:** $0.03 USDC
-- **Tier:** Core Gates
-- **Summary:** Enforces per-call and daily USDC spend caps per agent.
-- **Why:** Hard budget guardrail — the floor of every preflight decision.
-- **Inputs:** agentId, estimatedCostUsdc, targetUrl, policy
-- **Outputs:** allowed, spentTodayUsdc, remainingDailyUsdc
-
-## 17. Identity Gate
-
-- **Route:** POST /api/identity-gate/check
-- **Price:** $0.05 USDC
-- **Tier:** Core Gates
-- **Summary:** Wallet identity tier and risk scoring before paid calls.
-- **Why:** Blocks low-trust or unfunded wallets from mainnet spend.
-- **Inputs:** walletAddress, maxTierSpendUsdc?
-- **Outputs:** allowed, tier, riskScore, maxSpendUsdc
-
-## 18. Risk Gate
-
-- **Route:** POST /api/risk-gate/scan
-- **Price:** $0.08 USDC
-- **Tier:** Core Gates
-- **Summary:** Probes URL safety, HTTPS and x402 payment requirements.
-- **Why:** Detects unreachable, mispriced or unsafe endpoints before payment.
-- **Inputs:** targetUrl, estimatedCostUsdc, policy
-- **Outputs:** safe, riskScore, securityGrade, probe
-
-## 19. API Router
+## 14. API Router
 
 - **Route:** POST /api/router/route
 - **Price:** $0.02 USDC
@@ -190,7 +140,7 @@
 - **Inputs:** query, preferNetwork?, maxPriceUsdc?
 - **Outputs:** selected, alternatives, probedPriceUsdc
 
-## 20. Research Brief
+## 15. Research Brief
 
 - **Route:** POST /api/research/brief
 - **Price:** $0.20 USDC
@@ -200,7 +150,7 @@
 - **Inputs:** topic, includePrice?
 - **Outputs:** brief, sources, pipeline, estimatedCostUsdc
 
-## 21. Receipt Auditor
+## 16. Receipt Auditor
 
 - **Route:** POST /api/receipt-auditor/verify
 - **Price:** $0.05 USDC
@@ -210,7 +160,7 @@
 - **Inputs:** transactionHash, network, expectedAmountUsdc, settlement
 - **Outputs:** valid, checks, explorerUrl
 
-## 22. Refund Arbiter
+## 17. Refund Arbiter
 
 - **Route:** POST /api/refund-arbiter/evaluate
 - **Price:** $0.08 USDC
@@ -220,7 +170,7 @@
 - **Inputs:** verificationScore, responseEmpty, endpointReachable
 - **Outputs:** refundEligible, protectionTier, buyerGuidance, grade
 
-## 23. Budget Allocator
+## 18. Budget Allocator
 
 - **Route:** POST /api/budget-allocator/run
 - **Price:** $0.03 USDC
@@ -230,7 +180,7 @@
 - **Inputs:** fleetId, poolRemainingUsdc, agents
 - **Outputs:** allocations, poolAfterUsdc
 
-## 24. Settlement Graph
+## 19. Settlement Graph
 
 - **Route:** POST /api/settlement-graph/next
 - **Price:** $0.02 USDC
@@ -240,7 +190,7 @@
 - **Inputs:** lastEndpointPath, lastTopic?
 - **Outputs:** recommendations, graphNote
 
-## 25. Quality Monitor
+## 20. Quality Monitor
 
 - **Route:** POST /api/quality-monitor/probe
 - **Price:** $0.03 USDC
@@ -250,7 +200,7 @@
 - **Inputs:** urls
 - **Outputs:** results, averageScore, overall
 
-## 26. Evidence Locker
+## 21. Evidence Locker
 
 - **Route:** POST /api/evidence-locker/export
 - **Price:** $0.10 USDC
@@ -260,7 +210,7 @@
 - **Inputs:** organizationId, records
 - **Outputs:** bundleId, checksum, bundleSignature, export
 
-## 27. Agent Escrow
+## 22. Agent Escrow
 
 - **Route:** POST /api/agent-escrow
 - **Price:** $0.12 USDC
@@ -270,7 +220,7 @@
 - **Inputs:** action, payerAgentId, payeeAgentId, amountUsdc, escrowId?
 - **Outputs:** escrow, status, releasedAt?
 
-## 28. Merchant Trust (KYM)
+## 23. Merchant Trust (KYM)
 
 - **Route:** POST /api/merchant-trust/score
 - **Price:** $0.06 USDC
@@ -280,7 +230,7 @@
 - **Inputs:** host, washTradePct, verifiedResources, totalResources, probe?
 - **Outputs:** trustScore, grade, recommendation, penalties
 
-## 29. Mandate Compile
+## 24. Mandate Compile
 
 - **Route:** POST /api/mandate/compile
 - **Price:** $0.08 USDC
@@ -290,17 +240,7 @@
 - **Inputs:** principal, agentId, intent, maxPerTxUsdc, dailyCapUsdc, allowedMerchants
 - **Outputs:** mandate, mandateId, signature, verifyUrl
 
-## 30. Mandate Verify
-
-- **Route:** POST /api/mandate/verify
-- **Price:** $0.02 USDC
-- **Tier:** Tier-1 Enterprise
-- **Summary:** Verifies mandate signature and scopes a proposed payment against it.
-- **Why:** Merchants confirm agent payment is within authorized human intent.
-- **Inputs:** mandateId, proposed
-- **Outputs:** valid, withinScope, violations, record
-
-## 31. Rail Optimizer
+## 25. Rail Optimizer
 
 - **Route:** POST /api/rail-optimizer/route
 - **Price:** $0.04 USDC
@@ -310,7 +250,7 @@
 - **Inputs:** amountUsdc, disputable?, expectedCalls?, latencySensitive?
 - **Outputs:** recommendedRail, ranked, recommendation
 
-## 32. Compliance Ledger
+## 26. Compliance Ledger
 
 - **Route:** POST /api/compliance/ledger
 - **Price:** $0.12 USDC
@@ -320,7 +260,7 @@
 - **Inputs:** organizationId, period, records, policy
 - **Outputs:** summary, breakdown, violations, ledgerHash
 
-## 33. Dispute Resolver
+## 27. Dispute Resolver
 
 - **Route:** POST /api/dispute/resolve
 - **Price:** $0.10 USDC
@@ -330,7 +270,7 @@
 - **Inputs:** rail, merchant, amountUsdc, reason, evidence
 - **Outputs:** path, reasonCode, disputeStrength, filingSteps
 
-## 34. Quality Escrow
+## 28. Quality Escrow
 
 - **Route:** POST /api/quality-escrow/settle
 - **Price:** $0.10 USDC
@@ -340,7 +280,7 @@
 - **Inputs:** action, amountUsdc, expectedProfile, actualResponse, releaseThreshold
 - **Outputs:** decision, qualityScore, status, reasons
 
-## 35. Semantic Delivery Escrow
+## 29. Semantic Delivery Escrow
 
 - **Route:** POST /api/quality-escrow/semantic-settle
 - **Price:** $0.12 USDC
@@ -350,7 +290,7 @@
 - **Inputs:** deliveryIntent, expectedProfile, actualResponse, amountUsdc
 - **Outputs:** decision, semanticScore, schemaScore, judgeMode, bondSlash
 
-## 36. Mandate Intent Diff
+## 30. Mandate Intent Diff
 
 - **Route:** POST /api/mandate/diff
 - **Price:** $0.04 USDC
@@ -360,7 +300,7 @@
 - **Inputs:** mandateId, toolCalls, task?
 - **Outputs:** allowed, liabilityTier, violations
 
-## 37. Certified Seller
+## 31. Certified Seller
 
 - **Route:** POST /api/merchant-trust/certify
 - **Price:** $0.15 USDC
@@ -370,7 +310,7 @@
 - **Inputs:** host, policy, bondUsdc?, goodResponseProfile?
 - **Outputs:** certified, badgeId, policy, expiresAt
 
-## 38. Certified Buyer Gate
+## 32. Certified Buyer Gate
 
 - **Route:** POST /api/trust-network/buyer-gate
 - **Price:** $0.03 USDC
@@ -379,6 +319,66 @@
 - **Why:** Premium APIs only accept attested agents with minimum TrustScore.
 - **Inputs:** sellerHost, walletAddress, attestationId?
 - **Outputs:** allowed, violations, requiredHeaders
+
+## 33. Transaction Auth
+
+- **Route:** POST /api/trust-network/transaction-auth
+- **Price:** $0.05 USDC
+- **Tier:** Tier-1 Enterprise
+- **Summary:** /api/trust-network/transaction-auth
+- **Why:** Paid x402 Trust Layer API — see OpenAPI for request schema.
+- **Inputs:** see OpenAPI
+- **Outputs:** see OpenAPI
+
+## 34. Open
+
+- **Route:** POST /api/escrow/metered/open
+- **Price:** $0.05 USDC
+- **Tier:** Enterprise
+- **Summary:** /api/escrow/metered/open
+- **Why:** Paid x402 Trust Layer API — see OpenAPI for request schema.
+- **Inputs:** see OpenAPI
+- **Outputs:** see OpenAPI
+
+## 35. Charge
+
+- **Route:** POST /api/escrow/metered/charge
+- **Price:** $0.01 USDC
+- **Tier:** Enterprise
+- **Summary:** /api/escrow/metered/charge
+- **Why:** Paid x402 Trust Layer API — see OpenAPI for request schema.
+- **Inputs:** see OpenAPI
+- **Outputs:** see OpenAPI
+
+## 36. Close
+
+- **Route:** POST /api/escrow/metered/close
+- **Price:** $0.05 USDC
+- **Tier:** Enterprise
+- **Summary:** /api/escrow/metered/close
+- **Why:** Paid x402 Trust Layer API — see OpenAPI for request schema.
+- **Inputs:** see OpenAPI
+- **Outputs:** see OpenAPI
+
+## 37. Call
+
+- **Route:** POST /api/mcp/tools/call
+- **Price:** $0.02 USDC
+- **Tier:** Core Gates
+- **Summary:** /api/mcp/tools/call
+- **Why:** Paid x402 Trust Layer API — see OpenAPI for request schema.
+- **Inputs:** see OpenAPI
+- **Outputs:** see OpenAPI
+
+## 38. Summary
+
+- **Route:** GET /api/dashboard/summary
+- **Price:** Free USDC
+- **Tier:** Core Gates
+- **Summary:** /api/dashboard/summary
+- **Why:** Paid x402 Trust Layer API — see OpenAPI for request schema.
+- **Inputs:** see OpenAPI
+- **Outputs:** see OpenAPI
 
 ## 39. Pipeline Trust v2
 
@@ -500,37 +500,7 @@
 - **Inputs:** see OpenAPI
 - **Outputs:** see OpenAPI
 
-## 51. Create
-
-- **Route:** POST /api/protocol/escrow/create
-- **Price:** $0.08 USDC
-- **Tier:** Agent Trust Protocol v4
-- **Summary:** Create escrow FSM (CREATED)
-- **Why:** Paid x402 Trust Layer API — see OpenAPI for request schema.
-- **Inputs:** see OpenAPI
-- **Outputs:** see OpenAPI
-
-## 52. Transition
-
-- **Route:** POST /api/protocol/escrow/transition
-- **Price:** $0.06 USDC
-- **Tier:** Agent Trust Protocol v4
-- **Summary:** Transition escrow FSM state
-- **Why:** Paid x402 Trust Layer API — see OpenAPI for request schema.
-- **Inputs:** see OpenAPI
-- **Outputs:** see OpenAPI
-
-## 53. Status
-
-- **Route:** POST /api/protocol/escrow/status
-- **Price:** $0.02 USDC
-- **Tier:** Agent Trust Protocol v4
-- **Summary:** Query escrow FSM status
-- **Why:** Paid x402 Trust Layer API — see OpenAPI for request schema.
-- **Inputs:** see OpenAPI
-- **Outputs:** see OpenAPI
-
-## 54. Bind
+## 51. Bind
 
 - **Route:** POST /api/protocol/replay/bind
 - **Price:** $0.02 USDC
@@ -540,7 +510,7 @@
 - **Inputs:** see OpenAPI
 - **Outputs:** see OpenAPI
 
-## 55. Verify
+## 52. Verify
 
 - **Route:** POST /api/protocol/replay/verify
 - **Price:** $0.02 USDC
@@ -550,7 +520,7 @@
 - **Inputs:** see OpenAPI
 - **Outputs:** see OpenAPI
 
-## 56. Prove
+## 53. Prove
 
 - **Route:** POST /api/protocol/zk/prove
 - **Price:** $0.15 USDC
@@ -560,7 +530,7 @@
 - **Inputs:** see OpenAPI
 - **Outputs:** see OpenAPI
 
-## 57. Score
+## 54. Score
 
 - **Route:** POST /api/protocol/credit/score
 - **Price:** $0.06 USDC
@@ -570,7 +540,7 @@
 - **Inputs:** see OpenAPI
 - **Outputs:** see OpenAPI
 
-## 58. Assess
+## 55. Assess
 
 - **Route:** POST /api/protocol/compliance/assess
 - **Price:** $0.10 USDC

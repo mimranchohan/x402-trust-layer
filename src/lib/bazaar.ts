@@ -47,35 +47,10 @@ const ENDPOINT_META: Record<string, { summary: string; category: string; tags: s
     category: "Orchestration",
     tags: ["pipeline", "orchestration"],
   },
-  "/api/payment-intent/compile": {
-    summary: "Compile multi-step x402 execution plan from natural language",
-    category: "Orchestration",
-    tags: ["plan", "compiler"],
-  },
   "/api/facilitator/failover": {
     summary: "Rank facilitators and recommend failover path",
     category: "Infrastructure",
     tags: ["facilitator", "failover"],
-  },
-  "/api/mpp/session-plan": {
-    summary: "Estimate MPP session vs per-call settlement savings",
-    category: "Infrastructure",
-    tags: ["mpp", "estimate"],
-  },
-  "/api/spend-governor/check": {
-    summary: "Enforce agent daily and per-call spend caps",
-    category: "Policy",
-    tags: ["spend", "budget", "policy"],
-  },
-  "/api/identity-gate/check": {
-    summary: "Wallet identity tier and risk scoring",
-    category: "Policy",
-    tags: ["identity", "wallet", "kyc"],
-  },
-  "/api/risk-gate/scan": {
-    summary: "Probe URL security, HTTPS, and x402 payment requirements",
-    category: "Security",
-    tags: ["risk", "scan", "security"],
   },
   "/api/router/route": {
     summary: "Route capability query to best x402 API (suite-first)",
@@ -141,11 +116,6 @@ const ENDPOINT_META: Record<string, { summary: string; category: string; tags: s
     summary: "Compile signed AP2-style payment mandate from human intent",
     category: "Trust",
     tags: ["mandate", "ap2", "intent", "governance"],
-  },
-  "/api/mandate/verify": {
-    summary: "Verify mandate signature and scope a proposed payment",
-    category: "Trust",
-    tags: ["mandate", "verify", "governance"],
   },
   "/api/rail-optimizer/route": {
     summary: "Choose best rail: Visa CLI, Stripe MPP, Circle, Base, Solana",
@@ -221,11 +191,6 @@ const ENDPOINT_META: Record<string, { summary: string; category: string; tags: s
     summary: "Proof of Execution receipt with tool and settlement proofs",
     category: "Protocol",
     tags: ["poe", "receipt", "audit"],
-  },
-  "/api/protocol/escrow/create": {
-    summary: "Create escrow state machine (CREATED)",
-    category: "Protocol",
-    tags: ["escrow", "fsm"],
   },
   "/api/protocol/replay/bind": {
     summary: "Replay-safe binding: nonce + resource hash + request hash",

@@ -32,29 +32,9 @@ export const ENDPOINT_META: Record<string, { summary: string; tags: string[] }> 
     summary: "One-shot pipeline: guard, plan, facilitator, marketplace routing",
     tags: ["pipeline", "orchestration"],
   },
-  "/api/payment-intent/compile": {
-    summary: "Compile multi-step x402 execution plan from natural language",
-    tags: ["plan", "compiler"],
-  },
   "/api/facilitator/failover": {
     summary: "Rank facilitators and recommend failover path",
     tags: ["facilitator", "failover"],
-  },
-  "/api/mpp/session-plan": {
-    summary: "Estimate MPP session vs per-call settlement savings",
-    tags: ["mpp", "estimate"],
-  },
-  "/api/spend-governor/check": {
-    summary: "Enforce agent daily and per-call spend caps",
-    tags: ["spend", "budget", "policy"],
-  },
-  "/api/identity-gate/check": {
-    summary: "Wallet identity tier and risk scoring",
-    tags: ["identity", "wallet"],
-  },
-  "/api/risk-gate/scan": {
-    summary: "Probe URL security, HTTPS, and x402 payment requirements",
-    tags: ["risk", "scan", "security"],
   },
   "/api/router/route": {
     summary: "Route capability query to best x402 API",
@@ -115,10 +95,6 @@ export const ENDPOINT_META: Record<string, { summary: string; tags: string[] }> 
   "/api/mandate/compile": {
     summary: "Compile a signed, scoped AP2-style payment mandate from intent",
     tags: ["mandate", "ap2", "intent", "governance"],
-  },
-  "/api/mandate/verify": {
-    summary: "Verify mandate signature and scope a proposed payment",
-    tags: ["mandate", "verify", "governance"],
   },
   "/api/rail-optimizer/route": {
     summary: "Choose best rail: Visa CLI, Stripe MPP, Circle, Base, Solana",
@@ -199,18 +175,6 @@ export const ENDPOINT_META: Record<string, { summary: string; tags: string[] }> 
   "/api/protocol/reasoning/disclose": {
     summary: "Selective disclosure of reasoning audit leaves",
     tags: ["protocol", "zk", "disclosure"],
-  },
-  "/api/protocol/escrow/create": {
-    summary: "Create escrow FSM (CREATED)",
-    tags: ["protocol", "escrow"],
-  },
-  "/api/protocol/escrow/transition": {
-    summary: "Transition escrow FSM state",
-    tags: ["protocol", "escrow"],
-  },
-  "/api/protocol/escrow/status": {
-    summary: "Query escrow FSM status",
-    tags: ["protocol", "escrow"],
   },
   "/api/protocol/replay/bind": {
     summary: "Replay-safe payment binding",

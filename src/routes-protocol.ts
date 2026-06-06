@@ -45,9 +45,6 @@ export function listProtocolEndpoints() {
     { path: "POST /api/protocol/execution/verify", price: `$${pricing.protocolExecutionVerify}`, tier: "protocol" },
     { path: "POST /api/protocol/reasoning/commit", price: `$${pricing.protocolReasoningCommit}`, tier: "protocol" },
     { path: "POST /api/protocol/reasoning/disclose", price: `$${pricing.protocolReasoningDisclose}`, tier: "protocol" },
-    { path: "POST /api/protocol/escrow/create", price: `$${pricing.protocolEscrowCreate}`, tier: "protocol" },
-    { path: "POST /api/protocol/escrow/transition", price: `$${pricing.protocolEscrowTransition}`, tier: "protocol" },
-    { path: "POST /api/protocol/escrow/status", price: `$${pricing.protocolEscrowStatus}`, tier: "protocol" },
     { path: "POST /api/protocol/replay/bind", price: `$${pricing.protocolReplayBind}`, tier: "protocol" },
     { path: "POST /api/protocol/replay/verify", price: `$${pricing.protocolReplayVerify}`, tier: "protocol" },
     { path: "POST /api/protocol/zk/prove", price: `$${pricing.protocolZkProve}`, tier: "protocol" },
@@ -352,64 +349,6 @@ export function registerProtocolRoutes(
     },
   );
 
-  post(
-    "/api/protocol/escrow/create",
-    pricing.protocolEscrowCreate,
-    "Create protocol escrow FSM in CREATED state",
-    async (req, res) => {
-      const parsed = parseWithVerifierFallback(
-        "/api/protocol/escrow/create",
-        z.object({
-          payerAgentId: z.string().min(1),
-          payeeMerchant: z.string().min(1),
-          amountUsdc: z.coerce.number().positive(),
-          resourceHash: z.string().optional(),
-          sessionId: z.string().optional(),
-        }),
-        req.body,
-      );
-      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
-      res.json({ status: "ok", escrow: await createProtocolEscrow(parsed.data), validStates: ESCROW_STATES });
-    },
-  );
-
-  post(
-    "/api/protocol/escrow/transition",
-    pricing.protocolEscrowTransition,
-    "Transition escrow FSM state (atomic settlement path)",
-    async (req, res) => {
-      const parsed = parseWithVerifierFallback(
-        "/api/protocol/escrow/transition",
-        z.object({
-          escrowId: z.string().uuid(),
-          nextState: z.enum(ESCROW_STATES),
-          note: z.string().optional(),
-        }),
-        req.body,
-      );
-      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
-      const result = await transitionEscrow(parsed.data.escrowId, parsed.data.nextState, parsed.data.note);
-      if (!result.ok) return void res.status(409).json({ error: result.error });
-      res.json({ status: "ok", escrow: result.escrow });
-    },
-  );
-
-  post(
-    "/api/protocol/escrow/status",
-    pricing.protocolEscrowStatus,
-    "Query protocol escrow FSM status and history",
-    async (req, res) => {
-      const parsed = parseWithVerifierFallback(
-        "/api/protocol/escrow/status",
-        z.object({ escrowId: z.string().uuid() }),
-        req.body,
-      );
-      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
-      const escrow = await getEscrowStatus(parsed.data.escrowId);
-      if (!escrow) return void res.status(404).json({ error: "Escrow not found" });
-      res.json({ status: "ok", escrow });
-    },
-  );
 
   post(
     "/api/protocol/replay/bind",

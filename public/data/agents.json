@@ -363,34 +363,6 @@
       ]
     },
     {
-      "id": "payment-intent-compile",
-      "name": "Payment-Intent Compiler",
-      "tier": "orchestration",
-      "tierLabel": "Orchestration",
-      "layer": "settlement",
-      "method": "POST",
-      "path": "/api/payment-intent/compile",
-      "price": 0.15,
-      "summary": "Compiles natural-language task + budget into a multi-step x402 execution plan.",
-      "why": "Deterministic planning layer for autonomous spend within budget.",
-      "inputs": [
-        "task",
-        "maxBudgetUsdc",
-        "agentId",
-        "externalCallEstimateUsdc?"
-      ],
-      "outputs": [
-        "steps",
-        "totalEstimatedUsdc",
-        "withinBudget",
-        "executionOrder"
-      ],
-      "tags": [
-        "plan",
-        "compiler"
-      ]
-    },
-    {
       "id": "facilitator-failover",
       "name": "Facilitator Failover",
       "tier": "orchestration",
@@ -413,112 +385,6 @@
       "tags": [
         "facilitator",
         "failover"
-      ]
-    },
-    {
-      "id": "mpp-session-plan",
-      "name": "MPP Session Plan",
-      "tier": "orchestration",
-      "tierLabel": "Orchestration",
-      "layer": "settlement",
-      "method": "POST",
-      "path": "/api/mpp/session-plan",
-      "price": 0.02,
-      "summary": "Estimates MPP batch session savings vs per-call settlement.",
-      "why": "Quantifies when Stripe MPP / Dexter sessions beat individual settlements.",
-      "inputs": [
-        "action",
-        "expectedCalls",
-        "avgPricePerCallUsdc"
-      ],
-      "outputs": [
-        "estimatedSavingsUSDC",
-        "recommendation",
-        "breakEvenCallCount"
-      ],
-      "tags": [
-        "mpp",
-        "estimate"
-      ]
-    },
-    {
-      "id": "spend-governor",
-      "name": "Spend Governor",
-      "tier": "core",
-      "tierLabel": "Core Gates",
-      "layer": "guard",
-      "method": "POST",
-      "path": "/api/spend-governor/check",
-      "price": 0.03,
-      "summary": "Enforces per-call and daily USDC spend caps per agent.",
-      "why": "Hard budget guardrail — the floor of every preflight decision.",
-      "inputs": [
-        "agentId",
-        "estimatedCostUsdc",
-        "targetUrl",
-        "policy"
-      ],
-      "outputs": [
-        "allowed",
-        "spentTodayUsdc",
-        "remainingDailyUsdc"
-      ],
-      "tags": [
-        "spend",
-        "budget"
-      ]
-    },
-    {
-      "id": "identity-gate",
-      "name": "Identity Gate",
-      "tier": "core",
-      "tierLabel": "Core Gates",
-      "layer": "guard",
-      "method": "POST",
-      "path": "/api/identity-gate/check",
-      "price": 0.05,
-      "summary": "Wallet identity tier and risk scoring before paid calls.",
-      "why": "Blocks low-trust or unfunded wallets from mainnet spend.",
-      "inputs": [
-        "walletAddress",
-        "maxTierSpendUsdc?"
-      ],
-      "outputs": [
-        "allowed",
-        "tier",
-        "riskScore",
-        "maxSpendUsdc"
-      ],
-      "tags": [
-        "identity",
-        "wallet"
-      ]
-    },
-    {
-      "id": "risk-gate",
-      "name": "Risk Gate",
-      "tier": "core",
-      "tierLabel": "Core Gates",
-      "layer": "guard",
-      "method": "POST",
-      "path": "/api/risk-gate/scan",
-      "price": 0.08,
-      "summary": "Probes URL safety, HTTPS and x402 payment requirements.",
-      "why": "Detects unreachable, mispriced or unsafe endpoints before payment.",
-      "inputs": [
-        "targetUrl",
-        "estimatedCostUsdc",
-        "policy"
-      ],
-      "outputs": [
-        "safe",
-        "riskScore",
-        "securityGrade",
-        "probe"
-      ],
-      "tags": [
-        "risk",
-        "security"
       ]
     },
     {
@@ -816,33 +682,6 @@
       ]
     },
     {
-      "id": "mandate-verify",
-      "name": "Mandate Verify",
-      "tier": "tier1",
-      "tierLabel": "Tier-1 Enterprise",
-      "layer": "attestation",
-      "method": "POST",
-      "path": "/api/mandate/verify",
-      "price": 0.02,
-      "summary": "Verifies mandate signature and scopes a proposed payment against it.",
-      "why": "Merchants confirm agent payment is within authorized human intent.",
-      "inputs": [
-        "mandateId",
-        "proposed"
-      ],
-      "outputs": [
-        "valid",
-        "withinScope",
-        "violations",
-        "record"
-      ],
-      "tags": [
-        "mandate",
-        "verify",
-        "tier1"
-      ]
-    },
-    {
       "id": "rail-optimizer",
       "name": "Rail Optimizer",
       "tier": "tier1",
@@ -1070,6 +909,138 @@
         "buyer",
         "gate",
         "tier1"
+      ]
+    },
+    {
+      "id": "trust-network-transaction-auth",
+      "name": "Transaction Auth",
+      "tier": "tier1",
+      "tierLabel": "Tier-1 Enterprise",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/trust-network/transaction-auth",
+      "price": 0.05,
+      "summary": "/api/trust-network/transaction-auth",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "tier1",
+        "x402"
+      ]
+    },
+    {
+      "id": "escrow-metered-open",
+      "name": "Open",
+      "tier": "enterprise",
+      "tierLabel": "Enterprise",
+      "layer": "compliance",
+      "method": "POST",
+      "path": "/api/escrow/metered/open",
+      "price": 0.05,
+      "summary": "/api/escrow/metered/open",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "enterprise",
+        "x402"
+      ]
+    },
+    {
+      "id": "escrow-metered-charge",
+      "name": "Charge",
+      "tier": "enterprise",
+      "tierLabel": "Enterprise",
+      "layer": "compliance",
+      "method": "POST",
+      "path": "/api/escrow/metered/charge",
+      "price": 0.01,
+      "summary": "/api/escrow/metered/charge",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "enterprise",
+        "x402"
+      ]
+    },
+    {
+      "id": "escrow-metered-close",
+      "name": "Close",
+      "tier": "enterprise",
+      "tierLabel": "Enterprise",
+      "layer": "compliance",
+      "method": "POST",
+      "path": "/api/escrow/metered/close",
+      "price": 0.05,
+      "summary": "/api/escrow/metered/close",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "enterprise",
+        "x402"
+      ]
+    },
+    {
+      "id": "mcp-tools-call",
+      "name": "Call",
+      "tier": "core",
+      "tierLabel": "Core Gates",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/mcp/tools/call",
+      "price": 0.02,
+      "summary": "/api/mcp/tools/call",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "core",
+        "x402"
+      ]
+    },
+    {
+      "id": "dashboard-summary",
+      "name": "Summary",
+      "tier": "core",
+      "tierLabel": "Core Gates",
+      "layer": "guard",
+      "method": "GET",
+      "path": "/api/dashboard/summary",
+      "price": null,
+      "summary": "/api/dashboard/summary",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "core",
+        "x402"
       ]
     },
     {
@@ -1336,72 +1307,6 @@
       "path": "/api/protocol/reasoning/disclose",
       "price": 0.04,
       "summary": "Selective disclosure of reasoning audit leaves",
-      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
-      "inputs": [
-        "see OpenAPI"
-      ],
-      "outputs": [
-        "see OpenAPI"
-      ],
-      "tags": [
-        "protocol",
-        "x402"
-      ]
-    },
-    {
-      "id": "protocol-escrow-create",
-      "name": "Create",
-      "tier": "protocol",
-      "tierLabel": "Agent Trust Protocol v4",
-      "layer": "guard",
-      "method": "POST",
-      "path": "/api/protocol/escrow/create",
-      "price": 0.08,
-      "summary": "Create escrow FSM (CREATED)",
-      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
-      "inputs": [
-        "see OpenAPI"
-      ],
-      "outputs": [
-        "see OpenAPI"
-      ],
-      "tags": [
-        "protocol",
-        "x402"
-      ]
-    },
-    {
-      "id": "protocol-escrow-transition",
-      "name": "Transition",
-      "tier": "protocol",
-      "tierLabel": "Agent Trust Protocol v4",
-      "layer": "guard",
-      "method": "POST",
-      "path": "/api/protocol/escrow/transition",
-      "price": 0.06,
-      "summary": "Transition escrow FSM state",
-      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
-      "inputs": [
-        "see OpenAPI"
-      ],
-      "outputs": [
-        "see OpenAPI"
-      ],
-      "tags": [
-        "protocol",
-        "x402"
-      ]
-    },
-    {
-      "id": "protocol-escrow-status",
-      "name": "Status",
-      "tier": "protocol",
-      "tierLabel": "Agent Trust Protocol v4",
-      "layer": "guard",
-      "method": "POST",
-      "path": "/api/protocol/escrow/status",
-      "price": 0.02,
-      "summary": "Query escrow FSM status",
       "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
       "inputs": [
         "see OpenAPI"
