@@ -1,5 +1,4 @@
+# Exclude source files and build configurations from package
+node_modules/
 src/
 tsconfig.json
-node_modules/
-*.ts
-!dist/**
