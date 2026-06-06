@@ -130,3 +130,8 @@ Coinbase Agentic Wallet MCP pays for x402 services. Call Trust Layer guard BEFOR
 POST /api/guard/pre-x402 → then Agentic Wallet discovers and pays downstream.
 
 See: docs/AGENTIC-WALLET.md
+
+## Agentic Security & Google Research Alignments
+
+- **Agentic Engineering Paradigm**: The Trust Layer utilizes standard guardrails for autonomous agent execution. Under `POST /api/guard/payload-sandbox`, incoming request schemas and payloads are recursively scanned against 9 classes of adversarial threats: prompt injection system overrides, roleplay persona shifts, wallet balance draining commands, private key/credential harvesting, arbitrary command execution, XSS injection, network SSRF exploits, path traversal, and prompt extraction attacks.
+- **Scam Elucidation (CASE)**: Cryptographic attestations at `POST /api/trust-network/insurance/attest` issue transaction-level insurance coverage certificates against certified seller virtual bonds, guarding against wash trading and Sybil behaviors.

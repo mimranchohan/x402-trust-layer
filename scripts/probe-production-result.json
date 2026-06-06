@@ -1,14 +1,14 @@
 {
-  "origin": "http://127.0.0.1:3402",
-  "at": "2026-06-06T18:15:09.571Z",
+  "origin": "https://x402trustlayer.xyz",
+  "at": "2026-06-06T20:53:15.394Z",
   "expectedPaidRoutes": 55,
   "checks": {
     "health": {
       "status": 200,
       "endpointCount": 57,
-      "gitCommit": null,
-      "agenticReady": false,
-      "agentCashReady": false
+      "gitCommit": "7a2d500",
+      "agenticReady": true,
+      "agentCashReady": true
     },
     "wellKnown": {
       "status": 200,

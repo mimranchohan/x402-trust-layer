@@ -17,12 +17,42 @@ export type SandboxResult = {
 };
 
 const DANGEROUS_PATTERNS = [
-  { regex: /system\s*(override|reset|bypass)|ignore\s*(all)?\s*previous\s*instruction/i, tag: "prompt_injection_system_override" },
-  { regex: /you\s*(are|must)\s*now\s*(act\s*as|become|ignore)/i, tag: "prompt_injection_persona_shift" },
-  { regex: /(drain|transfer|send)\s*(all)?\s*(balance|funds|usdc|assets|wallets?)\s*to/i, tag: "balance_draining_command" },
-  { regex: /private\s*key|mnemonic\s*phrase|secret\s*recovery|seed\s*phrase/i, tag: "credential_harvesting" },
-  { regex: /sudo\s+|rm\s+-rf|spawn\s*sh|exec\s*file|exec\s*(sh|bash)/i, tag: "arbitrary_code_execution" },
-  { regex: /<script>|javascript:|onerror\s*=/i, tag: "xss_injection" }
+  {
+    regex: /(system\s*(override|reset|bypass|hijack|instruction)|ignore\s*(all)?\s*previous\s*instruction|disregard\s*(all)?\s*prior\s*instruction|bypass\s*safety\s*filter|developer\s*mode|dan\s*mode|do\s*anything\s*now|jailbreak)/i,
+    tag: "prompt_injection_system_override"
+  },
+  {
+    regex: /(you\s*(are|must)\s*now\s*(act\s*as|become|ignore)|\bact\s+as\s+an?\s+(unrestricted|unfiltered|jailbroken|system)\b|pretend\s+to\s+be|roleplay\s+as|simulate\s+an?\s+(unrestricted|unfiltered|jailbroken))/i,
+    tag: "prompt_injection_persona_shift"
+  },
+  {
+    regex: /((drain|transfer|send|withdraw|sweep|approve)\s+(?:all\s+|the\s+|my\s+|our\s+)*(?:wallet\s+|account\s+)*(?:balance|funds|usdc|assets|wallets?|allowance)\s+to|approve\s+max(imum)?\s+allowance|bypass\s+(?:payment|fee|signature)\s+check)/i,
+    tag: "balance_draining_command"
+  },
+  {
+    regex: /(private\s*key|mnemonic\s*phrase|secret\s*recovery|seed\s*phrase|keystore|wallet\s*password|process\.env|api\s*key|api\s*secret)/i,
+    tag: "credential_harvesting"
+  },
+  {
+    regex: /\b(sudo\s+|rm\s+-rf|spawn\s*(sh|bash|cmd|powershell)|exec\s*(sh|bash|file|code|command|shell)|eval\s*\(|system\s*\(|popen|subprocess)\b|[|&;`$]\s*(sh|bash|cmd|powershell|curl|wget)\b/i,
+    tag: "arbitrary_code_execution"
+  },
+  {
+    regex: /(\bjavascript:|<script\b|onerror\s*=|onload\s*=|<iframe\b|<svg\b\s*onload)/i,
+    tag: "xss_injection"
+  },
+  {
+    regex: /\b(curl|wget|nc|netcat|fetch)\b.*?(http|ftp|tftp|sftp)|\b(localhost|127\.0\.0\.1|169\.254\.169\.254)\b/i,
+    tag: "network_ssrf_exploit"
+  },
+  {
+    regex: /(\.\.[\/\\]\.\.)|(\/etc\/(passwd|shadow|hosts))|(\b(system32|win\.ini|boot\.ini)\b)/i,
+    tag: "path_traversal"
+  },
+  {
+    regex: /(\b(reveal|print|show|output|leak|repeat|display|dump)\s*(the|your)?\s*(system\s*prompt|initialization|instructions|directives|setup\s*prompt)\b)|(\brepeat\s+after\s+me\b)/i,
+    tag: "prompt_extraction_attack"
+  }
 ];
 
 function scanValue(val: unknown, detected: string[]): void {

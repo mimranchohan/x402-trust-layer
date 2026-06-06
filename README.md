@@ -47,8 +47,8 @@ few cents a call.
 - **Tamper-Proof ERC-8004 Caching** — Built-in local store indexing in `src/lib/erc8004/registry.ts` with Address-normalized keys and custom TTL, enabling 10x faster responses on blockchain checks.
 - **Strict Replay Binding & presets** — Promotes `Replay-Guard` middleware config in `public/skill.md` so template builders can pull integration directly.
 - **Advanced Security & Insurance** —
-  - `POST /api/guard/payload-sandbox`: Audits incoming requests recursively for prompt injection and shell exploits.
-  - `POST /api/trust-network/insurance/attest`: Cryptographically attests transaction liability coverage based on merchant bond thresholds.
+  - `POST /api/guard/payload-sandbox`: Recursively audits request JSON schemas/payloads against advanced adversarial attacks (jailbreaks, prompt leaks, system override commands, SSRF, path traversals) aligned with Google Research's **Agentic Engineering** paradigms.
+  - `POST /api/trust-network/insurance/attest`: Cryptographically attests transaction liability coverage based on merchant bond thresholds, providing robust mitigation for Agent Scam Elucidation (CASE) frameworks.
 - **SEO/GEO Vector Optimizations** — `public/llms.txt` is directly optimized for target keywords `"x402 standard payment check"` and `"Coinbase CDP wallet guardrail"`.
 
 ---
@@ -59,7 +59,7 @@ This suite is the missing *judgement and security plane* for autonomous agent co
 
 1. **Replay-Guard Integration**: Any agent framework using standard presets automatically wraps transactions in our middleware to prevent double-spending or duplicate charge attacks.
 2. **Coinbase CDP Wallet Guardrails**: The API intercepts outgoing payments to enforce limits and compliance rules before the private key signs the transaction.
-3. **Prompt Injection Payload Sandbox**: Prevent malicious actors from hijacking your agent through prompt injection payloads or command injections.
+3. **Google-Aligned Prompt Injection Payload Sandbox**: Prevent malicious actors from hijacking your agent through complex indirect prompt injection payloads, system overrides, or command injections. The sandbox aligns with Google Research's safety and robustness paradigms for agentic architectures.
 4. **Agent Liability Insurance**: Smart contract routing gateways require our signed HMAC attestation voucher as proof of merchant-bonded liability coverage before accepting payments.
 
 ---
