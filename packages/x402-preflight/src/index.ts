@@ -124,3 +124,6 @@ export async function guardPreflight(options: {
     raw,
   };
 }
+
+export * from "./trusted-agent.js";
+
