@@ -43,6 +43,8 @@ export function listEndpoints() {
     { path: "POST /api/escrow/metered/close", price: `$${pricing.escrowClose}`, tier: "enterprise" },
     { path: "POST /api/mcp/tools/call", price: `$${pricing.mcpCall}`, tier: "core" },
     { path: "GET /api/dashboard/summary", price: "Free", tier: "core" },
+    { path: "GET /api/solana-pay/action/agent-verify", price: "Free", tier: "identity" },
+    { path: "POST /api/solana-pay/action/agent-verify", price: "Free", tier: "identity" },
     { path: "POST /api/pipeline/trust-v2", price: `$${pricing.pipelineTrustV2}`, tier: "tier1" },
     { path: "POST /api/trust-network/bond/slash", price: `$${pricing.bondSlash}`, tier: "tier1" },
     ...listProtocolEndpoints(),

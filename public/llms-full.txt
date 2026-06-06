@@ -400,7 +400,27 @@
 - **Inputs:** see OpenAPI
 - **Outputs:** see OpenAPI
 
-## 41. Pipeline Trust v2
+## 41. Agent Verify
+
+- **Route:** POST /api/solana-pay/action/agent-verify
+- **Price:** Free USDC
+- **Tier:** Identity
+- **Summary:** /api/solana-pay/action/agent-verify
+- **Why:** Paid x402 Trust Layer API — see OpenAPI for request schema.
+- **Inputs:** see OpenAPI
+- **Outputs:** see OpenAPI
+
+## 42. Agent Verify
+
+- **Route:** POST /api/solana-pay/action/agent-verify
+- **Price:** Free USDC
+- **Tier:** Identity
+- **Summary:** /api/solana-pay/action/agent-verify
+- **Why:** Paid x402 Trust Layer API — see OpenAPI for request schema.
+- **Inputs:** see OpenAPI
+- **Outputs:** see OpenAPI
+
+## 43. Pipeline Trust v2
 
 - **Route:** POST /api/pipeline/trust-v2
 - **Price:** $0.35 USDC
@@ -410,7 +430,7 @@
 - **Inputs:** agentId, walletAddress, targetUrl, policy, mandateId?, toolCalls?
 - **Outputs:** allowed, steps, recommendedNextCalls
 
-## 42. Seller Bond Slash
+## 44. Seller Bond Slash
 
 - **Route:** POST /api/trust-network/bond/slash
 - **Price:** $0.03 USDC
@@ -420,7 +440,7 @@
 - **Inputs:** sellerHost, amountUsdc, reason
 - **Outputs:** slashed, bondRemainingUsdc
 
-## 43. Full Trust
+## 45. Full Trust
 
 - **Route:** POST /api/protocol/pipeline/full-trust
 - **Price:** $0.45 USDC
@@ -430,7 +450,7 @@
 - **Inputs:** see OpenAPI
 - **Outputs:** see OpenAPI
 
-## 44. Issue
+## 46. Issue
 
 - **Route:** POST /api/protocol/passport/issue
 - **Price:** $0.06 USDC
@@ -440,7 +460,7 @@
 - **Inputs:** see OpenAPI
 - **Outputs:** see OpenAPI
 
-## 45. Verify
+## 47. Verify
 
 - **Route:** POST /api/protocol/passport/verify
 - **Price:** $0.02 USDC
@@ -450,7 +470,7 @@
 - **Inputs:** see OpenAPI
 - **Outputs:** see OpenAPI
 
-## 46. V2
+## 48. V2
 
 - **Route:** POST /api/protocol/trust-score/v2
 - **Price:** $0.08 USDC
@@ -460,7 +480,7 @@
 - **Inputs:** see OpenAPI
 - **Outputs:** see OpenAPI
 
-## 47. Scan
+## 49. Scan
 
 - **Route:** POST /api/protocol/fraud/scan
 - **Price:** $0.10 USDC
@@ -470,7 +490,7 @@
 - **Inputs:** see OpenAPI
 - **Outputs:** see OpenAPI
 
-## 48. Consensus
+## 50. Consensus
 
 - **Route:** POST /api/protocol/oracle/consensus
 - **Price:** $0.12 USDC
@@ -480,7 +500,7 @@
 - **Inputs:** see OpenAPI
 - **Outputs:** see OpenAPI
 
-## 49. Issue
+## 51. Issue
 
 - **Route:** POST /api/protocol/execution/issue
 - **Price:** $0.05 USDC
@@ -490,7 +510,7 @@
 - **Inputs:** see OpenAPI
 - **Outputs:** see OpenAPI
 
-## 50. Verify
+## 52. Verify
 
 - **Route:** POST /api/protocol/execution/verify
 - **Price:** $0.03 USDC
@@ -500,7 +520,7 @@
 - **Inputs:** see OpenAPI
 - **Outputs:** see OpenAPI
 
-## 51. Commit
+## 53. Commit
 
 - **Route:** POST /api/protocol/reasoning/commit
 - **Price:** $0.08 USDC
@@ -510,7 +530,7 @@
 - **Inputs:** see OpenAPI
 - **Outputs:** see OpenAPI
 
-## 52. Disclose
+## 54. Disclose
 
 - **Route:** POST /api/protocol/reasoning/disclose
 - **Price:** $0.04 USDC
@@ -520,7 +540,7 @@
 - **Inputs:** see OpenAPI
 - **Outputs:** see OpenAPI
 
-## 53. Bind
+## 55. Bind
 
 - **Route:** POST /api/protocol/replay/bind
 - **Price:** $0.02 USDC
@@ -530,7 +550,7 @@
 - **Inputs:** see OpenAPI
 - **Outputs:** see OpenAPI
 
-## 54. Verify
+## 56. Verify
 
 - **Route:** POST /api/protocol/replay/verify
 - **Price:** $0.02 USDC
@@ -540,7 +560,7 @@
 - **Inputs:** see OpenAPI
 - **Outputs:** see OpenAPI
 
-## 55. Prove
+## 57. Prove
 
 - **Route:** POST /api/protocol/zk/prove
 - **Price:** $0.15 USDC
@@ -550,7 +570,7 @@
 - **Inputs:** see OpenAPI
 - **Outputs:** see OpenAPI
 
-## 56. Score
+## 58. Score
 
 - **Route:** POST /api/protocol/credit/score
 - **Price:** $0.06 USDC
@@ -560,7 +580,7 @@
 - **Inputs:** see OpenAPI
 - **Outputs:** see OpenAPI
 
-## 57. Assess
+## 59. Assess
 
 - **Route:** POST /api/protocol/compliance/assess
 - **Price:** $0.10 USDC

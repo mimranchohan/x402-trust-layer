@@ -1,6 +1,6 @@
 # x402 Trust Layer
 
-> 57 paid trust APIs enabling x402 standard payment check, Coinbase CDP wallet guardrail spend controls, and automated transaction auditing for AI agent fleets before the money moves.
+> 59 paid trust APIs enabling x402 standard payment check, Coinbase CDP wallet guardrail spend controls, and automated transaction auditing for AI agent fleets before the money moves.
 
 - Website: https://x402trustlayer.xyz
 - OpenAPI: https://x402trustlayer.xyz/openapi.json
@@ -42,7 +42,7 @@
 | POST | /api/pipeline/trust-v2 | $0.35 | One-shot: mandate diff + KYM ingest + guard + certified buyer gate. |
 | POST | /api/trust-network/bond/slash | $0.03 | Slash certified seller virtual bond after failed delivery. |
 
-## All 57 paid routes
+## All 59 paid routes
 
 | Method | Path | Price | Summary |
 |--------|------|-------|---------|
@@ -86,6 +86,8 @@
 | POST | /api/escrow/metered/close | $0.05 | /api/escrow/metered/close |
 | POST | /api/mcp/tools/call | $0.02 | /api/mcp/tools/call |
 | GET | /api/dashboard/summary | Free | /api/dashboard/summary |
+| POST | /api/solana-pay/action/agent-verify | Free | /api/solana-pay/action/agent-verify |
+| POST | /api/solana-pay/action/agent-verify | Free | /api/solana-pay/action/agent-verify |
 | POST | /api/pipeline/trust-v2 | $0.35 | One-shot: mandate diff + KYM ingest + guard + certified buyer gate. |
 | POST | /api/trust-network/bond/slash | $0.03 | Slash certified seller virtual bond after failed delivery. |
 | POST | /api/protocol/pipeline/full-trust | $0.45 | Agent Trust Protocol v4 full pipeline before x402 payment |

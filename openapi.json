@@ -40,8 +40,8 @@
   },
   "x-x402scan": {
     "discoveryMode": "openapi-first",
-    "paidRouteCount": 57,
-    "note": "OpenAPI lists 57 paid /api/* operations. Free routes documented under x-discovery.freeEndpoints."
+    "paidRouteCount": 59,
+    "note": "OpenAPI lists 59 paid /api/* operations. Free routes documented under x-discovery.freeEndpoints."
   },
   "servers": [
     {
@@ -2971,7 +2971,7 @@
                     "endpoint": "/api/spend-governor/check",
                     "amountUsdc": 0.03,
                     "network": "solana",
-                    "timestamp": "2026-06-06T21:12:22.833Z"
+                    "timestamp": "2026-06-06T22:28:00.289Z"
                   }
                 ]
               }
@@ -3694,7 +3694,7 @@
                     "category": "oracle",
                     "agentId": "dexter-verifier-probe",
                     "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
-                    "timestamp": "2026-06-06T21:12:22.834Z"
+                    "timestamp": "2026-06-06T22:28:00.289Z"
                   }
                 ],
                 "policy": {
@@ -5347,6 +5347,86 @@
             }
           }
         }
+      }
+    },
+    "/api/solana-pay/action/agent-verify": {
+      "get": {
+        "operationId": "get_solana_pay_action_agent_verify",
+        "summary": "/api/solana-pay/action/agent-verify",
+        "description": "/api/solana-pay/action/agent-verify — Free endpoint.",
+        "tags": [
+          "identity",
+          "x402"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "address",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "Solana wallet address to verify"
+          }
+        ]
+      },
+      "post": {
+        "operationId": "post_solana_pay_action_agent_verify",
+        "summary": "/api/solana-pay/action/agent-verify",
+        "description": "/api/solana-pay/action/agent-verify — Free endpoint.",
+        "tags": [
+          "identity",
+          "x402"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "address",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "Solana wallet address to verify"
+          }
+        ]
       }
     },
     "/api/pipeline/trust-v2": {

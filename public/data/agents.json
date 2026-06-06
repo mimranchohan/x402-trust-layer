@@ -1088,6 +1088,50 @@
       ]
     },
     {
+      "id": "solana-pay-action-agent-verify",
+      "name": "Agent Verify",
+      "tier": "identity",
+      "tierLabel": "Identity",
+      "layer": "attestation",
+      "method": "POST",
+      "path": "/api/solana-pay/action/agent-verify",
+      "price": null,
+      "summary": "/api/solana-pay/action/agent-verify",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "identity",
+        "x402"
+      ]
+    },
+    {
+      "id": "solana-pay-action-agent-verify",
+      "name": "Agent Verify",
+      "tier": "identity",
+      "tierLabel": "Identity",
+      "layer": "attestation",
+      "method": "POST",
+      "path": "/api/solana-pay/action/agent-verify",
+      "price": null,
+      "summary": "/api/solana-pay/action/agent-verify",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "identity",
+        "x402"
+      ]
+    },
+    {
       "id": "pipeline-trust-v2",
       "name": "Pipeline Trust v2",
       "tier": "tier1",

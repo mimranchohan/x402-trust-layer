@@ -206,6 +206,18 @@ function buildOperation(
     }
   }
 
+  if (path === "/api/solana-pay/action/agent-verify") {
+    op.parameters = [
+      {
+        name: "address",
+        in: "query",
+        schema: { type: "string" },
+        required: true,
+        description: "Solana wallet address to verify",
+      },
+    ];
+  }
+
   return op;
 }
 
