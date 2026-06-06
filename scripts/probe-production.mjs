@@ -1,6 +1,7 @@
 /**
  * Production probes — writes scripts/probe-production-result.json
  * Run: npm run probe:production
+ * Updated: June 2026
  */
 import { writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
