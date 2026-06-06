@@ -11,9 +11,29 @@ npm run audition:x402gle:endpoints    # per-URL paid score for routes not on ski
 npm run audition:x402gle:missing      # alias: missing routes only
 npm run audition:x402gle:v2           # 3 Trust v2 routes only
 
-# agent.md: per-endpoint URL = immediate paid score (required when whole-origin is pending/cooldown)
+# Prefer npm scripts on Windows (retries + safe spawn). Raw npx also works:
 npx @dexterai/opendexter audition "https://x402trustlayer.xyz/api/guard/pre-x402" --json
 ```
+
+### `audition_failed` / `<!DOCTYPE` HTML error
+
+The CLI talks to **x402gle/Dexter ingest**, not your merchant host. If their API returns an HTML error page you may see:
+
+```json
+{ "error": "audition_failed", "message": "Unexpected token '<', \"<!DOCTYPE \"... is not valid JSON" }
+```
+
+This is **transient** on their side. Wait 1–2 minutes, then:
+
+```powershell
+npm run audition:x402gle
+```
+
+(`runOpendexterAuditionWithRetry` retries up to 3× with 25s delay.) Your `openapi.json` and `/health` are fine if they return JSON.
+
+### Windows `UV_HANDLE_CLOSING` crash
+
+After a failed `npx` parse, Node on Windows can assert in `src\win\async.c`. Avoid rapid `npx` loops; use `npm run audition:x402gle:missing` (sequential spawn + delay).
 
 ### Windows batch auditions
 
