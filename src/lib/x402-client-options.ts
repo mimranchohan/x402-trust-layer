@@ -18,15 +18,32 @@ const EVM_CHAIN_BY_CAIP2: Record<string, Chain> = {
 /** Public mainnet RPC — Dexter proxy can return shapes web3.js 1.98 cannot parse */
 export const DEFAULT_SOLANA_RPC_URL = "https://api.mainnet-beta.solana.com";
 
-function preferredPaymentNetwork(): string | undefined {
+function resolvePreferredNetwork(hasEvmKey: boolean, hasSolKey: boolean): string | undefined {
   const explicit = process.env.X402_PREFERRED_NETWORK?.trim();
-  if (explicit) return explicit;
-
-  const nets = (process.env.NETWORKS ?? process.env.NETWORK ?? "base,solana").toLowerCase();
-  if (nets.split(",").map((s) => s.trim()).includes("base")) {
-    return CHAIN_IDS.base;
+  if (explicit) {
+    if (explicit.startsWith("solana:") && !hasSolKey) {
+      throw new Error(
+        `X402_PREFERRED_NETWORK=${explicit} requires SOLANA_PRIVATE_KEY in .env (demo payer with USDC)`,
+      );
+    }
+    if (explicit.startsWith("eip155:") && !hasEvmKey) {
+      throw new Error(
+        `X402_PREFERRED_NETWORK=${explicit} requires EVM_PRIVATE_KEY in .env (demo payer with USDC)`,
+      );
+    }
+    return explicit;
   }
-  return CHAIN_IDS.solana;
+
+  if (hasEvmKey && hasSolKey) {
+    const nets = (process.env.NETWORKS ?? process.env.NETWORK ?? "base,solana").toLowerCase();
+    if (nets.split(",").map((s) => s.trim()).includes("base")) {
+      return CHAIN_IDS.base;
+    }
+    return CHAIN_IDS.solana;
+  }
+  if (hasEvmKey) return CHAIN_IDS.base;
+  if (hasSolKey) return CHAIN_IDS.solana;
+  return undefined;
 }
 
 function evmRpcUrl(network: string): string {
@@ -116,11 +133,7 @@ export function buildWrapFetchOptions(overrides?: Partial<WrapFetchOptions>): Wr
   if (solKey) opts.walletPrivateKey = solKey;
   if (evmKey) opts.evmPrivateKey = evmKey;
 
-  if (evmKey && solKey) {
-    opts.preferredNetwork = preferredPaymentNetwork();
-  } else if (evmKey) {
-    opts.preferredNetwork = CHAIN_IDS.base;
-  }
+  opts.preferredNetwork = resolvePreferredNetwork(!!evmKey, !!solKey);
 
   if (process.env.X402_VERBOSE === "1" || overrides?.verbose) opts.verbose = true;
 

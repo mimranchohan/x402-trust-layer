@@ -9,7 +9,8 @@ dotenv.config();
 
 const base = (process.env.PUBLIC_BASE_URL ?? "https://x402trustlayer.xyz").replace(/\/$/, "");
 
-assertPayerKeys();
+const keys = assertPayerKeys();
+const wrapOpts = buildWrapFetchOptions({ verbose: process.env.X402_VERBOSE === "1" });
 
 const nativeFetch = globalThis.fetch;
 const tracingFetch: typeof fetch = async (input, init) => {
@@ -41,10 +42,16 @@ const body = {
   expectedCalls: 10,
 };
 
-const x402Fetch = await buildX402Fetch(tracingFetch, buildWrapFetchOptions({ verbose: process.env.X402_VERBOSE === "1" }));
+const x402Fetch = await buildX402Fetch(tracingFetch, wrapOpts);
 
 console.log("Target:", `${base}/api/market/buy-advisor`);
-console.log("Preferred network:", buildWrapFetchOptions().preferredNetwork ?? "(auto)");
+console.log("Payer keys:", `evm=${keys.evm}`, `solana=${keys.solana}`);
+console.log("Preferred network:", wrapOpts.preferredNetwork ?? "(auto)");
+if (process.env.X402_PREFERRED_NETWORK?.trim() && wrapOpts.preferredNetwork !== process.env.X402_PREFERRED_NETWORK.trim()) {
+  console.warn(
+    "Warning: X402_PREFERRED_NETWORK was ignored — set the matching private key (SOLANA_PRIVATE_KEY for Solana, EVM_PRIVATE_KEY for Base).",
+  );
+}
 
 const path = process.argv[2] ?? "/api/market/buy-advisor";
 const payloads: Record<string, unknown> = {
@@ -69,6 +76,21 @@ try {
   console.log("OK", res.status, `${Date.now() - t0}ms`);
   console.log(text.slice(0, 800));
 } catch (err) {
-  console.error("FAIL", `${Date.now() - t0}ms`, err instanceof Error ? err.message : err);
+  const msg = err instanceof Error ? err.message : String(err);
+  console.error("FAIL", `${Date.now() - t0}ms`, msg);
+  if (/facilitator_error_500/i.test(msg)) {
+    console.error(
+      "\nHint: Dexter facilitator /settle returned HTTP 500. Common Base cause: sponsored Permit2 tx never confirms on-chain.",
+    );
+    console.error(
+      "Run: npx tsx scripts/probe-settle-mismatch.ts — calls facilitator /verify and /settle directly.",
+    );
+    console.error(
+      "If body says 'Timed out while waiting for transaction', retry later or try Solana:",
+    );
+    console.error(
+      "  Set SOLANA_PRIVATE_KEY in .env, then: $env:X402_PREFERRED_NETWORK='solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'; npm run debug:settlement",
+    );
+  }
   process.exit(1);
 }

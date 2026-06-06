@@ -71,6 +71,14 @@ async function paidFetch(path: string, init: RequestInit, label = path): Promise
           console.error(
             "  Hint: server facilitator_timeout — on Railway set X402_FACILITATOR_TIMEOUT_MS=90000 (not 25000), redeploy, retry.\n",
           );
+        } else if (/facilitator_error_500|Timed out while waiting for transaction/i.test(msg)) {
+          console.error(
+            "  Hint: Dexter facilitator Base settle failed — sponsored Permit2 tx did not confirm on-chain (upstream infra).",
+          );
+          console.error(
+            "  Retry later, or: X402_PREFERRED_NETWORK=solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp npm run demo",
+          );
+          console.error("  Diagnose: npx tsx scripts/probe-settle-mismatch.ts\n");
         }
         console.error(
           "  Hint: long demo runs can hit transient Dexter facilitator limits. Retry one route:",

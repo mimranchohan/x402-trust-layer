@@ -1,30 +1,38 @@
 {
   "origin": "https://x402trustlayer.xyz",
-  "at": "2026-06-01T13:43:14.966Z",
-  "expectedPaidRoutes": 37,
+  "at": "2026-06-03T16:16:32.504Z",
+  "expectedPaidRoutes": 57,
   "checks": {
     "health": {
       "status": 200,
-      "endpointCount": 38,
-      "gitCommit": "8cb91d4",
+      "endpointCount": 58,
+      "gitCommit": "815e8e0",
       "agenticReady": true,
       "agentCashReady": true
     },
     "wellKnown": {
       "status": 200,
-      "resourceCount": 38,
+      "resourceCount": 58,
       "syncOk": true,
       "ownershipProofs": 2
     },
     "openapi": {
       "status": 200,
-      "pathCount": 38,
-      "postRouteCount": 37,
+      "pathCount": 58,
+      "postRouteCount": 57,
       "hasHealth": false,
       "hasGuidance": true
     }
   },
   "routes": [
+    {
+      "path": "/api/a2a/execute",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
     {
       "path": "/api/agent-escrow",
       "status": 402,
@@ -51,6 +59,14 @@
     },
     {
       "path": "/api/attestation/verify",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/bedrock/preflight",
       "status": 402,
       "pass402": true,
       "keys": [
@@ -202,6 +218,150 @@
       ]
     },
     {
+      "path": "/api/protocol/compliance/assess",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/protocol/credit/score",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/protocol/escrow/create",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/protocol/escrow/status",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/protocol/escrow/transition",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/protocol/execution/issue",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/protocol/execution/verify",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/protocol/fraud/scan",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/protocol/oracle/consensus",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/protocol/passport/issue",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/protocol/passport/verify",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/protocol/pipeline/full-trust",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/protocol/reasoning/commit",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/protocol/reasoning/disclose",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/protocol/replay/bind",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/protocol/replay/verify",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/protocol/trust-score/v2",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/protocol/zk/prove",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
       "path": "/api/quality-escrow/semantic-settle",
       "status": 402,
       "pass402": true,
@@ -323,8 +483,8 @@
     }
   ],
   "summary": {
-    "total": 37,
-    "pass402Count": 37,
+    "total": 57,
+    "pass402Count": 57,
     "fail402Paths": [],
     "discoveryInSync": true
   }
