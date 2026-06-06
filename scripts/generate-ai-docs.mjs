@@ -5,7 +5,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const MCP_VERSION = "1.2.0";
+const MCP_VERSION = "5.1.0";
 const agentsPath = join(root, "public", "data", "agents.json");
 const catalog = JSON.parse(readFileSync(agentsPath, "utf8"));
 const agents = catalog.agents;
@@ -187,7 +187,7 @@ Spend limits: configure in Agentic Wallet UI; enforce policy in Trust Layer \`po
 Demo: \`npm run demo:alchemy\` (~$1.10) | \`npm run demo:alchemy:enterprise\` (~$1.32)  
 Alchemy skill: \`npx skills add alchemyplatform/skills --yes\`
 
-## MCP tools (@mimranakb/trust-layer-mcp v1.2.0)
+## MCP tools (@mimranakb/trust-layer-mcp v\${MCP_VERSION})
 
 | Tool | Maps to |
 |------|---------|
@@ -200,7 +200,7 @@ Alchemy skill: \`npx skills add alchemyplatform/skills --yes\`
 | trust_insurance_attest | POST /api/trust-network/insurance/attest |
 | trust_receipt_verify | POST /api/receipt-auditor/verify |
 
-Setup: \`EVM_PRIVATE_KEY\` or \`SOLANA_PRIVATE_KEY\` in env. Run: \`npx @mimranakb/trust-layer-mcp@1.2.0\`
+Setup: \`EVM_PRIVATE_KEY\` or \`SOLANA_PRIVATE_KEY\` in env. Run: \`npx @mimranakb/trust-layer-mcp@${MCP_VERSION}\`
 
 ## Replay-Guard SDK Integration (Strict Nonce Binding)
 

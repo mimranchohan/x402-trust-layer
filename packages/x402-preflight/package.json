@@ -1,6 +1,6 @@
 {
   "name": "x402-agent-suite-preflight",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Default preflight helper — calls x402 Agent Suite proxy before paid API calls",
   "type": "module",
   "main": "dist/index.js",
