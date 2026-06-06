@@ -66,7 +66,7 @@ function withPaidRequestBudget(handler: PaidMw): PaidMw {
         error: "Payment settlement or handler timed out",
         code: "gateway_timeout",
         budgetMs: PAID_REQUEST_BUDGET_MS,
-        hint: "Set X402_FACILITATOR_TIMEOUT_MS=25000 and X402_FACILITATOR_MAX_RETRIES=1 on Railway; or pay on Solana.",
+        hint: "Raise X402_FACILITATOR_TIMEOUT_MS=90000 on Railway if settlements fail with facilitator_timeout.",
       });
     }, PAID_REQUEST_BUDGET_MS);
 
@@ -239,6 +239,7 @@ export function createPaidMiddleware(): (
               res.setHeader("Retry-After", String(process.env.SETTLEMENT_RETRY_AFTER_SEC ?? "15"));
             }
             console.error("[x402] settlement failed:", payload.reason);
+            payload.error = `Payment settlement failed (${payload.reason})`;
           }
         }
         if (bodyHasAccepts(body)) {

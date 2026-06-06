@@ -1,6 +1,6 @@
 /**
  * Dexter facilitator /settle: raise HTTP timeout and cap retries (avoids 55s+ hangs → Railway 504).
- * Env: X402_FACILITATOR_TIMEOUT_MS (default 25000), X402_FACILITATOR_MAX_RETRIES (default 1).
+ * Env: X402_FACILITATOR_TIMEOUT_MS (default 90000), X402_FACILITATOR_MAX_RETRIES (default 2).
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -11,9 +11,9 @@ const pkgRoot = path.join(root, "..", "node_modules", "@dexterai", "x402", "dist
 const targets = ["index.js", "index.cjs"].map((f) => path.join(pkgRoot, f));
 
 const timeoutDefault =
-  "(Number(process.env.X402_FACILITATOR_TIMEOUT_MS)||25e3)";
+  "(Number(process.env.X402_FACILITATOR_TIMEOUT_MS)||9e4)";
 const maxRetriesDefault =
-  "(Number(process.env.X402_FACILITATOR_MAX_RETRIES)||1)";
+  "(Number(process.env.X402_FACILITATOR_MAX_RETRIES)||2)";
 
 /** @type {{ from: string; to: string }[]} */
 const replacements = [
@@ -58,4 +58,4 @@ if (patched === 0) {
   console.warn("[patch-facilitator-timeout] no files patched — check @dexterai/x402 version");
   process.exit(0);
 }
-console.log(`[patch-facilitator-timeout] patched ${patched} file(s), timeout 25s, maxRetries 1`);
+console.log(`[patch-facilitator-timeout] patched ${patched} file(s), timeout 90s default, maxRetries 2`);

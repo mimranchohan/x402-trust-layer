@@ -160,6 +160,11 @@ function healthPayload() {
     chains: config.chains,
     networks: config.networks,
     facilitator: config.facilitatorUrl,
+    facilitatorConfig: {
+      timeoutMs: Number(process.env.X402_FACILITATOR_TIMEOUT_MS) || 90_000,
+      maxRetries: Number(process.env.X402_FACILITATOR_MAX_RETRIES) || 2,
+      paidRequestBudgetMs: Number(process.env.PAID_REQUEST_TIMEOUT_MS) || 70_000,
+    },
     endpointCount: listEndpoints().length,
     nonceBackend: metricsPayload().nonceBackend,
     gitCommit: process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) ?? null,

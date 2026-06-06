@@ -67,10 +67,15 @@ async function paidFetch(path: string, init: RequestInit, label = path): Promise
       }
       console.error(`--- ${label} FAILED ---`, msg);
       if (retryable) {
+        if (/facilitator_timeout/i.test(msg)) {
+          console.error(
+            "  Hint: server facilitator_timeout — on Railway set X402_FACILITATOR_TIMEOUT_MS=90000 (not 25000), redeploy, retry.\n",
+          );
+        }
         console.error(
           "  Hint: long demo runs can hit transient Dexter facilitator limits. Retry one route:",
         );
-        console.error(`  npm run demo:tail   (or wait 30s and re-run)\n`);
+        console.error(`  npm run demo:tail   (or: npx tsx scripts/debug-buy-advisor-pay.ts)\n`);
         console.error(
           "  Check Base wallet: USDC for payments + small ETH for Permit2 gas. X402_VERBOSE=1 for payment trace.\n",
         );

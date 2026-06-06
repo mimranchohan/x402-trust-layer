@@ -14,6 +14,9 @@
 
 | Variable | Purpose |
 |----------|---------|
+| `X402_FACILITATOR_TIMEOUT_MS` | **`90000`** — Dexter `/settle` on Base often exceeds 25s; `25000` causes `facilitator_timeout` in `npm run demo` |
+| `X402_FACILITATOR_MAX_RETRIES` | `2` (optional) |
+| `PAID_REQUEST_TIMEOUT_MS` | `120000` if paid routes run heavy handlers after settle |
 | `DATA_DIR` | `/app/data` when volume mount is `/app/data` (see below) |
 | `DB_PATH` | Override full DB file path (optional) |
 | `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` | Multi-replica nonce / replay |
