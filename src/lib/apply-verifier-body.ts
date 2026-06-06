@@ -142,14 +142,15 @@ export function mergeCompatibleProbeInput(
 export function applyVerifierExampleBody(req: Request): void {
   if (!isApiProbeMethod(req.method)) return;
 
-  const example = VERIFY_EXAMPLES[req.path];
+  const lookupPath = req.path.startsWith("/api") ? req.path : `/api${req.path}`;
+  const example = VERIFY_EXAMPLES[lookupPath];
   if (!example || typeof example !== "object" || Array.isArray(example)) return;
 
   const ex = example as Record<string, unknown>;
   const body = req.body as Record<string, unknown> | undefined;
   const fromQuery = req.method === "GET" || req.method === "HEAD" ? queryAsBody(req.query) : {};
 
-  if (req.path === "/api/router/route" && body && typeof body === "object" && !Array.isArray(body)) {
+  if (lookupPath === "/api/router/route" && body && typeof body === "object" && !Array.isArray(body)) {
     normalizeRouterAliases(body as Record<string, unknown>);
   }
 
@@ -158,7 +159,7 @@ export function applyVerifierExampleBody(req: Request): void {
 
   if (
     (emptyBody(body) && Object.keys(fromQuery).length === 0) ||
-    (Object.keys(rawBody).length > 0 && lacksRequiredFields(req.path, rawBody))
+    (Object.keys(rawBody).length > 0 && lacksRequiredFields(lookupPath, rawBody))
   ) {
     const merged = mergeCompatibleProbeInput(
       mergeCompatibleProbeInput(ex, fromQuery),
