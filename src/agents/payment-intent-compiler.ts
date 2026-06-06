@@ -16,11 +16,13 @@ export type CompilerResult = {
   withinBudget: boolean;
   totalEstimatedUsdc: number;
   maxBudgetUsdc: number;
+  /** Downstream suite steps only — excludes this compile call (already paid). */
   steps: SuiteStep[];
   executionOrder: string[];
   suiteBaseUrl: string;
   recommendedFirstStep: string;
   planSummary: string;
+  currentEndpointCostUsdc: number;
 };
 
 function trimStepsToBudget(steps: SuiteStep[], maxBudgetUsdc: number): SuiteStep[] {
@@ -52,19 +54,12 @@ export function runPaymentIntentCompiler(input: CompilerInput): WithAgentTrust<C
     externalCallEstimateUsdc: externalEstimate,
   });
 
-  steps.unshift({
-    step: 1,
-    agent: "payment-intent-compiler",
-    method: "POST",
-    path: "/api/payment-intent/compile",
-    priceUsdc: SUITE_PRICES.paymentCompiler,
-    purpose: "Compile multi-step x402 execution plan",
-  });
-  steps.forEach((s, i) => {
-    s.step = i + 1;
-  });
+  let fitted = trimStepsToBudget(steps, input.maxBudgetUsdc);
+  if (fitted.length === 0) {
+    fitted = steps.filter((s) => s.path === "/api/guard/pre-x402").slice(0, 1);
+  }
+  fitted = fitted.map((s, i) => ({ ...s, step: i + 1 }));
 
-  const fitted = trimStepsToBudget(steps, input.maxBudgetUsdc);
   const total = fitted.reduce((sum, s) => sum + s.priceUsdc, 0);
   const withinBudget = total <= input.maxBudgetUsdc;
   const firstHop = fitted.find((s) => s.path.startsWith("/api/"));
@@ -76,10 +71,10 @@ export function runPaymentIntentCompiler(input: CompilerInput): WithAgentTrust<C
     {
       status: "ok",
       ok: true,
-      allowed: withinBudget,
+      allowed: withinBudget && fitted.length > 0,
       summary: withinBudget
-        ? `Compiled ${fitted.length}-step plan ($${total.toFixed(2)} est.) within $${input.maxBudgetUsdc} budget`
-        : `Plan exceeds budget: $${total.toFixed(2)} est. vs $${input.maxBudgetUsdc} cap`,
+        ? `Compiled ${fitted.length}-step downstream plan ($${total.toFixed(2)} est.) within $${input.maxBudgetUsdc} budget`
+        : `No downstream plan fits budget: $${total.toFixed(2)} est. vs $${input.maxBudgetUsdc} cap`,
       task: input.task,
       withinBudget,
       totalEstimatedUsdc: Number(total.toFixed(4)),
@@ -89,11 +84,13 @@ export function runPaymentIntentCompiler(input: CompilerInput): WithAgentTrust<C
       suiteBaseUrl: suiteUrl(""),
       recommendedFirstStep,
       planSummary: fitted.map((s) => `Step ${s.step}: ${s.purpose} (${s.path}, $${s.priceUsdc})`).join("; "),
+      currentEndpointCostUsdc: SUITE_PRICES.paymentCompiler,
     },
     agentTrustMeta(["plan_compiled", withinBudget ? "within_budget" : "over_budget"], {
-      confidence: withinBudget ? 0.88 : 0.72,
+      confidence: withinBudget ? 0.92 : 0.72,
       sources: ["payment-intent-compiler", "suite-catalog"],
-      accuracy_note: "Plan estimates suite route costs; external x402 calls are not included unless specified.",
+      accuracy_note:
+        "Downstream step costs only; this compile call ($0.15) is excluded from totalEstimatedUsdc.",
     }),
   );
 }

@@ -1839,33 +1839,28 @@
                   "ok": true,
                   "status": "ok",
                   "allowed": true,
-                  "summary": "Compiled 4-step plan ($0.27 est.) within $1 budget",
+                  "summary": "Compiled 3-step downstream plan ($0.12 est.) within $1 budget",
                   "withinBudget": true,
-                  "totalEstimatedUsdc": 0.27,
+                  "totalEstimatedUsdc": 0.12,
                   "maxBudgetUsdc": 1,
+                  "currentEndpointCostUsdc": 0.15,
                   "recommendedFirstStep": "POST https://x402trustlayer.xyz/api/guard/pre-x402",
-                  "planSummary": "Step 1: Compile plan; Step 2: Guard preflight; Step 3: Route marketplace; Step 4: Verify receipt",
+                  "planSummary": "Step 1: Guard preflight; Step 2: Route marketplace; Step 3: Verify receipt",
                   "steps": [
                     {
                       "step": 1,
-                      "path": "/api/payment-intent/compile",
-                      "priceUsdc": 0.15,
-                      "purpose": "Compile plan"
-                    },
-                    {
-                      "step": 2,
                       "path": "/api/guard/pre-x402",
                       "priceUsdc": 0.05,
                       "purpose": "Spend policy + risk"
                     },
                     {
-                      "step": 3,
+                      "step": 2,
                       "path": "/api/router/route",
                       "priceUsdc": 0.02,
                       "purpose": "Pick marketplace API"
                     },
                     {
-                      "step": 4,
+                      "step": 3,
                       "path": "/api/receipt-auditor/verify",
                       "priceUsdc": 0.05,
                       "purpose": "Verify settlement"
@@ -1873,7 +1868,8 @@
                   ],
                   "executionOrder": [
                     "POST https://x402trustlayer.xyz/api/guard/pre-x402",
-                    "POST https://x402trustlayer.xyz/api/router/route"
+                    "POST https://x402trustlayer.xyz/api/router/route",
+                    "POST https://x402trustlayer.xyz/api/receipt-auditor/verify"
                   ],
                   "suiteBaseUrl": "https://x402trustlayer.xyz"
                 }
@@ -3527,7 +3523,7 @@
                     "endpoint": "/api/spend-governor/check",
                     "amountUsdc": 0.03,
                     "network": "solana",
-                    "timestamp": "2026-06-04T22:27:30.903Z"
+                    "timestamp": "2026-06-06T00:15:50.953Z"
                   }
                 ]
               }
@@ -4397,7 +4393,7 @@
                     "category": "oracle",
                     "agentId": "dexter-verifier-probe",
                     "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
-                    "timestamp": "2026-06-04T22:27:30.903Z"
+                    "timestamp": "2026-06-06T00:15:50.954Z"
                   }
                 ],
                 "policy": {
