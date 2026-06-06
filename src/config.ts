@@ -195,6 +195,7 @@ export const pricing = {
   qualityEscrowSemantic: "0.12",
   merchantCertify: "0.15",
   buyerGate: "0.03",
+  transactionAuth: "0.05",
   pipelineTrustV2: "0.35",
   bondSlash: "0.03",
   protocolFullTrust: "0.45",
@@ -217,6 +218,10 @@ export const pricing = {
   protocolComplianceAssess: "0.10",
   a2aExecute: "0.10",
   bedrockPreflight: "0.05",
+  escrowOpen: "0.05",
+  escrowCharge: "0.01",
+  escrowClose: "0.05",
+  mcpCall: "0.02",
 } as const;
 
 function isProductionEnv(): boolean {

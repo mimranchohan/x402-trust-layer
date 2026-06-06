@@ -35,6 +35,9 @@ import { runSellerCertify, runBuyerGate, runBondSlash } from "../agents/trust-ne
 import { runPipelineTrustV2 } from "../agents/pipeline-trust-v2.js";
 import { handleA2APaymentRoute } from "../agents/a2a-payment.js";
 import { handleBedrockPreflight } from "../agents/bedrock-bridge.js";
+import { openMeteredSession, chargeMeteredSession, closeMeteredSession } from "../agents/metered-escrow.js";
+import { handleMcpListTools, handleMcpCallTool } from "./mcp.js";
+import { handleDashboardSummary } from "./dashboard.js";
 import { config, pricing } from "../config.js";
 import { withRequestHeaders, createPost, createGet, type RouteContext } from "./shared.js";
 import { guardBodySchema, policySchema, hostListSchema, verifierFallback } from "./schemas.js";
@@ -1554,6 +1557,67 @@ export function registerRoutes(
       bundleSavingsNote: "pre-x402 guard replaces 3 calls ($0.16 → $0.05); pipeline/execute replaces guard+plan+failover+router ($0.27+ → $0.25)",
     });
   });
+
+  // MCP tools discovery (Free listing endpoint)
+  ctx.app.post("/api/mcp/tools", asyncRoute(handleMcpListTools));
+
+  // MCP tool call execution (Paid endpoint)
+  post(
+    "/api/mcp/tools/call",
+    pricing.mcpCall,
+    "Execute an MCP tool invocation dynamically with schema mapping",
+    async (req, res) => {
+      await handleMcpCallTool(req, res);
+    }
+  );
+
+  // Metered Escrow Open
+  post(
+    "/api/escrow/metered/open",
+    pricing.escrowOpen,
+    "Open a usage-based pay-as-you-go escrow session budget",
+    async (req, res) => {
+      const parsed = z.object({
+        buyerWallet: z.string().min(16),
+        sellerHost: z.string().min(1),
+        budgetUsdc: z.coerce.number().positive(),
+      }).safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(await openMeteredSession(parsed.data.buyerWallet, parsed.data.sellerHost, parsed.data.budgetUsdc));
+    }
+  );
+
+  // Metered Escrow Charge
+  post(
+    "/api/escrow/metered/charge",
+    pricing.escrowCharge,
+    "Charge against a running usage-based escrow session budget",
+    async (req, res) => {
+      const parsed = z.object({
+        sessionId: z.string().min(8),
+        amountUsdc: z.coerce.number().positive(),
+      }).safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(await chargeMeteredSession(parsed.data.sessionId, parsed.data.amountUsdc));
+    }
+  );
+
+  // Metered Escrow Close
+  post(
+    "/api/escrow/metered/close",
+    pricing.escrowClose,
+    "Close a usage-based escrow session and settle final spent amounts",
+    async (req, res) => {
+      const parsed = z.object({
+        sessionId: z.string().min(8),
+      }).safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
+      res.json(await closeMeteredSession(parsed.data.sessionId));
+    }
+  );
+
+  // Control Plane Telemetry Dashboard (Dual JSON/HTML view)
+  ctx.app.get("/api/dashboard/summary", asyncRoute(handleDashboardSummary));
 
   registerProtocolRoutes(app, paid, asyncRoute);
 

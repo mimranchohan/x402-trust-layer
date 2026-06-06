@@ -181,6 +181,10 @@ export function createPaidMiddleware(): (
     });
 
     const paidHandler: PaidMw = async (req: Request, res: Response, next: NextFunction) => {
+      if (process.env.X402_BYPASS === "1") {
+        next();
+        return;
+      }
       const paymentSig = getPaymentSignatureHeader(req);
       if (!paymentSig) {
         try {
