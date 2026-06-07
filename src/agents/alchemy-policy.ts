@@ -39,6 +39,34 @@ function hexToString(hex: string): string {
   }
 }
 
+function decodeRevertReason(hex: string): string {
+  if (!hex || hex === "0x") return "";
+  const clean = hex.startsWith("0x") ? hex.slice(2) : hex;
+  // Error(string) selector: 08c379a0
+  if (clean.startsWith("08c379a0")) {
+    try {
+      const lenHex = clean.slice(8 + 64, 8 + 64 + 64);
+      const len = parseInt(lenHex, 16);
+      if (Number.isNaN(len) || len <= 0) return "";
+      const dataHex = clean.slice(8 + 64 + 64, 8 + 64 + 64 + len * 2);
+      return Buffer.from(dataHex, "hex").toString("utf8");
+    } catch {
+      return "";
+    }
+  }
+  // Panic(uint256) selector: 4e487b71
+  if (clean.startsWith("4e487b71")) {
+    try {
+      const codeHex = clean.slice(8, 8 + 64);
+      const code = parseInt(codeHex, 16);
+      return `Panic(0x${code.toString(16)})`;
+    } catch {
+      return "";
+    }
+  }
+  return "";
+}
+
 export type PaymasterPolicyInput = {
   userOperation: {
     sender: string;
@@ -274,8 +302,16 @@ export async function runAlchemySimulationShield(
     const jsonExec = (await resExec.json()) as any;
 
     const changes = jsonChanges.result?.changes || [];
-    const errorMsg = jsonExec.result?.error || jsonExec.error?.message || "";
-    const reverted = Boolean(errorMsg || jsonExec.result?.revertReason);
+    let errorMsg = jsonExec.result?.error || jsonExec.error?.message || "";
+    const revertReasonHex = jsonExec.result?.revertReason || "";
+    const reverted = Boolean(errorMsg || revertReasonHex);
+
+    if (reverted && revertReasonHex) {
+      const decoded = decodeRevertReason(revertReasonHex);
+      if (decoded) {
+        errorMsg = errorMsg ? `${errorMsg}: ${decoded}` : decoded;
+      }
+    }
 
     const detectedThreats: string[] = [];
 
@@ -317,6 +353,8 @@ export async function runAlchemySimulationShield(
 
     const summary = safe
       ? "Transaction simulation succeeded. No potential drain or threat vectors detected."
+      : reverted && errorMsg
+      ? `Transaction reverted: ${errorMsg}`
       : `Threat vectors identified: ${detectedThreats.join(", ")}.`;
 
     return {
