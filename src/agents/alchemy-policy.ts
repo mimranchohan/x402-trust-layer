@@ -301,8 +301,15 @@ export async function runAlchemySimulationShield(
     const jsonChanges = (await resChanges.json()) as any;
     const jsonExec = (await resExec.json()) as any;
 
+    if (jsonChanges.error) {
+      throw new Error(`Alchemy AssetChanges node error: ${jsonChanges.error.message} (code ${jsonChanges.error.code})`);
+    }
+    if (jsonExec.error) {
+      throw new Error(`Alchemy Execution node error: ${jsonExec.error.message} (code ${jsonExec.error.code})`);
+    }
+
     const changes = jsonChanges.result?.changes || [];
-    let errorMsg = jsonExec.result?.error || jsonExec.error?.message || "";
+    let errorMsg = jsonExec.result?.error || "";
     const revertReasonHex = jsonExec.result?.revertReason || "";
     const reverted = Boolean(errorMsg || revertReasonHex);
 
@@ -368,11 +375,11 @@ export async function runAlchemySimulationShield(
   } catch (err: any) {
     return {
       safe: false,
-      reverted: true,
+      reverted: false,
       summary: `Failed to complete transaction simulation: ${err?.message || String(err)}`,
       assetChanges: [],
       detectedThreats: ["simulation_failed"],
-      securityGrade: "F",
+      securityGrade: "C",
     };
   }
 }
