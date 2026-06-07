@@ -288,7 +288,11 @@ export async function runAlchemySimulationShield(
             data: input.transaction.data || "0x",
           },
           "latest",
-          {},
+          {
+            traceOptions: {
+              format: "FLAT",
+            },
+          },
         ],
       }),
     });
@@ -299,11 +303,56 @@ export async function runAlchemySimulationShield(
     }
 
     const jsonChanges = (await resChanges.json()) as any;
-    const jsonExec = (await resExec.json()) as any;
+    let jsonExec = (await resExec.json()) as any;
 
     if (jsonChanges.error) {
       throw new Error(`Alchemy AssetChanges node error: ${jsonChanges.error.message} (code ${jsonChanges.error.code})`);
     }
+
+    if (jsonExec.error && (jsonExec.error.message?.toLowerCase().includes("tracer") || jsonExec.error.code === -32603)) {
+      // Fallback: Use standard eth_call to check for reverts without JS Tracer
+      try {
+        const resFallback = await fetch(url, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: 3,
+            method: "eth_call",
+            params: [
+              {
+                from: input.transaction.from,
+                to: input.transaction.to,
+                value: input.transaction.value || "0x0",
+                data: input.transaction.data || "0x",
+              },
+              "latest",
+            ],
+          }),
+        });
+        if (resFallback.ok) {
+          const jsonFallback = (await resFallback.json()) as any;
+          if (jsonFallback.error) {
+            jsonExec = {
+              result: {
+                error: jsonFallback.error.message || "Reverted",
+                revertReason: jsonFallback.error.data || "",
+              },
+            };
+          } else {
+            jsonExec = {
+              result: {
+                error: "",
+                revertReason: "",
+              },
+            };
+          }
+        }
+      } catch {
+        // If fallback fails, let the original tracer error bubble up
+      }
+    }
+
     if (jsonExec.error) {
       throw new Error(`Alchemy Execution node error: ${jsonExec.error.message} (code ${jsonExec.error.code})`);
     }
