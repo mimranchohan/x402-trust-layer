@@ -288,7 +288,7 @@ export async function runAlchemySimulationShield(
             data: input.transaction.data || "0x",
           },
           "latest",
-          "FLAT",
+          {},
         ],
       }),
     });
