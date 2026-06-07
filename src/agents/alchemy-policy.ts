@@ -231,6 +231,83 @@ export async function runAlchemyNotifyWebhook(
  * POST /api/alchemy/simulate-shield
  * Simulates EVM transaction execution and flags threat vectors before submission.
  */
+function getJsonRpcError(code: number, msg: string): Error {
+  if (code === -32700) {
+    return new Error(`Alchemy JSON-RPC Parse error (-32700): Invalid JSON was received by the server. An error occurred on the server while parsing the JSON text.`);
+  }
+  if (code === -32600) {
+    return new Error(`Alchemy JSON-RPC Invalid Request (-32600): The JSON sent is not a valid Request object.`);
+  }
+  if (code === -32601) {
+    return new Error(`Alchemy JSON-RPC Method not found (-32601): The method ${msg ? `(${msg})` : ""} does not exist or is not available.`);
+  }
+  if (code === -32602) {
+    return new Error(`Alchemy JSON-RPC Invalid params (-32602): Invalid method parameter(s)${msg ? `: ${msg}` : ""}.`);
+  }
+  if (code === -32603) {
+    return new Error(`Alchemy JSON-RPC Internal error (-32603): Internal JSON-RPC error${msg ? `: ${msg}` : ""}.`);
+  }
+  if (code >= -32099 && code <= -32000) {
+    return new Error(`Alchemy JSON-RPC Server error (${code}): ${msg || "Reserved for implementation-defined server-errors."}`);
+  }
+  return new Error(`Alchemy JSON-RPC error (${code}): ${msg}`);
+}
+
+async function parseAlchemyResponse(res: Response, allowTracerError = false): Promise<any> {
+  const status = res.status;
+  if (!res.ok) {
+    let bodyText = "";
+    try {
+      bodyText = await res.text();
+    } catch {}
+
+    let errorMessage = "";
+    try {
+      const parsed = JSON.parse(bodyText);
+      if (parsed.error) {
+        errorMessage = parsed.error.message || "";
+      }
+    } catch {}
+
+    if (status === 429) {
+      throw new Error(`Alchemy rate limit exceeded (HTTP 429). Your app has exceeded its compute units per second (CUPS) capacity or concurrent requests capacity.`);
+    }
+    if (status === 401) {
+      throw new Error(`Alchemy API key invalid or unauthorized (HTTP 401). Please check your API key.`);
+    }
+    if (status === 403) {
+      throw new Error(`Alchemy access forbidden (HTTP 403). Possible reasons: monthly capacity limit exceeded, app is inactive, or IP/Origin not whitelisted.`);
+    }
+    if (status === 400) {
+      const details = errorMessage ? `: ${errorMessage}` : "";
+      throw new Error(`Alchemy bad request (HTTP 400). The request format or parameters are invalid${details}.`);
+    }
+    if (status >= 500) {
+      const details = errorMessage ? `: ${errorMessage}` : "";
+      throw new Error(`Alchemy internal server error (HTTP ${status}). The server was unable to complete the request. Please check the Alchemy status page${details}.`);
+    }
+    throw new Error(`Alchemy RPC error (HTTP ${status})${errorMessage ? `: ${errorMessage}` : ""}`);
+  }
+
+  const json = await res.json() as any;
+  if (json && json.error) {
+    const code = json.error.code;
+    const msg = json.error.message || "";
+
+    if (allowTracerError && (code === -32603 || msg.toLowerCase().includes("tracer"))) {
+      return json;
+    }
+
+    throw getJsonRpcError(code, msg);
+  }
+
+  return json;
+}
+
+/**
+ * POST /api/alchemy/simulate-shield
+ * Simulates EVM transaction execution and flags threat vectors before submission.
+ */
 export async function runAlchemySimulationShield(
   input: SimulationShieldInput
 ): Promise<{
@@ -298,16 +375,8 @@ export async function runAlchemySimulationShield(
     });
 
     const [resChanges, resExec] = await Promise.all([assetChangesPromise, executionPromise]);
-    if (!resChanges.ok || !resExec.ok) {
-      throw new Error(`Alchemy simulation RPC error (HTTP ${resChanges.status}/${resExec.status})`);
-    }
-
-    const jsonChanges = (await resChanges.json()) as any;
-    let jsonExec = (await resExec.json()) as any;
-
-    if (jsonChanges.error) {
-      throw new Error(`Alchemy AssetChanges node error: ${jsonChanges.error.message} (code ${jsonChanges.error.code})`);
-    }
+    const jsonChanges = await parseAlchemyResponse(resChanges);
+    let jsonExec = await parseAlchemyResponse(resExec, true);
 
     if (jsonExec.error && (jsonExec.error.message?.toLowerCase().includes("tracer") || jsonExec.error.code === -32603)) {
       // Fallback: Use standard eth_call to check for reverts without JS Tracer
@@ -330,23 +399,21 @@ export async function runAlchemySimulationShield(
             ],
           }),
         });
-        if (resFallback.ok) {
-          const jsonFallback = (await resFallback.json()) as any;
-          if (jsonFallback.error) {
-            jsonExec = {
-              result: {
-                error: jsonFallback.error.message || "Reverted",
-                revertReason: jsonFallback.error.data || "",
-              },
-            };
-          } else {
-            jsonExec = {
-              result: {
-                error: "",
-                revertReason: "",
-              },
-            };
-          }
+        const jsonFallback = await parseAlchemyResponse(resFallback);
+        if (jsonFallback.error) {
+          jsonExec = {
+            result: {
+              error: jsonFallback.error.message || "Reverted",
+              revertReason: jsonFallback.error.data || "",
+            },
+          };
+        } else {
+          jsonExec = {
+            result: {
+              error: "",
+              revertReason: "",
+            },
+          };
         }
       } catch {
         // If fallback fails, let the original tracer error bubble up
@@ -354,7 +421,7 @@ export async function runAlchemySimulationShield(
     }
 
     if (jsonExec.error) {
-      throw new Error(`Alchemy Execution node error: ${jsonExec.error.message} (code ${jsonExec.error.code})`);
+      throw getJsonRpcError(jsonExec.error.code, jsonExec.error.message);
     }
 
     const changes = jsonChanges.result?.changes || [];
