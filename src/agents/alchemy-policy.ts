@@ -253,12 +253,14 @@ export async function runAlchemySimulationShield(
         id: 2,
         method: "alchemy_simulateExecution",
         params: [
+          "FLAT",
           {
             from: input.transaction.from,
             to: input.transaction.to,
             value: input.transaction.value || "0x0",
             data: input.transaction.data || "0x",
           },
+          "latest",
         ],
       }),
     });
