@@ -375,8 +375,16 @@ export async function runAlchemySimulationShield(
     });
 
     const [resChanges, resExec] = await Promise.all([assetChangesPromise, executionPromise]);
-    const jsonChanges = await parseAlchemyResponse(resChanges);
+    let jsonChanges = await parseAlchemyResponse(resChanges, true);
     let jsonExec = await parseAlchemyResponse(resExec, true);
+
+    if (jsonChanges.error) {
+      jsonChanges = {
+        result: {
+          changes: [],
+        },
+      };
+    }
 
     if (jsonExec.error && (jsonExec.error.message?.toLowerCase().includes("tracer") || jsonExec.error.code === -32603)) {
       // Fallback: Use standard eth_call to check for reverts without JS Tracer

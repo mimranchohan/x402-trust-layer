@@ -192,6 +192,47 @@ describe("Alchemy Policy - Simulation Shield Error Handling", () => {
     expect(result.securityGrade).toBe("A");
   });
 
+  it("runs the JS Tracer fallback flow when BOTH asset changes and execution simulation return tracer disabled errors", async () => {
+    // 1. asset changes fails with JS tracer error (-32603)
+    fetchMock.mockResolvedValueOnce({
+      status: 200,
+      ok: true,
+      json: async () => ({
+        jsonrpc: "2.0",
+        id: 1,
+        error: { code: -32603, message: "JS Tracer is not enabled" }
+      }),
+    } as any);
+
+    // 2. execution simulation fails with JS tracer error (-32603)
+    fetchMock.mockResolvedValueOnce({
+      status: 200,
+      ok: true,
+      json: async () => ({
+        jsonrpc: "2.0",
+        id: 2,
+        error: { code: -32603, message: "JS Tracer is not enabled" }
+      }),
+    } as any);
+
+    // 3. Fallback eth_call succeeds (no revert)
+    fetchMock.mockResolvedValueOnce({
+      status: 200,
+      ok: true,
+      json: async () => ({
+        jsonrpc: "2.0",
+        id: 3,
+        result: "0x"
+      }),
+    } as any);
+
+    const result = await runAlchemySimulationShield(sampleInput);
+    expect(result.safe).toBe(true);
+    expect(result.reverted).toBe(false);
+    expect(result.detectedThreats).toHaveLength(0);
+    expect(result.securityGrade).toBe("A");
+  });
+
   it("completes normal simulation successfully", async () => {
     // 1. asset changes succeeds
     fetchMock.mockResolvedValueOnce({
