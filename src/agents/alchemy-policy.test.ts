@@ -24,7 +24,7 @@ describe("Alchemy Policy - Simulation Shield Error Handling", () => {
       data: "0x",
       value: "0x0",
     },
-    chainId: 8453,
+    chainId: 137,
   };
 
   it("handles HTTP 429 rate limit errors", async () => {

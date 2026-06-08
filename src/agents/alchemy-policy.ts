@@ -375,6 +375,10 @@ export async function runAlchemySimulationShield(
 
   const url = `https://${networkName}.g.alchemy.com/v2/${apiKey}`;
 
+  // Base Mainnet (8453) disables JS Tracer, Ethereum Mainnet (1) has a bigInt bug.
+  // Only Polygon Mainnet (137) supports it correctly without tracer errors.
+  const supportsSimulation = chainId === 137;
+
   try {
     const headers: Record<string, string> = { "content-type": "application/json" };
     const originUrl = process.env.ORIGIN || config.publicBaseUrl || config.canonicalOrigin;
@@ -383,63 +387,80 @@ export async function runAlchemySimulationShield(
       headers["Referer"] = originUrl;
     }
 
-    // 1. Fetch asset changes
-    const assetChangesPromise = fetchWithRetry(url, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: 1,
-        method: "alchemy_simulateAssetChanges",
-        params: [
-          {
-            from: input.transaction.from,
-            to: input.transaction.to,
-            value: input.transaction.value || "0x0",
-            data: input.transaction.data || "0x",
-          },
-        ],
-      }),
-    });
+    let jsonChanges: any = {
+      result: {
+        changes: [],
+      },
+    };
+    let jsonExec: any = {
+      result: {
+        error: "",
+        revertReason: "",
+      },
+      error: undefined,
+    };
 
-    // 2. Fetch execution simulation (revert checks)
-    const executionPromise = fetchWithRetry(url, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: 2,
-        method: "alchemy_simulateExecution",
-        params: [
-          {
-            from: input.transaction.from,
-            to: input.transaction.to,
-            value: input.transaction.value || "0x0",
-            data: input.transaction.data || "0x",
-          },
-          "latest",
-          {
-            traceOptions: {
-              format: "FLAT",
+    if (supportsSimulation) {
+      // 1. Fetch asset changes
+      const assetChangesPromise = fetchWithRetry(url, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          method: "alchemy_simulateAssetChanges",
+          params: [
+            {
+              from: input.transaction.from,
+              to: input.transaction.to,
+              value: input.transaction.value || "0x0",
+              data: input.transaction.data || "0x",
             },
+          ],
+        }),
+      });
+
+      // 2. Fetch execution simulation (revert checks)
+      const executionPromise = fetchWithRetry(url, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 2,
+          method: "alchemy_simulateExecution",
+          params: [
+            {
+              from: input.transaction.from,
+              to: input.transaction.to,
+              value: input.transaction.value || "0x0",
+              data: input.transaction.data || "0x",
+            },
+            "latest",
+            {
+              traceOptions: {
+                format: "FLAT",
+              },
+            },
+          ],
+        }),
+      });
+
+      const [resChanges, resExec] = await Promise.all([assetChangesPromise, executionPromise]);
+      jsonChanges = await parseAlchemyResponse(resChanges, true);
+      jsonExec = await parseAlchemyResponse(resExec, true);
+
+      if (jsonChanges.error) {
+        jsonChanges = {
+          result: {
+            changes: [],
           },
-        ],
-      }),
-    });
-
-    const [resChanges, resExec] = await Promise.all([assetChangesPromise, executionPromise]);
-    let jsonChanges = await parseAlchemyResponse(resChanges, true);
-    let jsonExec = await parseAlchemyResponse(resExec, true);
-
-    if (jsonChanges.error) {
-      jsonChanges = {
-        result: {
-          changes: [],
-        },
-      };
+        };
+      }
     }
 
-    if (jsonExec.error && (jsonExec.error.message?.toLowerCase().includes("tracer") || jsonExec.error.code === -32603)) {
+    const isTracerError = jsonExec.error && (jsonExec.error.message?.toLowerCase().includes("tracer") || jsonExec.error.code === -32603);
+
+    if (!supportsSimulation || isTracerError) {
       // Fallback: Use standard eth_call to check for reverts without JS Tracer
       try {
         const resFallback = await fetchWithRetry(url, {
@@ -472,6 +493,7 @@ export async function runAlchemySimulationShield(
               error: jsonFallback.error.message || "Reverted",
               revertReason: jsonFallback.error.data || "",
             },
+            error: undefined,
           };
         } else {
           jsonExec = {
@@ -479,10 +501,15 @@ export async function runAlchemySimulationShield(
               error: "",
               revertReason: "",
             },
+            error: undefined,
           };
         }
-      } catch (fallbackErr) {
-        // If fallback fails due to network/HTTP issues, let the original tracer error bubble up
+      } catch (fallbackErr: any) {
+        if (supportsSimulation) {
+          // If fallback fails on a supported chain, let the original tracer error bubble up
+        } else {
+          throw new Error(`Fallback eth_call failed: ${fallbackErr.message}`);
+        }
       }
     }
 
