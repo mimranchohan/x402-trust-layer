@@ -341,10 +341,17 @@ export async function runAlchemySimulationShield(
   const url = `https://${networkName}.g.alchemy.com/v2/${apiKey}`;
 
   try {
+    const headers: Record<string, string> = { "content-type": "application/json" };
+    const originUrl = process.env.ORIGIN || config.publicBaseUrl || config.canonicalOrigin;
+    if (originUrl) {
+      headers["Origin"] = originUrl;
+      headers["Referer"] = originUrl;
+    }
+
     // 1. Fetch asset changes
     const assetChangesPromise = fetch(url, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers,
       body: JSON.stringify({
         jsonrpc: "2.0",
         id: 1,
@@ -363,7 +370,7 @@ export async function runAlchemySimulationShield(
     // 2. Fetch execution simulation (revert checks)
     const executionPromise = fetch(url, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers,
       body: JSON.stringify({
         jsonrpc: "2.0",
         id: 2,
@@ -402,7 +409,7 @@ export async function runAlchemySimulationShield(
       try {
         const resFallback = await fetch(url, {
           method: "POST",
-          headers: { "content-type": "application/json" },
+          headers,
           body: JSON.stringify({
             jsonrpc: "2.0",
             id: 3,
