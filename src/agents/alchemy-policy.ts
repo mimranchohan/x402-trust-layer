@@ -254,6 +254,9 @@ function getJsonRpcError(code: number, msg: string): Error {
 }
 
 async function parseAlchemyResponse(res: Response, allowTracerError = false): Promise<any> {
+  if (!res) {
+    throw new Error("Alchemy RPC connection failed (no response received)");
+  }
   const status = res.status;
   if (!res.ok) {
     let bodyText = "";
@@ -315,6 +318,38 @@ async function parseAlchemyResponse(res: Response, allowTracerError = false): Pr
   return json;
 }
 
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  maxRetries = 3,
+  baseDelayMs = typeof process !== "undefined" && (process.env.NODE_ENV === "test" || process.env.VITEST) ? 1 : 500
+): Promise<Response> {
+  let attempt = 0;
+  while (true) {
+    attempt++;
+    const res = await fetch(url, options);
+    if (!res) {
+      return res;
+    }
+    if (res.status === 429 && attempt <= maxRetries) {
+      let waitMs = baseDelayMs * Math.pow(2, attempt);
+      const retryAfterHeader = res.headers?.get("retry-after") || res.headers?.get("Retry-After");
+      if (retryAfterHeader) {
+        const parsedSec = parseFloat(retryAfterHeader);
+        if (!Number.isNaN(parsedSec) && parsedSec > 0) {
+          waitMs = parsedSec * 1000;
+        }
+      }
+      waitMs += Math.random() * 200;
+      await delay(waitMs);
+      continue;
+    }
+    return res;
+  }
+}
+
 /**
  * POST /api/alchemy/simulate-shield
  * Simulates EVM transaction execution and flags threat vectors before submission.
@@ -349,7 +384,7 @@ export async function runAlchemySimulationShield(
     }
 
     // 1. Fetch asset changes
-    const assetChangesPromise = fetch(url, {
+    const assetChangesPromise = fetchWithRetry(url, {
       method: "POST",
       headers,
       body: JSON.stringify({
@@ -368,7 +403,7 @@ export async function runAlchemySimulationShield(
     });
 
     // 2. Fetch execution simulation (revert checks)
-    const executionPromise = fetch(url, {
+    const executionPromise = fetchWithRetry(url, {
       method: "POST",
       headers,
       body: JSON.stringify({
@@ -407,7 +442,7 @@ export async function runAlchemySimulationShield(
     if (jsonExec.error && (jsonExec.error.message?.toLowerCase().includes("tracer") || jsonExec.error.code === -32603)) {
       // Fallback: Use standard eth_call to check for reverts without JS Tracer
       try {
-        const resFallback = await fetch(url, {
+        const resFallback = await fetchWithRetry(url, {
           method: "POST",
           headers,
           body: JSON.stringify({

@@ -28,7 +28,7 @@ describe("Alchemy Policy - Simulation Shield Error Handling", () => {
   };
 
   it("handles HTTP 429 rate limit errors", async () => {
-    fetchMock.mockResolvedValueOnce({
+    fetchMock.mockResolvedValue({
       status: 429,
       ok: false,
       text: async () => "Rate limit exceeded",
