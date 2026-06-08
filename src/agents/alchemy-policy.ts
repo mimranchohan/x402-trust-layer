@@ -262,12 +262,23 @@ async function parseAlchemyResponse(res: Response, allowTracerError = false): Pr
     } catch {}
 
     let errorMessage = "";
+    let errorCode: number | undefined;
     try {
       const parsed = JSON.parse(bodyText);
       if (parsed.error) {
         errorMessage = parsed.error.message || "";
+        errorCode = parsed.error.code;
       }
     } catch {}
+
+    if (allowTracerError && (errorCode === -32603 || errorMessage.toLowerCase().includes("tracer"))) {
+      return {
+        error: {
+          code: errorCode ?? -32603,
+          message: errorMessage || "Tracer error",
+        },
+      };
+    }
 
     if (status === 429) {
       throw new Error(`Alchemy rate limit exceeded (HTTP 429). Your app has exceeded its compute units per second (CUPS) capacity or concurrent requests capacity.`);
