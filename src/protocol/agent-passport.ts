@@ -53,6 +53,30 @@ export async function issueAgentPassport(input: IssuePassportInput): Promise<Age
   return passport;
 }
 
+/** W3C Verifiable Credential envelope (MolTrust/ACHIVX-style portability). */
+export function toW3cVerifiableCredential(passport: AgentPassport): Record<string, unknown> {
+  return {
+    "@context": ["https://www.w3.org/2018/credentials/v1", "https://x402trustlayer.xyz/contexts/agent-passport/v1"],
+    type: ["VerifiableCredential", "AgentPassportCredential"],
+    issuer: "did:web:x402trustlayer.xyz",
+    issuanceDate: passport.issuedAt,
+    credentialSubject: {
+      id: passport.did,
+      agentId: passport.agentId,
+      capabilities: passport.capabilities,
+      permissions: passport.permissions,
+      riskTier: passport.riskTier,
+      reputationProfileId: passport.reputationProfileId,
+    },
+    proof: {
+      type: "HMAC-SHA256",
+      proofPurpose: "assertionMethod",
+      verificationMethod: `${passport.did}#hmac`,
+      proofValue: passport.signature,
+    },
+  };
+}
+
 export async function verifyAgentPassport(did: string): Promise<{
   valid: boolean;
   passport: AgentPassport | null;

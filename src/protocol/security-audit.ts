@@ -49,6 +49,11 @@ export function generateSecurityAuditReport(): {
         area: "Storage",
         note: "Protocol state is JSON files; migrate to Postgres for multi-tenant scale",
       },
+      {
+        severity: "info",
+        area: "Portable trust",
+        note: "Passport issue now exports W3C VC envelope; ERC-8004 reputation writes planned for settlement feedback",
+      },
     ],
     threatModel: getThreatModel(),
   };

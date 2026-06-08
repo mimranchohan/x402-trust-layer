@@ -27,7 +27,11 @@ import { applyVerifierExampleBody } from "./lib/apply-verifier-body.js";
 import { replayBindingMiddleware } from "./lib/replay-middleware.js";
 import { registerAgenticProbes, stripTrailingSlash } from "./lib/agentic-probes.js";
 import { registerWebhookRoutes } from "./lib/webhook-routes.js";
-import { KILLER_SELLER_ENDPOINTS, PRIMARY_ENTRYPOINTS } from "./lib/suite-catalog.js";
+import {
+  ADVANCED_ENTRYPOINTS,
+  KILLER_SELLER_ENDPOINTS,
+  PRIMARY_ENTRYPOINTS,
+} from "./lib/suite-catalog.js";
 import { listEndpoints, registerRoutes } from "./routes.js";
 import { registerX402gleHostVerification } from "./lib/x402gle-host-verify.js";
 import { ensureVerifierProbeMandate } from "./lib/mandate.js";
@@ -36,6 +40,7 @@ import { SUITE_VERSION } from "./lib/version.js";
 import { refreshFacilitatorExtras, startFacilitatorExtrasRefresh } from "./lib/facilitator-extra.js";
 import { rateLimitPerMinute, rateLimitUnpaidProbes, rateLimitAgentLookup } from "./lib/rate-limit.js";
 import { handleAgentLookup } from "./agents/agent-verify.js";
+import { attachPaymentIdentity } from "./lib/mpp-identity.js";
 import { runCertifiedLookup, runCertifiedCatalog } from "./agents/trust-network.js";
 
 assertConfig();
@@ -109,6 +114,7 @@ app.use("/api", (req, _res, next) => {
   next();
 });
 app.use("/api", replayBindingMiddleware);
+app.use("/api", attachPaymentIdentity);
 
 /** Trust Layer brand landing page — served to browsers at `/`; machines still get JSON. */
 let LANDING_HTML = "";
@@ -199,6 +205,18 @@ function healthPayload() {
       wellKnown: `${config.publicBaseUrl}/.well-known/x402`,
       ready:
         config.publicBaseUrl.startsWith("https://") && config.payToEvm.length > 0,
+    },
+    primaryProducts: PRIMARY_ENTRYPOINTS,
+    settlementGuidance: {
+      rails: ["x402-usdc", "mpp-agent-id", "ap2-mandate"],
+      facilitator: config.facilitatorUrl,
+      alternatives: [
+        "USE_CDP_FACILITATOR=1 with CDP API keys",
+        "X402_PREFERRED_NETWORK=solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp for Dexter Base outages",
+        "POST /api/facilitator/failover before high-value spend",
+      ],
+      knownUpstreamIssue:
+        "Dexter Base sponsored Permit2 may return facilitator_error_500 when tx does not confirm on-chain",
     },
   };
 }
@@ -372,6 +390,7 @@ app.get("/", (req, res) => {
     pipeline: `${config.publicBaseUrl}/api/pipeline/full`,
     onboarding: {
       primary: PRIMARY_ENTRYPOINTS,
+      advanced: ADVANCED_ENTRYPOINTS,
       killerSeller: KILLER_SELLER_ENDPOINTS,
       advancedCount: all.length - PRIMARY_ENTRYPOINTS.length - KILLER_SELLER_ENDPOINTS.length,
     },

@@ -9,6 +9,7 @@ import { registerSettlementRoutes } from "./settlement-routes.js";
 import { registerAlchemyRoutes } from "./alchemy-routes.js";
 import { registerSolanaRoutes } from "./solana-routes.js";
 import { registerOtherRoutes } from "./other-routes.js";
+import { registerCoreAgentRoutes } from "./core-agent-routes.js";
 
 export function registerRoutes(
   app: Express,
@@ -18,6 +19,7 @@ export function registerRoutes(
   const ctx: RouteContext = { app, paid, asyncRoute, postHandlers: new Map() };
 
   registerGuardRoutes(ctx);
+  registerCoreAgentRoutes(ctx);
   registerAttestationRoutes(ctx);
   registerComplianceRoutes(ctx);
   registerSettlementRoutes(ctx);

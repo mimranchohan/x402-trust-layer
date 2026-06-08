@@ -414,6 +414,116 @@
       ]
     },
     {
+      "id": "spend-governor-check",
+      "name": "Check",
+      "tier": "core",
+      "tierLabel": "Core Gates",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/spend-governor/check",
+      "price": 0.03,
+      "summary": "Spend governor: daily and per-call USDC cap check",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "core",
+        "x402"
+      ]
+    },
+    {
+      "id": "identity-gate-check",
+      "name": "Check",
+      "tier": "core",
+      "tierLabel": "Core Gates",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/identity-gate/check",
+      "price": 0.05,
+      "summary": "Identity gate: wallet tier and ERC-8004 TrustScore check",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "core",
+        "x402"
+      ]
+    },
+    {
+      "id": "risk-gate-scan",
+      "name": "Scan",
+      "tier": "core",
+      "tierLabel": "Core Gates",
+      "layer": "guard",
+      "method": "POST",
+      "path": "/api/risk-gate/scan",
+      "price": 0.08,
+      "summary": "Risk gate: HTTPS and x402 endpoint safety probe",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "core",
+        "x402"
+      ]
+    },
+    {
+      "id": "payment-intent-compile",
+      "name": "Compile",
+      "tier": "orchestration",
+      "tierLabel": "Orchestration",
+      "layer": "settlement",
+      "method": "POST",
+      "path": "/api/payment-intent/compile",
+      "price": 0.15,
+      "summary": "Payment intent compiler: multi-step x402 plan within budget",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "orchestration",
+        "x402"
+      ]
+    },
+    {
+      "id": "mpp-session-plan",
+      "name": "Session Plan",
+      "tier": "orchestration",
+      "tierLabel": "Orchestration",
+      "layer": "settlement",
+      "method": "POST",
+      "path": "/api/mpp/session-plan",
+      "price": 0.02,
+      "summary": "MPP session plan: batch vs per-call cost estimate",
+      "why": "Paid x402 Trust Layer API — see OpenAPI for request schema.",
+      "inputs": [
+        "see OpenAPI"
+      ],
+      "outputs": [
+        "see OpenAPI"
+      ],
+      "tags": [
+        "orchestration",
+        "x402"
+      ]
+    },
+    {
       "id": "agent-verify",
       "name": "Agent Verify (ERC-8004)",
       "tier": "identity",

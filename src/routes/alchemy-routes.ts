@@ -37,6 +37,19 @@ export function registerAlchemyRoutes(ctx: RouteContext) {
   postHandlers.set("/api/alchemy/paymaster-policy", paymasterPolicyHandler);
 
   const notifyWebhookHandler = asyncRoute(async (req: Request, res: Response) => {
+    // Verify Alchemy webhook HMAC signature if auth token is configured
+    const alchemyWebhookToken = process.env.ALCHEMY_WEBHOOK_AUTH_TOKEN;
+    if (alchemyWebhookToken) {
+      const { createHmac } = await import("node:crypto");
+      const sigHeader = req.headers["x-alchemy-signature"] as string | undefined;
+      const rawBody = JSON.stringify(req.body);
+      const expectedSig = createHmac("sha256", alchemyWebhookToken)
+        .update(rawBody)
+        .digest("hex");
+      if (!sigHeader || sigHeader !== expectedSig) {
+        return void res.status(401).json({ error: "Invalid Alchemy webhook signature" });
+      }
+    }
     const parsed = z.object({
       webhookId: z.string(),
       id: z.string(),

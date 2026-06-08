@@ -40,6 +40,26 @@ export const ENDPOINT_META: Record<string, { summary: string; tags: string[] }> 
     summary: "Pre-x402 guard: spend + identity + risk in one call",
     tags: ["guard", "preflight", "policy"],
   },
+  "/api/spend-governor/check": {
+    summary: "Spend governor: daily and per-call USDC cap check",
+    tags: ["spend", "policy", "governor"],
+  },
+  "/api/identity-gate/check": {
+    summary: "Identity gate: wallet tier and ERC-8004 TrustScore check",
+    tags: ["identity", "erc-8004", "gate"],
+  },
+  "/api/risk-gate/scan": {
+    summary: "Risk gate: HTTPS and x402 endpoint safety probe",
+    tags: ["risk", "security", "gate"],
+  },
+  "/api/payment-intent/compile": {
+    summary: "Payment intent compiler: multi-step x402 plan within budget",
+    tags: ["orchestration", "plan", "budget"],
+  },
+  "/api/mpp/session-plan": {
+    summary: "MPP session plan: batch vs per-call cost estimate",
+    tags: ["mpp", "batch", "estimate"],
+  },
   "/api/agent/verify": {
     summary: "ERC-8004 TrustScore on Base mainnet",
     tags: ["erc-8004", "identity", "trust-score"],

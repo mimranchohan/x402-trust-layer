@@ -9,19 +9,35 @@ export type SuiteStep = {
   purpose: string;
 };
 
-/** Buyer onboarding — only these three in README / INTEGRATE lead */
+/** Buyer onboarding — 2026 three-product face (ACHIVX/MolTrust/Bedrock-style clarity) */
 export const PRIMARY_ENTRYPOINTS = [
-  {
-    path: "/api/x402/proxy",
-    method: "POST",
-    priceUsdc: 0.08,
-    label: "Default preflight (guard + probe + optional attestation)",
-  },
   {
     path: "/api/guard/pre-x402",
     method: "POST",
     priceUsdc: 0.05,
-    label: "Lightweight bundle (spend + identity + risk)",
+    label: "Pre-pay Guard — spend policy + identity + URL risk before any x402 payment",
+  },
+  {
+    path: "/api/receipt-auditor/verify",
+    method: "POST",
+    priceUsdc: 0.05,
+    label: "Receipt Audit — verify settlement tx and amount after payment",
+  },
+  {
+    path: "/api/merchant-trust/score",
+    method: "POST",
+    priceUsdc: 0.06,
+    label: "Merchant Trust (KYM) — wash-trade and verification signals before you pay",
+  },
+] as const;
+
+/** Advanced bundles (power users) */
+export const ADVANCED_ENTRYPOINTS = [
+  {
+    path: "/api/x402/proxy",
+    method: "POST",
+    priceUsdc: 0.08,
+    label: "All-in-one preflight (guard + probe + optional attestation)",
   },
   {
     path: "/api/pipeline/execute",

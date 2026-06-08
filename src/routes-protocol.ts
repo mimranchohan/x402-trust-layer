@@ -3,7 +3,11 @@ import { z } from "zod";
 import { config, pricing } from "./config.js";
 import { parseWithVerifierFallback } from "./lib/parse-with-verifier-fallback.js";
 import { agentTrustMeta, withAgentTrust } from "./lib/agent-response.js";
-import { issueAgentPassport, verifyAgentPassport } from "./protocol/agent-passport.js";
+import {
+  issueAgentPassport,
+  toW3cVerifiableCredential,
+  verifyAgentPassport,
+} from "./protocol/agent-passport.js";
 import { computeTrustScoreV2 } from "./protocol/trust-score-v2.js";
 import { runFraudScan } from "./protocol/fraud-engine.js";
 import { runTrustOracleConsensus } from "./protocol/trust-oracle.js";
@@ -98,6 +102,20 @@ export function registerProtocolRoutes(
         "credit-bureau",
         "compliance-v2",
       ],
+      implementationStatus: {
+        zkProofs: "simulated — Groth16 verifier contract planned",
+        trustOracle: "simulated quorum — on-chain validator set planned",
+        escrowFsm: "server-side JSON — Base smart contract escrow planned",
+        passports: "HMAC-signed VC-shaped credentials — W3C Ed25519 export in progress",
+        reputation: "ERC-8004 read on Base — on-chain write feedback planned",
+        storage: "SQLite + JSON files — Postgres federation planned",
+      },
+      decentralizationRoadmap: [
+        "Phase 1: portable ERC-8004 + W3C VC credentials",
+        "Phase 2: on-chain escrow + immutable receipt registry",
+        "Phase 3: Groth16 verifier + oracle validator set",
+        "Phase 4: federated trust oracles + governance",
+      ],
       paidRoutes: listProtocolEndpoints().map((e) => e.path),
       freeRoutes: [
         "GET /api/protocol/threat-model",
@@ -106,6 +124,7 @@ export function registerProtocolRoutes(
         "GET /api/protocol/metrics",
       ],
       canonicalOrigin: config.canonicalOrigin,
+      auditReport: `${config.publicBaseUrl}/api/protocol/security/audit`,
     });
   });
 
@@ -157,7 +176,14 @@ export function registerProtocolRoutes(
       const passport = await issueAgentPassport(parsed.data);
       res.json(
         withAgentTrust(
-          { status: "ok", passport, hardwareAttestation: { available: true } },
+          {
+            status: "ok",
+            passport,
+            w3cVerifiableCredential: toW3cVerifiableCredential(passport),
+            portableTrustNote:
+              "Export w3cVerifiableCredential for cross-platform verification (MolTrust/ACHIVX-style portability).",
+            hardwareAttestation: { available: true },
+          },
           agentTrustMeta(["passport_issued"], { sources: ["agent-passport-protocol"] }),
         ),
       );

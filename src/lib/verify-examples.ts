@@ -33,6 +33,34 @@ export const VERIFY_EXAMPLES: Record<string, unknown> = {
     network: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
     policy: { dailyCapUsdc: 10, perCallCapUsdc: 0.5, allowedHosts: ["myceliasignal.com"] },
   },
+  "/api/spend-governor/check": {
+    agentId: "dexter-verifier-probe",
+    estimatedCostUsdc: 0.05,
+    targetUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
+    network: "eip155:8453",
+    policy: { dailyCapUsdc: 10, perCallCapUsdc: 0.5, allowedHosts: ["myceliasignal.com"] },
+  },
+  "/api/identity-gate/check": {
+    walletAddress: "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
+    maxTierSpendUsdc: 1,
+  },
+  "/api/risk-gate/scan": {
+    targetUrl: "https://api.myceliasignal.com/oracle/price/eth/usd",
+    estimatedCostUsdc: 0.05,
+    fastProbe: true,
+  },
+  "/api/payment-intent/compile": {
+    task: "ETH USD spot oracle with guard and receipt audit under $1 budget",
+    maxBudgetUsdc: 1,
+    agentId: "dexter-verifier-probe",
+    externalCallEstimateUsdc: 0.05,
+  },
+  "/api/mpp/session-plan": {
+    action: "estimate",
+    expectedCalls: 25,
+    avgPricePerCallUsdc: 0.03,
+    network: "eip155:8453",
+  },
   "/api/agent/verify": {
     walletAddress: "0x0000000000000000000000000000000000000001",
     agentId: "1",

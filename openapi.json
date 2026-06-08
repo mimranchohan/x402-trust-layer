@@ -13,8 +13,8 @@
   "info": {
     "title": "x402 Trust Layer",
     "version": "5.1.0",
-    "description": "55 paid x402 trust infrastructure APIs: guard, semantic escrow, mandate diff, certified seller network, KYM, mandates, compliance, disputes, and orchestration.",
-    "x-guidance": "x402 Trust Layer — 55 paid agent payment infrastructure APIs on Base, Solana, and Polygon via Dexter facilitator.\n\nTypical flow:\n1. POST /api/guard/pre-x402 or POST /api/x402/proxy before any downstream x402 payment.\n2. POST /api/merchant-trust/score for Know-Your-Merchant preflight on unknown hosts.\n3. POST /api/mandate/compile for AP2-style signed intent; POST /api/mandate/diff before spend.\n4. POST /api/trust-network/buyer-gate when paying certified sellers; POST /api/merchant-trust/certify to join network.\n5. POST /api/quality-escrow/semantic-settle after delivery for auto-refund on bad responses.\n6. POST /api/pipeline/execute for multi-step orchestration.\n7. POST /api/mpp/session with action open|voucher|close for batch settlement savings.\n8. POST /api/attestation/issue then pass X-Suite-Attestation on partner calls.\n9. POST /api/receipt-auditor/verify after external settlements; POST /api/compliance/ledger for audit.\n\nPay with x402 (USDC). Unpaid GET probes return 402; send Payment-Signature on POST for full JSON responses.\n\nFree (not in this catalog): GET /health — monitoring only, returns 200 without payment."
+    "description": "68 paid x402 trust infrastructure APIs: guard, semantic escrow, mandate diff, certified seller network, KYM, mandates, compliance, disputes, and orchestration.",
+    "x-guidance": "x402 Trust Layer — 68 paid agent payment infrastructure APIs on Base, Solana, and Polygon via Dexter or CDP facilitator.\n\n2026 primary products: POST /api/guard/pre-x402 ($0.05), POST /api/receipt-auditor/verify ($0.05), POST /api/merchant-trust/score ($0.06).\nSupports x402 PAYMENT-SIGNATURE and MPP X-Agent-Id identity headers.\n\nTypical flow:\n1. POST /api/guard/pre-x402 or POST /api/x402/proxy before any downstream x402 payment.\n2. POST /api/merchant-trust/score for Know-Your-Merchant preflight on unknown hosts.\n3. POST /api/mandate/compile for AP2-style signed intent; POST /api/mandate/diff before spend.\n4. POST /api/trust-network/buyer-gate when paying certified sellers; POST /api/merchant-trust/certify to join network.\n5. POST /api/quality-escrow/semantic-settle after delivery for auto-refund on bad responses.\n6. POST /api/pipeline/execute for multi-step orchestration.\n7. POST /api/mpp/session with action open|voucher|close for batch settlement savings.\n8. POST /api/attestation/issue then pass X-Suite-Attestation on partner calls.\n9. POST /api/receipt-auditor/verify after external settlements; POST /api/compliance/ledger for audit.\n\nPay with x402 (USDC). Unpaid GET probes return 402; send Payment-Signature on POST for full JSON responses.\n\nFree (not in this catalog): GET /health — monitoring only, returns 200 without payment."
   },
   "x-discovery": {
     "ownershipProofs": [
@@ -40,8 +40,8 @@
   },
   "x-x402scan": {
     "discoveryMode": "openapi-first",
-    "paidRouteCount": 63,
-    "note": "OpenAPI lists 63 paid /api/* operations. Free routes documented under x-discovery.freeEndpoints."
+    "paidRouteCount": 68,
+    "note": "OpenAPI lists 68 paid /api/* operations. Free routes documented under x-discovery.freeEndpoints."
   },
   "servers": [
     {
@@ -1879,6 +1879,677 @@
         }
       }
     },
+    "/api/spend-governor/check": {
+      "post": {
+        "operationId": "post_spend_governor_check",
+        "summary": "Spend governor: daily and per-call USDC cap check",
+        "description": "Spend governor: daily and per-call USDC cap check — $0.03 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "tags": [
+          "core",
+          "spend",
+          "policy",
+          "governor"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response after x402 settlement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Successful response after x402 settlement",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "allowed": {
+                      "type": "boolean"
+                    },
+                    "summary": {
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "type": "number"
+                    },
+                    "checks_passed": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": true
+                },
+                "example": {
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment Required (x402 v2). Unpaid requests must receive HTTP 402 with Payment-Required header and non-empty accepts.",
+            "headers": {
+              "Payment-Required": {
+                "description": "Base64-encoded x402 payment requirements (v2)",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.030000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "agentId": {
+                    "type": "string"
+                  },
+                  "estimatedCostUsdc": {
+                    "type": "number"
+                  },
+                  "targetUrl": {
+                    "type": "string"
+                  },
+                  "network": {
+                    "type": "string"
+                  },
+                  "policy": {
+                    "type": "object",
+                    "properties": {
+                      "dailyCapUsdc": {
+                        "type": "number"
+                      },
+                      "perCallCapUsdc": {
+                        "type": "number"
+                      },
+                      "allowedHosts": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "dailyCapUsdc",
+                      "perCallCapUsdc",
+                      "allowedHosts"
+                    ]
+                  }
+                },
+                "required": [
+                  "agentId",
+                  "estimatedCostUsdc",
+                  "targetUrl",
+                  "network",
+                  "policy"
+                ]
+              },
+              "example": {
+                "agentId": "dexter-verifier-probe",
+                "estimatedCostUsdc": 0.05,
+                "targetUrl": "https://api.myceliasignal.com/oracle/price/eth/usd",
+                "network": "eip155:8453",
+                "policy": {
+                  "dailyCapUsdc": 10,
+                  "perCallCapUsdc": 0.5,
+                  "allowedHosts": [
+                    "myceliasignal.com"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/identity-gate/check": {
+      "post": {
+        "operationId": "post_identity_gate_check",
+        "summary": "Identity gate: wallet tier and ERC-8004 TrustScore check",
+        "description": "Identity gate: wallet tier and ERC-8004 TrustScore check — $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "tags": [
+          "core",
+          "identity",
+          "erc-8004",
+          "gate"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response after x402 settlement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Successful response after x402 settlement",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "allowed": {
+                      "type": "boolean"
+                    },
+                    "summary": {
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "type": "number"
+                    },
+                    "checks_passed": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": true
+                },
+                "example": {
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment Required (x402 v2). Unpaid requests must receive HTTP 402 with Payment-Required header and non-empty accepts.",
+            "headers": {
+              "Payment-Required": {
+                "description": "Base64-encoded x402 payment requirements (v2)",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.050000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "walletAddress": {
+                    "type": "string"
+                  },
+                  "maxTierSpendUsdc": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "walletAddress",
+                  "maxTierSpendUsdc"
+                ]
+              },
+              "example": {
+                "walletAddress": "9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt",
+                "maxTierSpendUsdc": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/risk-gate/scan": {
+      "post": {
+        "operationId": "post_risk_gate_scan",
+        "summary": "Risk gate: HTTPS and x402 endpoint safety probe",
+        "description": "Risk gate: HTTPS and x402 endpoint safety probe — $0.08 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "tags": [
+          "core",
+          "risk",
+          "security",
+          "gate"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response after x402 settlement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Successful response after x402 settlement",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "allowed": {
+                      "type": "boolean"
+                    },
+                    "summary": {
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "type": "number"
+                    },
+                    "checks_passed": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": true
+                },
+                "example": {
+                  "ok": true,
+                  "allowed": true,
+                  "summary": "Paid response after x402 settlement"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment Required (x402 v2). Unpaid requests must receive HTTP 402 with Payment-Required header and non-empty accepts.",
+            "headers": {
+              "Payment-Required": {
+                "description": "Base64-encoded x402 payment requirements (v2)",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.080000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "targetUrl": {
+                    "type": "string"
+                  },
+                  "estimatedCostUsdc": {
+                    "type": "number"
+                  },
+                  "fastProbe": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "targetUrl",
+                  "estimatedCostUsdc",
+                  "fastProbe"
+                ]
+              },
+              "example": {
+                "targetUrl": "https://api.myceliasignal.com/oracle/price/eth/usd",
+                "estimatedCostUsdc": 0.05,
+                "fastProbe": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/payment-intent/compile": {
+      "post": {
+        "operationId": "post_payment_intent_compile",
+        "summary": "Payment intent compiler: multi-step x402 plan within budget",
+        "description": "Payment intent compiler: multi-step x402 plan within budget — $0.15 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "tags": [
+          "orchestration",
+          "orchestration",
+          "plan",
+          "budget"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response after x402 settlement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Successful response after x402 settlement",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "allowed": {
+                      "type": "boolean"
+                    },
+                    "summary": {
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "type": "number"
+                    },
+                    "checks_passed": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": true
+                },
+                "example": {
+                  "ok": true,
+                  "status": "ok",
+                  "allowed": true,
+                  "summary": "Compiled 3-step downstream plan ($0.12 est.) within $1 budget",
+                  "withinBudget": true,
+                  "totalEstimatedUsdc": 0.12,
+                  "maxBudgetUsdc": 1,
+                  "currentEndpointCostUsdc": 0.15,
+                  "recommendedFirstStep": "POST https://x402trustlayer.xyz/api/guard/pre-x402",
+                  "planSummary": "Step 1: Guard preflight; Step 2: Route marketplace; Step 3: Verify receipt",
+                  "steps": [
+                    {
+                      "step": 1,
+                      "path": "/api/guard/pre-x402",
+                      "priceUsdc": 0.05,
+                      "purpose": "Spend policy + risk"
+                    },
+                    {
+                      "step": 2,
+                      "path": "/api/router/route",
+                      "priceUsdc": 0.02,
+                      "purpose": "Pick marketplace API"
+                    },
+                    {
+                      "step": 3,
+                      "path": "/api/receipt-auditor/verify",
+                      "priceUsdc": 0.05,
+                      "purpose": "Verify settlement"
+                    }
+                  ],
+                  "executionOrder": [
+                    "POST https://x402trustlayer.xyz/api/guard/pre-x402",
+                    "POST https://x402trustlayer.xyz/api/router/route",
+                    "POST https://x402trustlayer.xyz/api/receipt-auditor/verify"
+                  ],
+                  "suiteBaseUrl": "https://x402trustlayer.xyz"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment Required (x402 v2). Unpaid requests must receive HTTP 402 with Payment-Required header and non-empty accepts.",
+            "headers": {
+              "Payment-Required": {
+                "description": "Base64-encoded x402 payment requirements (v2)",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.150000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            }
+          ]
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "task": {
+                    "type": "string"
+                  },
+                  "maxBudgetUsdc": {
+                    "type": "number"
+                  },
+                  "agentId": {
+                    "type": "string"
+                  },
+                  "externalCallEstimateUsdc": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "task",
+                  "maxBudgetUsdc",
+                  "agentId",
+                  "externalCallEstimateUsdc"
+                ]
+              },
+              "example": {
+                "task": "ETH USD spot oracle with guard and receipt audit under $1 budget",
+                "maxBudgetUsdc": 1,
+                "agentId": "dexter-verifier-probe",
+                "externalCallEstimateUsdc": 0.05
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mpp/session-plan": {
+      "post": {
+        "operationId": "post_mpp_session_plan",
+        "summary": "MPP session plan: batch vs per-call cost estimate",
+        "description": "MPP session plan: batch vs per-call cost estimate — $0.02 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "tags": [
+          "orchestration",
+          "mpp",
+          "batch",
+          "estimate"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response after x402 settlement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Successful response after x402 settlement",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "allowed": {
+                      "type": "boolean"
+                    },
+                    "summary": {
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "type": "number"
+                    },
+                    "checks_passed": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": true
+                },
+                "example": {
+                  "ok": true,
+                  "status": "ok",
+                  "success": true,
+                  "action": "close",
+                  "session": {
+                    "sessionId": "mpp_example",
+                    "status": "closed",
+                    "chain": "polygon",
+                    "agentId": "agent-mpp-usdc-test-042",
+                    "expectedCalls": 9,
+                    "callsUsed": 0,
+                    "avgPricePerCallUsdc": 0.03
+                  },
+                  "settlement": {
+                    "status": "closed",
+                    "sessionId": "mpp_example",
+                    "network": "eip155:137",
+                    "chain": "polygon",
+                    "agentId": "agent-mpp-usdc-test-042",
+                    "callsSettled": 0,
+                    "plannedCalls": 9,
+                    "estimatedTotalUsdc": 0,
+                    "facilitatorUrl": "https://x402.dexter.cash"
+                  },
+                  "recommendation": "Settle aggregate USDC once on-chain via facilitator",
+                  "facilitator": {
+                    "url": "https://x402.dexter.cash",
+                    "mppDocs": "https://docs.dexter.cash/docs/mpp/"
+                  },
+                  "nextSteps": [
+                    "Facilitator settles session total to payTo wallet"
+                  ],
+                  "savingsNote": "Session closed with settlement metadata",
+                  "confidence": 0.9,
+                  "checks_passed": [
+                    "mpp_session",
+                    "action_close",
+                    "settlement_metadata"
+                  ]
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment Required (x402 v2). Unpaid requests must receive HTTP 402 with Payment-Required header and non-empty accepts.",
+            "headers": {
+              "Payment-Required": {
+                "description": "Base64-encoded x402 payment requirements (v2)",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-payment-info": {
+          "price": {
+            "mode": "fixed",
+            "currency": "USD",
+            "amount": "0.020000"
+          },
+          "protocols": [
+            {
+              "x402": {}
+            },
+            {
+              "mpp": {
+                "method": "POST",
+                "intent": "session",
+                "currency": "0x20c000000000000000000000b9537d11c60e8b50"
+              }
+            }
+          ]
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string"
+                  },
+                  "expectedCalls": {
+                    "type": "number"
+                  },
+                  "avgPricePerCallUsdc": {
+                    "type": "number"
+                  },
+                  "network": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "action",
+                  "expectedCalls",
+                  "avgPricePerCallUsdc",
+                  "network"
+                ]
+              },
+              "example": {
+                "action": "estimate",
+                "expectedCalls": 25,
+                "avgPricePerCallUsdc": 0.03,
+                "network": "eip155:8453"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/agent/verify": {
       "post": {
         "operationId": "post_agent_verify",
@@ -3222,7 +3893,7 @@
                     "endpoint": "/api/spend-governor/check",
                     "amountUsdc": 0.03,
                     "network": "solana",
-                    "timestamp": "2026-06-06T23:25:10.809Z"
+                    "timestamp": "2026-06-08T15:22:47.601Z"
                   }
                 ]
               }
@@ -3945,7 +4616,7 @@
                     "category": "oracle",
                     "agentId": "dexter-verifier-probe",
                     "transactionHash": "0x0000000000000000000000000000000000000000000000000000000000000001",
-                    "timestamp": "2026-06-06T23:25:10.810Z"
+                    "timestamp": "2026-06-08T15:22:47.602Z"
                   }
                 ],
                 "policy": {
