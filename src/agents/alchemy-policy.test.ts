@@ -233,6 +233,52 @@ describe("Alchemy Policy - Simulation Shield Error Handling", () => {
     expect(result.securityGrade).toBe("A");
   });
 
+  it("runs the JS Tracer fallback flow and handles eth_call revert error correctly", async () => {
+    // 1. asset changes fails with JS tracer error (-32603)
+    fetchMock.mockResolvedValueOnce({
+      status: 200,
+      ok: true,
+      json: async () => ({
+        jsonrpc: "2.0",
+        id: 1,
+        error: { code: -32603, message: "JS Tracer is not enabled" }
+      }),
+    } as any);
+
+    // 2. execution simulation fails with JS tracer error (-32603)
+    fetchMock.mockResolvedValueOnce({
+      status: 200,
+      ok: true,
+      json: async () => ({
+        jsonrpc: "2.0",
+        id: 2,
+        error: { code: -32603, message: "JS Tracer is not enabled" }
+      }),
+    } as any);
+
+    // 3. Fallback eth_call returns revert error
+    fetchMock.mockResolvedValueOnce({
+      status: 200,
+      ok: true,
+      json: async () => ({
+        jsonrpc: "2.0",
+        id: 3,
+        error: {
+          code: 3,
+          message: "execution reverted",
+          data: "0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000104e6f7420656e6f7567682066756e647300000000000000000000000000000000"
+        }
+      }),
+    } as any);
+
+    const result = await runAlchemySimulationShield(sampleInput);
+    expect(result.safe).toBe(false);
+    expect(result.reverted).toBe(true);
+    expect(result.detectedThreats).toContain("simulation_revert");
+    expect(result.summary).toContain("Transaction reverted: execution reverted: Not enough funds");
+    expect(result.securityGrade).toBe("D");
+  });
+
   it("completes normal simulation successfully", async () => {
     // 1. asset changes succeeds
     fetchMock.mockResolvedValueOnce({

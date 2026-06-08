@@ -407,8 +407,13 @@ export async function runAlchemySimulationShield(
             ],
           }),
         });
-        const jsonFallback = await parseAlchemyResponse(resFallback);
-        if (jsonFallback.error) {
+
+        if (!resFallback.ok) {
+          throw new Error(`HTTP ${resFallback.status}`);
+        }
+
+        const jsonFallback = await resFallback.json();
+        if (jsonFallback && jsonFallback.error) {
           jsonExec = {
             result: {
               error: jsonFallback.error.message || "Reverted",
@@ -423,8 +428,8 @@ export async function runAlchemySimulationShield(
             },
           };
         }
-      } catch {
-        // If fallback fails, let the original tracer error bubble up
+      } catch (fallbackErr) {
+        // If fallback fails due to network/HTTP issues, let the original tracer error bubble up
       }
     }
 
