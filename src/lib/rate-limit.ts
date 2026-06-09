@@ -22,6 +22,7 @@ function startRateLimitCleanup(): void {
     pruneExpired(hourlyBuckets, now);
     pruneExpired(bucketsUnpaid, now);
     pruneExpired(lookupBuckets, now);
+    pruneExpired(walletBuckets, now);
   }, 5 * 60_000);
   timer.unref();
 }
@@ -29,6 +30,20 @@ function startRateLimitCleanup(): void {
 const hourlyBuckets = new Map<string, Bucket>();
 const bucketsUnpaid = new Map<string, Bucket>();
 const lookupBuckets = new Map<string, Bucket>();
+
+/**
+ * Per-wallet / per-agentId sliding-window bucket.
+ * Keyed on `walletAddress` or `agentId` from request body — not IP, so it works correctly
+ * behind load balancers and reverse proxies where all traffic shares one source IP.
+ */
+const walletBuckets = new Map<string, Bucket>();
+
+/** Default per-wallet request cap per minute (overridable via AGENT_RATE_LIMIT_PER_MIN env var) */
+export const AGENT_RATE_LIMIT_PER_MIN = Math.max(
+  1,
+  Number(process.env.AGENT_RATE_LIMIT_PER_MIN ?? "30"),
+);
+
 startRateLimitCleanup();
 
 /**
@@ -105,6 +120,49 @@ export function rateLimitUnpaidProbes(maxPerMinute: number) {
     if (bucket.count > maxPerMinute) {
       res.status(429).json({
         error: "Too many discovery probes",
+        retryAfterSeconds: Math.ceil((bucket.resetAt - now) / 1000),
+      });
+      return;
+    }
+    next();
+  };
+}
+
+/**
+ * Per-wallet / per-agentId rate limiter.
+ *
+ * Reads `walletAddress` or `agentId` from `req.body` (whichever is present first).
+ * Falls through to `next()` when neither field exists so existing IP-based limits still apply.
+ *
+ * Usage:
+ *   router.use(rateLimitPerWallet(AGENT_RATE_LIMIT_PER_MIN));
+ *
+ * The limit is configurable via the AGENT_RATE_LIMIT_PER_MIN environment variable (default 30).
+ */
+export function rateLimitPerWallet(maxPerMin: number) {
+  const windowMs = 60_000;
+  return (req: Request, res: Response, next: NextFunction): void => {
+    // Extract wallet/agent identity from body — body-parser must run before this middleware
+    const raw: unknown =
+      (req.body as Record<string, unknown> | undefined)?.walletAddress ??
+      (req.body as Record<string, unknown> | undefined)?.agentId;
+    const wallet = typeof raw === "string" ? raw.trim().toLowerCase() : "";
+    if (!wallet) {
+      next();
+      return;
+    }
+
+    const now = Date.now();
+    let bucket = walletBuckets.get(wallet);
+    if (!bucket || now >= bucket.resetAt) {
+      bucket = { count: 0, resetAt: now + windowMs };
+      walletBuckets.set(wallet, bucket);
+    }
+    bucket.count += 1;
+    if (bucket.count > maxPerMin) {
+      res.status(429).json({
+        error: "Per-wallet rate limit exceeded",
+        limitPerMinute: maxPerMin,
         retryAfterSeconds: Math.ceil((bucket.resetAt - now) / 1000),
       });
       return;

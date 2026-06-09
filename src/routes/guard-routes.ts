@@ -10,9 +10,16 @@ import { createPost, withRequestHeaders, type RouteContext } from "./shared.js";
 import { guardBodySchema } from "./schemas.js";
 import { parseWithVerifierFallback } from "../lib/parse-with-verifier-fallback.js";
 import { dispatchWebhooks } from "../lib/webhooks.js";
+import { rateLimitPerWallet, AGENT_RATE_LIMIT_PER_MIN } from "../lib/rate-limit.js";
 
 export function registerGuardRoutes(ctx: RouteContext) {
   const post = createPost(ctx);
+  // Per-wallet / per-agentId rate limiter applied to all guard + pipeline routes.
+  // Falls through when body has no wallet/agentId so IP-based limits remain as backstop.
+  const walletRateLimit = rateLimitPerWallet(AGENT_RATE_LIMIT_PER_MIN);
+  ctx.app.use("/api/guard", walletRateLimit);
+  ctx.app.use("/api/pipeline", walletRateLimit);
+  ctx.app.use("/api/x402/proxy", walletRateLimit);
 
   post(
     "/api/guard/pre-x402",

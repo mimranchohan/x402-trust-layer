@@ -41,6 +41,15 @@ few cents a call.
 
 ---
 
+## What's New (v5.3.0)
+
+- **Per-Wallet / Per-AgentId Rate Limiting** — New `rateLimitPerWallet` middleware in `src/lib/rate-limit.ts` keys on `walletAddress` or `agentId` from the request body (not IP), so limits work correctly behind load balancers. Applied to all `/api/guard/*`, `/api/pipeline/*`, and `/api/x402/proxy` routes. Configurable via `AGENT_RATE_LIMIT_PER_MIN` (default `30`).
+- **Unit Test Suite** — 30+ vitest unit tests covering `spend-governor`, `identity-gate`, and `risk-gate` with full mock isolation for ledger, host-policy, probe, SSRF, security, and ERC-8004 trust-score dependencies. Run with `npm test`.
+- **RPC Timeout Hardening** — `trust-score.ts` wraps every on-chain RPC call in `withRpcTimeout` (env: `TRUSTSCORE_RPC_TIMEOUT_MS`, default `8000 ms`). Falls back to `UNVERIFIED` tier on timeout so a slow node never stalls the guard pipeline.
+- **Overall Guard Timeout** — `pre-x402-guard.ts` wraps the entire pipeline in `Promise.race` (env: `PRE_X402_GUARD_TIMEOUT_MS`, default `12000 ms`) to guarantee a bounded response regardless of downstream RPC latency.
+
+---
+
 ## What's New (v5.2.0)
 
 - **63 Live Endpoints (57 Paid, 6 Free)** — Native support for the Alchemy platform, including preset guard rails, inbound webhooks, transaction simulation audits, and custom RPC configurations.
@@ -162,13 +171,84 @@ To prevent high latency on high-frequency transactions, the ERC-8004 engine impl
 
 ---
 
+## Quick Start
+
+```bash
+# 1. Clone and install
+git clone https://github.com/mimranchohan/x402-trust-layer
+cd x402-trust-layer
+npm install
+
+# 2. Copy env template and fill in required secrets
+cp .env.example .env   # or set Railway env vars — see table below
+
+# 3. Build and run
+npm run build
+npm start              # listens on PORT (default 3402)
+```
+
+Hit the health endpoint to confirm:
+
+```bash
+curl http://localhost:3402/api/health
+```
+
+---
+
+## Environment Variables
+
+### Required (server will not start without these in production)
+
+| Variable | Description |
+|---|---|
+| `ATTESTATION_HMAC_SECRET` | 32-byte hex secret for signing attestation tokens |
+| `PAY_TO_ADDRESS` | Solana wallet address that receives x402 payments |
+| `PAY_TO_EVM` | EVM wallet address that receives x402 payments on Base |
+| `WEBHOOK_ADMIN_SECRET` | Shared secret for webhook delivery verification |
+
+### Optional / Tunable
+
+| Variable | Default | Description |
+|---|---|---|
+| `PORT` | `3402` | HTTP port the server listens on |
+| `PUBLIC_BASE_URL` | auto-detected | Canonical base URL (e.g. `https://x402trustlayer.xyz`) |
+| `DATA_DIR` | `./data` | Directory for persistent ledger and evidence files |
+| `PRE_X402_GUARD_TIMEOUT_MS` | `12000` | Hard timeout (ms) for the full pre-x402 guard pipeline |
+| `TRUSTSCORE_RPC_TIMEOUT_MS` | `8000` | Per-RPC-call timeout (ms) for ERC-8004 trust score lookups |
+| `AGENT_RATE_LIMIT_PER_MIN` | `30` | Max requests per wallet/agentId per minute on guard routes |
+| `ERC8004_REGISTRY_ADDRESS` | built-in | On-chain ERC-8004 agent registry contract address (Base) |
+| `SOLANA_RPC_URL` | public RPC | Solana RPC endpoint for trust score lookups |
+| `A2A_ORCHESTRATOR_ENABLED` | `1` | Set to `0` to disable A2A orchestrator on constrained deployments |
+| `FACILITATOR_URL` | Dexter | x402 facilitator URL for payment routing |
+
+### Railway Deployment
+
+Set the required variables in **Railway → Project → Variables** panel.  
+No Dockerfile changes needed — `railway.json` configures the build command automatically.
+
+```
+ATTESTATION_HMAC_SECRET  = <your-secret>
+PAY_TO_ADDRESS           = <solana-wallet>
+PAY_TO_EVM               = <evm-wallet>
+WEBHOOK_ADMIN_SECRET     = <your-secret>
+PORT                     = 3402
+A2A_ORCHESTRATOR_ENABLED = 0          # recommended on Hobby plan
+```
+
+---
+
 ## How to Test
 
-### 1. Verification Suite
-Run the full test suite locally:
+### Unit Tests (vitest)
+
 ```bash
-npm run ci
+npm test
+# or watch mode:
+npx vitest
 ```
+
+Covers `spend-governor`, `identity-gate`, and `risk-gate` with full mock isolation.
+> **Note:** Tests require Node ≥20 with ESM support. The sandbox may error on Node 22 due to a `std-env` package issue — this does not affect Railway deployment.
 
 ### 2. Local Server Probing
 Compile and run the server locally:
