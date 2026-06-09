@@ -31,8 +31,15 @@ const pruneInflight = db.prepare(
   "DELETE FROM idempotency_inflight WHERE created_at < unixepoch() - 3600",
 );
 
+// Deterministic pruning: every 1000 calls instead of random 2% probability.
+// This avoids clustering (multiple simultaneous prunes) and missed prunes under low traffic.
+let _pruneCounter = 0;
+const PRUNE_EVERY = 1000;
+
 function maybePrune(): void {
-  if (Math.random() < 0.02) {
+  _pruneCounter += 1;
+  if (_pruneCounter >= PRUNE_EVERY) {
+    _pruneCounter = 0;
     pruneCache.run(TTL_SEC);
     pruneInflight.run();
   }

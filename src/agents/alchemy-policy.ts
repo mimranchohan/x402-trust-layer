@@ -262,7 +262,10 @@ async function parseAlchemyResponse(res: Response, allowTracerError = false): Pr
     let bodyText = "";
     try {
       bodyText = await res.text();
-    } catch {}
+    } catch (readErr) {
+      // Response body unreadable — proceed with empty bodyText
+      void readErr;
+    }
 
     let errorMessage = "";
     let errorCode: number | undefined;
@@ -272,7 +275,10 @@ async function parseAlchemyResponse(res: Response, allowTracerError = false): Pr
         errorMessage = parsed.error.message || "";
         errorCode = parsed.error.code;
       }
-    } catch {}
+    } catch (parseErr) {
+      // bodyText is not JSON — treat as plain error message
+      void parseErr;
+    }
 
     if (allowTracerError && (errorCode === -32603 || errorMessage.toLowerCase().includes("tracer"))) {
       return {

@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { USDC_BASE, x402Middleware } from "@dexterai/x402/server";
 import { config, isAllowedNetwork } from "../config.js";
+import { logger } from "./logger.js";
 import { CHAIN_IDS, usdcAssetForCaip2, type ChainKey } from "./chains.js";
 import { bazaarExtensionForRequest } from "./bazaar-extension.js";
 import { resolvePaidResourceUrl } from "./paid-resource-url.js";
@@ -48,7 +49,7 @@ const baseMiddleware = {
   facilitatorUrl: config.facilitatorUrl,
   network: [...config.networks],
   onSettlement: (info: { transaction?: string; payer?: string; network?: string }) => {
-    console.log(`[x402] settled tx=${info.transaction} payer=${info.payer} network=${info.network}`);
+    logger.info({ tx: info.transaction, payer: info.payer, network: info.network }, "[x402] settled");
   },
 };
 
@@ -60,7 +61,7 @@ function withPaidRequestBudget(handler: PaidMw): PaidMw {
     let done = false;
     const timer = setTimeout(() => {
       if (done || isResponseLocked(res)) return;
-      console.error("[x402-paid] request budget exceeded", PAID_REQUEST_BUDGET_MS, "ms", req.path);
+      logger.error({ budgetMs: PAID_REQUEST_BUDGET_MS, path: req.path }, "[x402-paid] request budget exceeded");
       lockResponse(res);
       res.status(504).json({
         error: "Payment settlement or handler timed out",
@@ -74,7 +75,7 @@ function withPaidRequestBudget(handler: PaidMw): PaidMw {
       await handler(req, res, next);
     } catch (err) {
       if (!isResponseLocked(res)) next(err);
-      else console.error("[x402-paid] error after response locked:", err);
+      else logger.error({ err: err instanceof Error ? err.message : String(err) }, "[x402-paid] error after response locked");
     } finally {
       done = true;
       clearTimeout(timer);
@@ -136,7 +137,7 @@ function injectBazaarExtension(encoded: string, req: Request): string {
     syncResourceUrl(parsed, req);
     return Buffer.from(JSON.stringify(parsed)).toString("base64");
   } catch (err) {
-    console.error("[x402-paid] injectBazaarExtension failed:", err);
+    logger.error({ err: err instanceof Error ? err.message : String(err) }, "[x402-paid] injectBazaarExtension failed");
     return encoded;
   }
 }
@@ -168,12 +169,12 @@ export function createPaidMiddleware(): (
         const pending = store?.x402PendingNonce;
         if (pending) {
           void markNonceUsed(pending.nonce, pending.network).catch((err) => {
-            console.error("[x402-paid] markNonceUsed failed:", err);
+            logger.error({ err: err instanceof Error ? err.message : String(err) }, "[x402-paid] markNonceUsed failed");
           });
         }
         if (store) {
           void markIdempotencyKeyUsed(store, store.path).catch((err) => {
-            console.error("[x402-paid] idempotency mark failed:", err);
+            logger.error({ err: err instanceof Error ? err.message : String(err) }, "[x402-paid] idempotency mark failed");
           });
         }
         baseMiddleware.onSettlement(info);
@@ -190,10 +191,7 @@ export function createPaidMiddleware(): (
         try {
           await ensureFacilitatorExtras();
         } catch (err) {
-          console.warn(
-            "[x402-paid] facilitator extras cache:",
-            err instanceof Error ? err.message : err,
-          );
+          logger.warn({ err: err instanceof Error ? err.message : String(err) }, "[x402-paid] facilitator extras cache refresh failed");
         }
       }
 
@@ -242,7 +240,7 @@ export function createPaidMiddleware(): (
             if (!res.headersSent) {
               res.setHeader("Retry-After", String(process.env.SETTLEMENT_RETRY_AFTER_SEC ?? "15"));
             }
-            console.error("[x402] settlement failed:", payload.reason);
+            logger.error({ reason: payload.reason }, "[x402] settlement failed");
             payload.error = `Payment settlement failed (${payload.reason})`;
           }
         }
@@ -276,7 +274,7 @@ export function createPaidMiddleware(): (
         });
       } catch (err) {
         if (!isResponseLocked(res)) next(err);
-        else console.error("[x402-paid] inner error after response locked:", err);
+        else logger.error({ err: err instanceof Error ? err.message : String(err) }, "[x402-paid] inner error after response locked");
       }
     };
 

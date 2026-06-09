@@ -34,8 +34,9 @@ const A2APaymentSchema = z.object({
 export type A2APaymentInput = z.infer<typeof A2APaymentSchema>;
 
 async function payerFetch(maxBudgetUsdc: number) {
-  const evm = process.env.EVM_PRIVATE_KEY?.trim();
-  const sol = process.env.SOLANA_PRIVATE_KEY?.trim();
+  // Keys are read once at startup in config.ts and scrubbed from process.env
+  const evm = config.evmPrivateKey;
+  const sol = config.solanaPrivateKey;
   if (!evm && !sol) {
     throw new Error(
       "A2A execute requires EVM_PRIVATE_KEY or SOLANA_PRIVATE_KEY on the orchestrator (never pass keys in request body)",

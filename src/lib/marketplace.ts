@@ -1,4 +1,5 @@
 import type { MarketplaceResource } from "../types.js";
+import { logger } from "./logger.js";
 
 type MarketplaceResponse = {
   resources?: MarketplaceResource[];
@@ -137,13 +138,13 @@ export async function searchMarketplace(
     const primary = await searchFacilitatorCatalog(query, options);
     if (primary.length > 0) return primary;
   } catch (err) {
-    console.warn(`[marketplace] facilitator catalog:`, err);
+    logger.warn({ err: err instanceof Error ? err.message : String(err) }, "[marketplace] facilitator catalog search failed");
   }
 
   try {
     return await searchLabCatalog(query, options);
   } catch (err) {
-    console.warn(`[marketplace] lab catalog fallback failed for "${query}":`, err);
+    logger.warn({ err: err instanceof Error ? err.message : String(err), query }, "[marketplace] lab catalog fallback failed");
     return [];
   }
 }

@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { config } from "../config.js";
+import { logger } from "./logger.js";
 
 function getCacheFilePath(): string {
   const dataDir = process.env.DATA_DIR?.trim() || path.join(process.cwd(), "data");
@@ -100,7 +101,7 @@ export async function refreshFacilitatorExtras(
     const fallbackPath = getFallbackFilePath();
     if (existsSync(cachePath)) {
       try {
-        console.warn(`[facilitator-extra] network fetch failed, falling back to local cache: ${err instanceof Error ? err.message : String(err)}`);
+        logger.warn({ err: err instanceof Error ? err.message : String(err) }, "[facilitator-extra] network fetch failed, falling back to local cache");
         const raw = readFileSync(cachePath, "utf8");
         body = JSON.parse(raw) as { kinds?: SupportedKind[] };
       } catch (fallbackErr) {
@@ -108,7 +109,7 @@ export async function refreshFacilitatorExtras(
       }
     } else if (existsSync(fallbackPath)) {
       try {
-        console.warn(`[facilitator-extra] network fetch failed and no local cache, falling back to pre-bundled cache: ${err instanceof Error ? err.message : String(err)}`);
+        logger.warn({ err: err instanceof Error ? err.message : String(err) }, "[facilitator-extra] network fetch failed and no local cache, falling back to pre-bundled cache");
         const raw = readFileSync(fallbackPath, "utf8");
         body = JSON.parse(raw) as { kinds?: SupportedKind[] };
       } catch (fallbackErr) {
@@ -161,10 +162,7 @@ export function enrichAcceptFromFacilitator(accept: {
 export function startFacilitatorExtrasRefresh(intervalMs = CACHE_TTL_MS): void {
   const tick = () => {
     void refreshFacilitatorExtras().catch((err) => {
-      console.warn(
-        "[facilitator-extra] refresh failed:",
-        err instanceof Error ? err.message : err,
-      );
+      logger.warn({ err: err instanceof Error ? err.message : String(err) }, "[facilitator-extra] refresh failed");
     });
   };
   setInterval(tick, intervalMs).unref?.();

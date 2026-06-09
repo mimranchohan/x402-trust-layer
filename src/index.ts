@@ -39,6 +39,13 @@ import { ensureVerifierProbeProtocol } from "./lib/verifier-probe-protocol.js";
 import { SUITE_VERSION } from "./lib/version.js";
 import { refreshFacilitatorExtras, startFacilitatorExtrasRefresh } from "./lib/facilitator-extra.js";
 import { rateLimitPerMinute, rateLimitUnpaidProbes, rateLimitAgentLookup } from "./lib/rate-limit.js";
+
+/** Default per-IP hourly cap for free lookup endpoints. Override with RATE_LIMIT_AGENT_LOOKUP_PER_HOUR. */
+const AGENT_LOOKUP_DEFAULT_PER_HOUR = 60;
+const _agentLookupPerHour = parseInt(process.env.RATE_LIMIT_AGENT_LOOKUP_PER_HOUR ?? "", 10);
+const AGENT_LOOKUP_PER_HOUR = Number.isFinite(_agentLookupPerHour) && _agentLookupPerHour > 0
+  ? _agentLookupPerHour
+  : AGENT_LOOKUP_DEFAULT_PER_HOUR;
 import { handleAgentLookup } from "./agents/agent-verify.js";
 import { attachPaymentIdentity } from "./lib/mpp-identity.js";
 import { runCertifiedLookup, runCertifiedCatalog } from "./agents/trust-network.js";
@@ -407,17 +414,17 @@ app.get("/", (req, res) => {
 const postHandlers = registerRoutes(app, paid, asyncRoute);
 registerWebhookRoutes(app);
 
-/** Free ERC-8004 lookup — rate limited ~30/hr per IP */
+/** Free ERC-8004 lookup — rate limited per IP (default 60/hr, override RATE_LIMIT_AGENT_LOOKUP_PER_HOUR) */
 app.get(
   "/api/agent/lookup/:wallet",
-  rateLimitAgentLookup(Number(process.env.RATE_LIMIT_AGENT_LOOKUP_PER_HOUR ?? 30)),
+  rateLimitAgentLookup(AGENT_LOOKUP_PER_HOUR),
   asyncRoute(handleAgentLookup),
 );
 
 /** Free certified seller lookup — rate limited */
 app.get(
   "/api/merchant-trust/certified/:host",
-  rateLimitAgentLookup(Number(process.env.RATE_LIMIT_AGENT_LOOKUP_PER_HOUR ?? 60)),
+  rateLimitAgentLookup(AGENT_LOOKUP_PER_HOUR),
   asyncRoute(async (req, res) => {
     const host = String(req.params.host ?? "").trim();
     if (!host) {
@@ -430,7 +437,7 @@ app.get(
 
 app.get(
   "/api/trust-network/catalog",
-  rateLimitAgentLookup(Number(process.env.RATE_LIMIT_AGENT_LOOKUP_PER_HOUR ?? 60)),
+  rateLimitAgentLookup(AGENT_LOOKUP_PER_HOUR),
   asyncRoute(async (req, res) => {
     const limit =
       typeof req.query.limit === "string" ? Math.min(100, Math.max(1, Number(req.query.limit) || 50)) : 50;

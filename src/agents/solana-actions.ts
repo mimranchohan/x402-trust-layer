@@ -1,9 +1,23 @@
 import { Connection, PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
 import { config } from "../config.js";
 import { computeTrustScore } from "../lib/erc8004/trust-score.js";
+import { logger } from "../lib/logger.js";
 
-// Mainnet connection fallback or custom RPC
-const SOLANA_RPC = process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
+// Mainnet connection — SOLANA_RPC_URL should always be set in production.
+// The public fallback (api.mainnet-beta.solana.com) is heavily rate-limited
+// and will fail under any real load.
+const _solanaRpcUrl = process.env.SOLANA_RPC_URL;
+const _isProdSolana =
+  process.env.NODE_ENV === "production" ||
+  !!process.env.RAILWAY_ENVIRONMENT ||
+  !!process.env.RAILWAY_PUBLIC_DOMAIN;
+if (_isProdSolana && !_solanaRpcUrl) {
+  logger.warn(
+    "[solana-actions] SOLANA_RPC_URL not set — using public fallback which is rate-limited. " +
+      "Set SOLANA_RPC_URL to a dedicated RPC endpoint (Helius, QuickNode, etc.).",
+  );
+}
+const SOLANA_RPC = _solanaRpcUrl || "https://api.mainnet-beta.solana.com";
 const connection = new Connection(SOLANA_RPC);
 
 export type SolanaActionMetadata = {
@@ -116,7 +130,7 @@ export async function postSolanaVerifyAction(
     const res = await connection.getLatestBlockhash("confirmed");
     blockhash = res.blockhash;
   } catch (err) {
-    console.warn("[solana-actions] Custom RPC blockhash fetch failed, trying public fallback...", err);
+    logger.warn({ err: err instanceof Error ? err.message : String(err) }, "[solana-actions] Custom RPC blockhash fetch failed, trying public fallback");
     try {
       const fallbackConnection = new Connection("https://api.mainnet-beta.solana.com");
       const res = await fallbackConnection.getLatestBlockhash("confirmed");

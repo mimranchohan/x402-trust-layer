@@ -7,6 +7,7 @@ import {
   NETWORK_ALIAS_TO_CAIP2,
   type ChainKey,
 } from "./lib/chains.js";
+import { logger } from "./lib/logger.js";
 
 dotenv.config();
 
@@ -123,6 +124,15 @@ function resolveFacilitatorUrl(): string {
   return "https://x402.dexter.cash";
 }
 
+// Read private keys once, then delete from process.env to prevent accidental logging
+const _evmPrivateKey = env("EVM_PRIVATE_KEY");
+const _solanaPrivateKey = env("SOLANA_PRIVATE_KEY");
+const _webhookAdminSecret = env("WEBHOOK_ADMIN_SECRET");
+
+// Scrub sensitive keys from process.env immediately after reading
+delete process.env["EVM_PRIVATE_KEY"];
+delete process.env["SOLANA_PRIVATE_KEY"];
+
 export const config = {
   port: Number(process.env.PORT ?? 3402),
   publicBaseUrl: resolvePublicBaseUrl(Number(process.env.PORT ?? 3402)),
@@ -150,12 +160,16 @@ export const config = {
   allowVerifierProbeIds: env("ALLOW_VERIFIER_PROBE_IDS") === "1",
   /** Optional server secret for verifier synthetic probes (header X-Verifier-Fast-Path-Secret). */
   verifierFastPathSecret: env("VERIFIER_FAST_PATH_SECRET"),
-  webhookAdminSecret: env("WEBHOOK_ADMIN_SECRET"),
+  webhookAdminSecret: _webhookAdminSecret,
   /** Production A2A orchestrator requires A2A_ORCHESTRATOR_ENABLED=1 (uses server payer keys). */
   a2aOrchestratorEnabled: env("A2A_ORCHESTRATOR_ENABLED") === "1",
   zkSimulateAllowed:
     env("ALLOW_ZK_SIMULATE") === "1" ||
     !(process.env.NODE_ENV === "production" || !!process.env.RAILWAY_ENVIRONMENT),
+  /** EVM private key for A2A orchestrator — read once and scrubbed from process.env */
+  evmPrivateKey: _evmPrivateKey,
+  /** Solana private key for A2A orchestrator — read once and scrubbed from process.env */
+  solanaPrivateKey: _solanaPrivateKey,
 };
 
 export const pricing = {
@@ -241,6 +255,7 @@ export function assertProductionSecrets(): void {
     { name: "ATTESTATION_HMAC_SECRET", value: config.attestationHmacSecret, minLen: 32 },
     { name: "PAY_TO_ADDRESS", value: config.payTo, minLen: 16 },
     { name: "PAY_TO_EVM", value: config.payToEvm, minLen: 16 },
+    { name: "WEBHOOK_ADMIN_SECRET", value: config.webhookAdminSecret, minLen: 16 },
   ];
   for (const { name, value, minLen } of required) {
     if (!value || value.length < minLen) {
@@ -248,13 +263,15 @@ export function assertProductionSecrets(): void {
       process.exit(1);
     }
   }
-  if (!config.webhookAdminSecret || config.webhookAdminSecret.length < 16) {
-    console.warn(
-      "[config] WEBHOOK_ADMIN_SECRET not set — webhook register/list/delete return 503 until configured.",
+  // At least one payer key is required for A2A orchestration
+  if (config.a2aOrchestratorEnabled && !config.evmPrivateKey && !config.solanaPrivateKey) {
+    console.error(
+      "FATAL: A2A_ORCHESTRATOR_ENABLED=1 but neither EVM_PRIVATE_KEY nor SOLANA_PRIVATE_KEY is set.",
     );
+    process.exit(1);
   }
   if (!config.zkSimulateAllowed) {
-    console.warn("[config] ALLOW_ZK_SIMULATE not set — POST /api/protocol/zk/prove returns 503 in production.");
+    logger.warn("[config] ALLOW_ZK_SIMULATE not set — POST /api/protocol/zk/prove returns 503 in production.");
   }
 }
 
@@ -270,7 +287,7 @@ export function assertConfig(): void {
     !env("PUBLIC_BASE_URL") &&
     !env("CANONICAL_PUBLIC_URL")
   ) {
-    console.warn(
+    logger.warn(
       `[config] PUBLIC_BASE_URL not set — discovery URLs use ${config.publicBaseUrl}. Set PUBLIC_BASE_URL=${DEFAULT_CANONICAL_ORIGIN} for x402trustlayer.xyz indexing.`,
     );
   }

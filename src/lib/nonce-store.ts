@@ -1,5 +1,6 @@
 import { db } from "./db.js";
 import { assertSafeOutboundUrl } from "./ssrf.js";
+import { logger } from "./logger.js";
 
 const checkNonce = db.prepare("SELECT 1 AS ok FROM used_nonces WHERE nonce = ?");
 const insertNonce = db.prepare(
@@ -24,17 +25,14 @@ async function ensureRedis(): Promise<boolean> {
       try {
         const mod = await import("redis");
         const client = mod.createClient({ url: REDIS_URL });
-        client.on("error", (err: Error) => console.warn("[nonce-store] redis:", err.message));
+        client.on("error", (err: Error) => logger.warn({ err: err.message }, "[nonce-store] redis client error"));
         await client.connect();
         redisSetNx = async (key, ttlSec) => {
           const r = await client.set(key, "1", { NX: true, EX: ttlSec });
           return r === "OK";
         };
       } catch (err) {
-        console.warn(
-          "[nonce-store] REDIS_URL set but redis package unavailable — using SQLite only:",
-          err instanceof Error ? err.message : err,
-        );
+        logger.warn({ err: err instanceof Error ? err.message : String(err) }, "[nonce-store] REDIS_URL set but redis package unavailable — using SQLite only");
       }
     })();
   }
@@ -67,8 +65,12 @@ function sqliteClaim(key: string, network: string): boolean {
   return true;
 }
 
+let _sqliteCleanCounter = 0;
+const SQLITE_CLEAN_EVERY = 50; // ~2% of calls, deterministic
+
 function maybeCleanSqlite(): void {
-  if (Math.random() < 0.02) {
+  if (++_sqliteCleanCounter >= SQLITE_CLEAN_EVERY) {
+    _sqliteCleanCounter = 0;
     cleanOld.run(Math.floor(Date.now() / 1000) - 86_400 * 7);
   }
 }

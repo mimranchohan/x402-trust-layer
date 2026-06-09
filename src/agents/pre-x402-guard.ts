@@ -34,10 +34,17 @@ export type PreX402GuardResult = {
   overlapNote: string;
 };
 
+const GUARD_TIMEOUT_MS = Math.max(
+  2_000,
+  Number(process.env.PRE_X402_GUARD_TIMEOUT_MS ?? "12000"),
+);
+
 /** One paid call before x402_fetch — spend + identity + risk (replaces 3 separate calls). */
 export async function runPreX402Guard(
   input: PreX402GuardInput,
 ): Promise<WithAgentTrust<PreX402GuardResult>> {
+  return Promise.race([
+    (async (): Promise<WithAgentTrust<PreX402GuardResult>> => {
   const spendInput: SpendGovernorInput = {
     agentId: input.agentId,
     estimatedCostUsdc: input.estimatedCostUsdc,
@@ -120,5 +127,13 @@ export async function runPreX402Guard(
       sources: ["spend-governor", "identity-gate", "risk-gate", "url-security", "erc-8004"],
     }),
   );
+    })(),
+    new Promise<never>((_, reject) =>
+      setTimeout(
+        () => reject(new Error(`pre-x402-guard timed out after ${GUARD_TIMEOUT_MS}ms`)),
+        GUARD_TIMEOUT_MS,
+      ),
+    ),
+  ]);
 }
 

@@ -1,6 +1,7 @@
 import path from "node:path";
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { createRequire } from "node:module";
+import { logger } from "./logger.js";
 
 const require = createRequire(import.meta.url);
 
@@ -33,7 +34,18 @@ let SqliteDatabaseClass: any = null;
 try {
   SqliteDatabaseClass = require("better-sqlite3");
 } catch (err) {
-  // Silent fallback
+  const isProd =
+    process.env.NODE_ENV === "production" ||
+    !!process.env.RAILWAY_ENVIRONMENT ||
+    !!process.env.RAILWAY_PUBLIC_DOMAIN;
+  if (isProd) {
+    throw new Error(
+      "better-sqlite3 failed to load in production. Ensure the native module is compiled for this platform. " +
+        String(err instanceof Error ? err.message : err),
+    );
+  }
+  // Dev/test only: warn and fall back to JsonDatabase
+  logger.warn({ err: err instanceof Error ? err.message : String(err) }, "[DB] better-sqlite3 unavailable — using JSON fallback (dev/test only)");
 }
 
 // Statement interface mimicking better-sqlite3
@@ -47,8 +59,12 @@ export class Statement {
   }
 
   run(...args: any[]): { changes: number; lastInsertRowid: number } {
+    const sizeBefore = this.db.dataSize();
     this.db.executeWrite(this.query, args);
-    return { changes: 1, lastInsertRowid: 1 };
+    const sizeAfter = this.db.dataSize();
+    // Detect whether a write actually happened (nonce inserts skip on duplicate)
+    const changed = sizeAfter !== sizeBefore;
+    return { changes: changed ? 1 : 0, lastInsertRowid: changed ? sizeAfter : 0 };
   }
 
   get(...args: any[]): any {
@@ -96,7 +112,7 @@ class JsonDatabase {
         };
       }
     } catch (err) {
-      console.warn("[DB] Failed to load JSON database, starting fresh:", err);
+      logger.warn({ err: err instanceof Error ? err.message : String(err) }, "[DB] Failed to load JSON database, starting fresh");
     }
   }
 
@@ -104,12 +120,23 @@ class JsonDatabase {
     try {
       writeFileSync(this.filepath, JSON.stringify(this.data, null, 2), "utf8");
     } catch (err) {
-      console.error("[DB] Failed to save JSON database:", err);
+      logger.error({ err: err instanceof Error ? err.message : String(err) }, "[DB] Failed to save JSON database");
     }
   }
 
-  pragma(str: string) {}
-  exec(str: string) {}
+  /** Returns a simple count used by Statement.run() to detect whether a write actually changed data. */
+  dataSize(): number {
+    return (
+      Object.keys(this.data.attestations).length +
+      this.data.spend_ledger.length +
+      Object.keys(this.data.mpp_sessions).length +
+      Object.keys(this.data.escrow_records).length +
+      Object.keys(this.data.used_nonces).length
+    );
+  }
+
+  pragma(_str: string) {}
+  exec(_str: string) {}
 
   prepare(query: string): Statement {
     return new Statement(query, this);
@@ -329,7 +356,17 @@ if (SqliteDatabaseClass) {
     const { runMigrations } = require("./migrations.js");
     runMigrations(db);
   } catch (err) {
-    console.warn("[DB] Failed to initialize SQLite database, falling back to JSON:", err);
+    const isProd =
+      process.env.NODE_ENV === "production" ||
+      !!process.env.RAILWAY_ENVIRONMENT ||
+      !!process.env.RAILWAY_PUBLIC_DOMAIN;
+    if (isProd) {
+      throw new Error(
+        "[DB] SQLite initialization failed in production — refusing to fall back to JSON store. " +
+          String(err instanceof Error ? err.message : err),
+      );
+    }
+    logger.warn({ err: err instanceof Error ? err.message : String(err) }, "[DB] SQLite init failed — using JSON fallback (dev/test only)");
     db = new JsonDatabase(DB_PATH);
   }
 } else {
