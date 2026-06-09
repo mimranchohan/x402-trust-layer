@@ -92,6 +92,21 @@ const MIGRATIONS: Migration[] = [
     `,
   },
   {
+    version: 9,
+    sql: `
+      CREATE TABLE IF NOT EXISTS settlement_failures (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        reason TEXT NOT NULL,
+        wallet_address TEXT,
+        amount_usdc TEXT,
+        network TEXT,
+        endpoint TEXT,
+        created_at INTEGER NOT NULL DEFAULT (unixepoch())
+      );
+      CREATE INDEX IF NOT EXISTS idx_sf_created ON settlement_failures(created_at DESC);
+    `,
+  },
+  {
     version: 8,
     sql: `
       CREATE TABLE IF NOT EXISTS escrows (

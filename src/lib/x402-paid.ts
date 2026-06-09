@@ -14,6 +14,7 @@ import {
   markIdempotencyKeyUsed,
 } from "./x402-payment-replay.js";
 import { incCounter } from "./telemetry.js";
+import { logSettlementFailure, checkCircuitBreaker } from "./settlement-failures.js";
 import { isTrustedPayTo } from "./payto-guard.js";
 import { enrichAcceptFromFacilitator, ensureFacilitatorExtras } from "./facilitator-extra.js";
 import { paymentRequestAls, type PaymentRequestStore } from "./payment-request-context.js";
@@ -237,11 +238,30 @@ export function createPaidMiddleware(): (
             payload.reason
           ) {
             incCounter("x402_settlement_failures");
+            logSettlementFailure({
+              reason: String(payload.reason),
+              walletAddress: typeof payload.payer === "string" ? payload.payer : undefined,
+              amountUsdc: typeof payload.amount === "string" ? payload.amount : undefined,
+              network: typeof payload.network === "string" ? payload.network : undefined,
+              endpoint: req.path,
+            });
+            const circuit = checkCircuitBreaker();
             if (!res.headersSent) {
               res.setHeader("Retry-After", String(process.env.SETTLEMENT_RETRY_AFTER_SEC ?? "15"));
+              if (circuit.open) {
+                res.setHeader("X-Circuit-Breaker", "open");
+                res.setHeader("X-Failover-Hint", "settlement-failures-threshold-exceeded");
+              }
             }
-            logger.error({ reason: payload.reason }, "[x402] settlement failed");
+            if (circuit.open) {
+              logger.warn({ circuit }, "[x402] circuit breaker open — too many settlement failures");
+            }
+            logger.error({ reason: payload.reason, circuit: circuit.open }, "[x402] settlement failed");
             payload.error = `Payment settlement failed (${payload.reason})`;
+            if (circuit.open) {
+              (payload as Record<string, unknown>).circuitBreaker = "open";
+              (payload as Record<string, unknown>).failoverHint = circuit.hint;
+            }
           }
         }
         if (bodyHasAccepts(body)) {

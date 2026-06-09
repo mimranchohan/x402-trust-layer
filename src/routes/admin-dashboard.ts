@@ -16,6 +16,7 @@ import { timingSafeEqual } from "node:crypto";
 import { db } from "../lib/db.js";
 import { metricsPayload } from "../lib/telemetry.js";
 import { listTrustWebhooks } from "../lib/trust-events.js";
+import { getRecentFailures, checkCircuitBreaker } from "../lib/settlement-failures.js";
 
 // ---------------------------------------------------------------------------
 // Auth helper
@@ -256,10 +257,31 @@ export function registerAdminDashboard(app: Express): void {
     res.send(html(agents, blocks, spend, metrics));
   });
 
+  // Settlement failures — recent list + circuit breaker status
+  app.get("/api/admin/settlement-failures", (req: Request, res: Response): void => {
+    if (!requireAdmin(req, res)) return;
+    const limit = Math.min(Number(req.query.limit ?? 50), 200);
+    const failures = getRecentFailures(limit);
+    const circuit = checkCircuitBreaker();
+    res.json({
+      ok: true,
+      circuit,
+      count: failures.length,
+      failures: failures.map((f) => ({
+        id: f.id,
+        reason: f.reason,
+        walletAddress: f.wallet_address,
+        amountUsdc: f.amount_usdc,
+        network: f.network,
+        endpoint: f.endpoint,
+        createdAt: new Date(f.created_at * 1000).toISOString(),
+      })),
+    });
+  });
+
   // JSON version for programmatic access
   app.get("/admin/json", (req: Request, res: Response): void => {
     if (!requireAdmin(req, res)) return;
-
     res.json({
       ok: true,
       generatedAt: new Date().toISOString(),
