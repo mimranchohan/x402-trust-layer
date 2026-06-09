@@ -63,7 +63,7 @@ async function _pipelineInner(
   input: PipelineExecuteInput,
 ): Promise<PipelineExecuteResult> {
   
-  const guard = await runPreX402Guard(input);const guard = await runPreX402Guard(input);
+  const guard = await runPreX402Guard(input);
 
   const result: PipelineExecuteResult = {
     status: "ok",
