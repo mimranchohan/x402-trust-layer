@@ -12,9 +12,9 @@
   },
   "info": {
     "title": "x402 Trust Layer",
-    "version": "5.1.0",
+    "version": "5.2.1",
     "description": "68 paid x402 trust infrastructure APIs: guard, semantic escrow, mandate diff, certified seller network, KYM, mandates, compliance, disputes, and orchestration.",
-    "x-guidance": "x402 Trust Layer — 68 paid agent payment infrastructure APIs on Base, Solana, and Polygon via Dexter or CDP facilitator.\n\n2026 primary products: POST /api/guard/pre-x402 ($0.05), POST /api/receipt-auditor/verify ($0.05), POST /api/merchant-trust/score ($0.06).\nSupports x402 PAYMENT-SIGNATURE and MPP X-Agent-Id identity headers.\n\nTypical flow:\n1. POST /api/guard/pre-x402 or POST /api/x402/proxy before any downstream x402 payment.\n2. POST /api/merchant-trust/score for Know-Your-Merchant preflight on unknown hosts.\n3. POST /api/mandate/compile for AP2-style signed intent; POST /api/mandate/diff before spend.\n4. POST /api/trust-network/buyer-gate when paying certified sellers; POST /api/merchant-trust/certify to join network.\n5. POST /api/quality-escrow/semantic-settle after delivery for auto-refund on bad responses.\n6. POST /api/pipeline/execute for multi-step orchestration.\n7. POST /api/mpp/session with action open|voucher|close for batch settlement savings.\n8. POST /api/attestation/issue then pass X-Suite-Attestation on partner calls.\n9. POST /api/receipt-auditor/verify after external settlements; POST /api/compliance/ledger for audit.\n\nPay with x402 (USDC). Unpaid GET probes return 402; send Payment-Signature on POST for full JSON responses.\n\nFree (not in this catalog): GET /health — monitoring only, returns 200 without payment."
+    "x-guidance": "x402 Trust Layer \u2014 68 paid agent payment infrastructure APIs on Base, Solana, and Polygon via Dexter or CDP facilitator.\n\n2026 primary products: POST /api/guard/pre-x402 ($0.05), POST /api/receipt-auditor/verify ($0.05), POST /api/merchant-trust/score ($0.06).\nSupports x402 PAYMENT-SIGNATURE and MPP X-Agent-Id identity headers.\n\nTypical flow:\n1. POST /api/guard/pre-x402 or POST /api/x402/proxy before any downstream x402 payment.\n2. POST /api/merchant-trust/score for Know-Your-Merchant preflight on unknown hosts.\n3. POST /api/mandate/compile for AP2-style signed intent; POST /api/mandate/diff before spend.\n4. POST /api/trust-network/buyer-gate when paying certified sellers; POST /api/merchant-trust/certify to join network.\n5. POST /api/quality-escrow/semantic-settle after delivery for auto-refund on bad responses.\n6. POST /api/pipeline/execute for multi-step orchestration.\n7. POST /api/mpp/session with action open|voucher|close for batch settlement savings.\n8. POST /api/attestation/issue then pass X-Suite-Attestation on partner calls.\n9. POST /api/receipt-auditor/verify after external settlements; POST /api/compliance/ledger for audit.\n\nPay with x402 (USDC). Unpaid GET probes return 402; send Payment-Signature on POST for full JSON responses.\n\nFree (not in this catalog): GET /health \u2014 monitoring only, returns 200 without payment."
   },
   "x-discovery": {
     "ownershipProofs": [
@@ -29,12 +29,12 @@
       {
         "path": "/health",
         "method": "GET",
-        "purpose": "Monitoring — not in OpenAPI paths"
+        "purpose": "Monitoring \u2014 not in OpenAPI paths"
       },
       {
         "path": "/.well-known/x402",
         "method": "GET",
-        "purpose": "Paid URL catalog — register /api/* from resources[]"
+        "purpose": "Paid URL catalog \u2014 register /api/* from resources[]"
       }
     ]
   },
@@ -53,7 +53,7 @@
       "post": {
         "operationId": "post_a2a_execute",
         "summary": "Agent-to-agent x402 orchestration: trust preflight then paid call to seller endpoint",
-        "description": "Agent-to-agent x402 orchestration: trust preflight then paid call to seller endpoint — $0.10 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Agent-to-agent x402 orchestration: trust preflight then paid call to seller endpoint \u2014 $0.10 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "killer",
           "a2a",
@@ -185,7 +185,7 @@
       "post": {
         "operationId": "post_bedrock_preflight",
         "summary": "AWS Bedrock / enterprise agent preflight: guard, mandate, and trust bundle before x402 pay",
-        "description": "AWS Bedrock / enterprise agent preflight: guard, mandate, and trust bundle before x402 pay — $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "AWS Bedrock / enterprise agent preflight: guard, mandate, and trust bundle before x402 pay \u2014 $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "orchestration",
           "bedrock",
@@ -236,7 +236,7 @@
                     "httpStatusCode": 200,
                     "responseBody": {
                       "application/json": {
-                        "body": "{\"ok\":true,\"allowed\":true,\"summary\":\"Spend policy allows call — proceed to x402 payment\"}"
+                        "body": "{\"ok\":true,\"allowed\":true,\"summary\":\"Spend policy allows call \u2014 proceed to x402 payment\"}"
                       }
                     }
                   }
@@ -360,7 +360,7 @@
       "post": {
         "operationId": "post_market_buy_advisor",
         "summary": "x402 buy quote: rank paid APIs, policy, chain, MPP before you pay",
-        "description": "x402 buy quote: rank paid APIs, policy, chain, MPP before you pay — $0.08 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "x402 buy quote: rank paid APIs, policy, chain, MPP before you pay \u2014 $0.08 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "killer",
           "marketplace",
@@ -547,7 +547,7 @@
       "post": {
         "operationId": "post_seller_audition_coach",
         "summary": "Seller audition coach: OpenAPI, 402 probes, Bazaar fixes before Dexter ingest",
-        "description": "Seller audition coach: OpenAPI, 402 probes, Bazaar fixes before Dexter ingest — $0.06 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Seller audition coach: OpenAPI, 402 probes, Bazaar fixes before Dexter ingest \u2014 $0.06 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "killer",
           "seller",
@@ -677,11 +677,7 @@
                   "maxRoutes": {
                     "type": "number"
                   }
-                },
-                "required": [
-                  "origin",
-                  "maxRoutes"
-                ]
+                }
               },
               "example": {
                 "origin": "https://x402trustlayer.xyz",
@@ -696,7 +692,7 @@
       "post": {
         "operationId": "post_x402_proxy",
         "summary": "x402 proxy: guard + security + attestation in one call",
-        "description": "x402 proxy: guard + security + attestation in one call — $0.08 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "x402 proxy: guard + security + attestation in one call \u2014 $0.08 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "killer",
           "x402",
@@ -743,7 +739,7 @@
                   "status": "ok",
                   "ok": true,
                   "allowed": true,
-                  "summary": "Proxy preflight passed — safe to pay downstream x402 endpoint",
+                  "summary": "Proxy preflight passed \u2014 safe to pay downstream x402 endpoint",
                   "securityGrade": "A",
                   "riskScore": 12,
                   "targetProbe": {
@@ -846,7 +842,7 @@
       "post": {
         "operationId": "post_mpp_session",
         "summary": "MPP session v2: open, voucher, close",
-        "description": "MPP session v2: open, voucher, close — $0.03 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "MPP session v2: open, voucher, close \u2014 $0.03 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "killer",
           "mpp",
@@ -988,9 +984,6 @@
                 },
                 "required": [
                   "action",
-                  "expectedCalls",
-                  "avgPricePerCallUsdc",
-                  "chain",
                   "agentId"
                 ]
               },
@@ -1010,7 +1003,7 @@
       "post": {
         "operationId": "post_attestation_issue",
         "summary": "Issue signed preflight attestation",
-        "description": "Issue signed preflight attestation — $0.04 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Issue signed preflight attestation \u2014 $0.04 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "killer",
           "attestation",
@@ -1148,7 +1141,7 @@
       "post": {
         "operationId": "post_attestation_verify",
         "summary": "Verify attestation signature",
-        "description": "Verify attestation signature — $0.02 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Verify attestation signature \u2014 $0.02 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "killer",
           "attestation",
@@ -1250,7 +1243,7 @@
       "get": {
         "operationId": "get_attestation_registry",
         "summary": "Query attestation registry",
-        "description": "Query attestation registry — $0.02 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Query attestation registry \u2014 $0.02 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "killer",
           "attestation",
@@ -1355,7 +1348,7 @@
       "post": {
         "operationId": "post_guard_pre_x402_alchemy",
         "summary": "Pre-x402 guard optimized for Alchemy: spend + identity + risk",
-        "description": "Pre-x402 guard optimized for Alchemy: spend + identity + risk — $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Pre-x402 guard optimized for Alchemy: spend + identity + risk \u2014 $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "bundle",
           "guard",
@@ -1507,7 +1500,7 @@
       "post": {
         "operationId": "post_alchemy_paymaster_policy",
         "summary": "Alchemy Paymaster Custom Webhook Policy for sponsored transactions",
-        "description": "Alchemy Paymaster Custom Webhook Policy for sponsored transactions — Free endpoint.",
+        "description": "Alchemy Paymaster Custom Webhook Policy for sponsored transactions \u2014 Free endpoint.",
         "tags": [
           "security",
           "alchemy",
@@ -1538,7 +1531,7 @@
       "post": {
         "operationId": "post_alchemy_notify_webhook",
         "summary": "Alchemy Notify Webhook Receiver for transaction audit logging",
-        "description": "Alchemy Notify Webhook Receiver for transaction audit logging — Free endpoint.",
+        "description": "Alchemy Notify Webhook Receiver for transaction audit logging \u2014 Free endpoint.",
         "tags": [
           "security",
           "alchemy",
@@ -1570,7 +1563,7 @@
       "post": {
         "operationId": "post_alchemy_simulate_shield",
         "summary": "Alchemy-powered 2026 Transaction simulation and safety shield",
-        "description": "Alchemy-powered 2026 Transaction simulation and safety shield — Free endpoint.",
+        "description": "Alchemy-powered 2026 Transaction simulation and safety shield \u2014 Free endpoint.",
         "tags": [
           "intelligence",
           "alchemy",
@@ -1606,7 +1599,7 @@
       "post": {
         "operationId": "post_guard_pre_x402",
         "summary": "Pre-x402 guard: spend + identity + risk in one call",
-        "description": "Pre-x402 guard: spend + identity + risk in one call — $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Pre-x402 guard: spend + identity + risk in one call \u2014 $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "bundle",
           "guard",
@@ -1757,7 +1750,7 @@
       "post": {
         "operationId": "post_guard_payload_sandbox",
         "summary": "Payload sandbox to check request schemas for prompt injections and malicious commands",
-        "description": "Payload sandbox to check request schemas for prompt injections and malicious commands — $0.04 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Payload sandbox to check request schemas for prompt injections and malicious commands \u2014 $0.04 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "bundle",
           "guard",
@@ -1883,7 +1876,7 @@
       "post": {
         "operationId": "post_spend_governor_check",
         "summary": "Spend governor: daily and per-call USDC cap check",
-        "description": "Spend governor: daily and per-call USDC cap check — $0.03 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Spend governor: daily and per-call USDC cap check \u2014 $0.03 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "core",
           "spend",
@@ -2029,7 +2022,7 @@
       "post": {
         "operationId": "post_identity_gate_check",
         "summary": "Identity gate: wallet tier and ERC-8004 TrustScore check",
-        "description": "Identity gate: wallet tier and ERC-8004 TrustScore check — $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Identity gate: wallet tier and ERC-8004 TrustScore check \u2014 $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "core",
           "identity",
@@ -2135,7 +2128,7 @@
       "post": {
         "operationId": "post_risk_gate_scan",
         "summary": "Risk gate: HTTPS and x402 endpoint safety probe",
-        "description": "Risk gate: HTTPS and x402 endpoint safety probe — $0.08 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Risk gate: HTTPS and x402 endpoint safety probe \u2014 $0.08 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "core",
           "risk",
@@ -2246,7 +2239,7 @@
       "post": {
         "operationId": "post_payment_intent_compile",
         "summary": "Payment intent compiler: multi-step x402 plan within budget",
-        "description": "Payment intent compiler: multi-step x402 plan within budget — $0.15 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Payment intent compiler: multi-step x402 plan within budget \u2014 $0.15 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "orchestration",
           "orchestration",
@@ -2395,7 +2388,7 @@
       "post": {
         "operationId": "post_mpp_session_plan",
         "summary": "MPP session plan: batch vs per-call cost estimate",
-        "description": "MPP session plan: batch vs per-call cost estimate — $0.02 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "MPP session plan: batch vs per-call cost estimate \u2014 $0.02 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "orchestration",
           "mpp",
@@ -2554,7 +2547,7 @@
       "post": {
         "operationId": "post_agent_verify",
         "summary": "ERC-8004 TrustScore on Base mainnet",
-        "description": "ERC-8004 TrustScore on Base mainnet — $0.04 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "ERC-8004 TrustScore on Base mainnet \u2014 $0.04 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "identity",
           "erc-8004",
@@ -2660,7 +2653,7 @@
       "post": {
         "operationId": "post_pipeline_execute",
         "summary": "One-shot pipeline: guard, plan, facilitator, marketplace routing",
-        "description": "One-shot pipeline: guard, plan, facilitator, marketplace routing — $0.25 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "One-shot pipeline: guard, plan, facilitator, marketplace routing \u2014 $0.25 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "bundle",
           "pipeline",
@@ -2830,7 +2823,7 @@
       "post": {
         "operationId": "post_facilitator_failover",
         "summary": "Rank facilitators and recommend failover path",
-        "description": "Rank facilitators and recommend failover path — $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Rank facilitators and recommend failover path \u2014 $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "orchestration",
           "facilitator",
@@ -2940,7 +2933,7 @@
       "post": {
         "operationId": "post_router_route",
         "summary": "Route capability query to best x402 API",
-        "description": "Route capability query to best x402 API — $0.02 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Route capability query to best x402 API \u2014 $0.02 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "core",
           "router",
@@ -3055,7 +3048,7 @@
       "post": {
         "operationId": "post_research_brief",
         "summary": "Research pipeline plan and cost estimate",
-        "description": "Research pipeline plan and cost estimate — $0.20 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Research pipeline plan and cost estimate \u2014 $0.20 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "core",
           "research",
@@ -3165,7 +3158,7 @@
       "post": {
         "operationId": "post_receipt_auditor_verify",
         "summary": "Verify x402 settlement receipt on-chain",
-        "description": "Verify x402 settlement receipt on-chain — $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Verify x402 settlement receipt on-chain \u2014 $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "core",
           "receipt",
@@ -3306,7 +3299,7 @@
       "post": {
         "operationId": "post_refund_arbiter_evaluate",
         "summary": "Evaluate refund eligibility from verification signals",
-        "description": "Evaluate refund eligibility from verification signals — $0.08 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Evaluate refund eligibility from verification signals \u2014 $0.08 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "trust",
           "refund",
@@ -3421,7 +3414,7 @@
       "post": {
         "operationId": "post_budget_allocator_run",
         "summary": "Allocate shared USDC pool across agent fleet",
-        "description": "Allocate shared USDC pool across agent fleet — $0.03 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Allocate shared USDC pool across agent fleet \u2014 $0.03 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "enterprise",
           "budget",
@@ -3561,7 +3554,7 @@
       "post": {
         "operationId": "post_settlement_graph_next",
         "summary": "Recommend next paid APIs after a settlement",
-        "description": "Recommend next paid APIs after a settlement — $0.02 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Recommend next paid APIs after a settlement \u2014 $0.02 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "intelligence",
           "graph",
@@ -3666,7 +3659,7 @@
       "post": {
         "operationId": "post_quality_monitor_probe",
         "summary": "Regression probe up to 10 x402 endpoints",
-        "description": "Regression probe up to 10 x402 endpoints — $0.03 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Regression probe up to 10 x402 endpoints \u2014 $0.03 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "intelligence",
           "monitor",
@@ -3771,7 +3764,7 @@
       "post": {
         "operationId": "post_evidence_locker_export",
         "summary": "Export compliance audit bundle for settlements",
-        "description": "Export compliance audit bundle for settlements — $0.10 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Export compliance audit bundle for settlements \u2014 $0.10 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "enterprise",
           "compliance",
@@ -3906,7 +3899,7 @@
       "post": {
         "operationId": "post_agent_escrow",
         "summary": "Create, status, or release agent-to-agent USDC escrow",
-        "description": "Create, status, or release agent-to-agent USDC escrow — $0.12 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Create, status, or release agent-to-agent USDC escrow \u2014 $0.12 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "enterprise",
           "escrow",
@@ -4026,7 +4019,7 @@
       "post": {
         "operationId": "post_merchant_trust_score",
         "summary": "Know-Your-Merchant trust + wash-trading score before payment",
-        "description": "Know-Your-Merchant trust + wash-trading score before payment — $0.06 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Know-Your-Merchant trust + wash-trading score before payment \u2014 $0.06 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "tier1",
           "trust",
@@ -4168,7 +4161,7 @@
       "post": {
         "operationId": "post_mandate_compile",
         "summary": "Compile a signed, scoped AP2-style payment mandate from intent",
-        "description": "Compile a signed, scoped AP2-style payment mandate from intent — $0.08 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Compile a signed, scoped AP2-style payment mandate from intent \u2014 $0.08 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "tier1",
           "mandate",
@@ -4329,7 +4322,7 @@
       "post": {
         "operationId": "post_rail_optimizer_route",
         "summary": "Choose best rail: Visa CLI, Stripe MPP, Circle, Base, Solana",
-        "description": "Choose best rail: Visa CLI, Stripe MPP, Circle, Base, Solana — $0.04 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Choose best rail: Visa CLI, Stripe MPP, Circle, Base, Solana \u2014 $0.04 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "tier1",
           "rail",
@@ -4447,7 +4440,7 @@
       "post": {
         "operationId": "post_compliance_ledger",
         "summary": "CFO/SOC2-grade spend reconciliation with policy flags and tamper hash",
-        "description": "CFO/SOC2-grade spend reconciliation with policy flags and tamper hash — $0.12 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "CFO/SOC2-grade spend reconciliation with policy flags and tamper hash \u2014 $0.12 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "tier1",
           "compliance",
@@ -4634,7 +4627,7 @@
       "post": {
         "operationId": "post_dispute_resolve",
         "summary": "Visa chargeback dossier or on-chain refund claim builder",
-        "description": "Visa chargeback dossier or on-chain refund claim builder — $0.10 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Visa chargeback dossier or on-chain refund claim builder \u2014 $0.10 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "tier1",
           "dispute",
@@ -4771,7 +4764,7 @@
       "post": {
         "operationId": "post_quality_escrow_settle",
         "summary": "Quality-gated escrow with response verification and auto-refund",
-        "description": "Quality-gated escrow with response verification and auto-refund — $0.10 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Quality-gated escrow with response verification and auto-refund \u2014 $0.10 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "tier1",
           "escrow",
@@ -4818,7 +4811,7 @@
                   "status": "ok",
                   "ok": true,
                   "allowed": true,
-                  "summary": "Quality score 100 ≥ 70 — released $0.05 to api.myceliasignal.com",
+                  "summary": "Quality score 100 \u2265 70 \u2014 released $0.05 to api.myceliasignal.com",
                   "action": "settle",
                   "escrowId": "qesc_example",
                   "escrowStatus": "released",
@@ -4967,7 +4960,7 @@
       "post": {
         "operationId": "post_quality_escrow_semantic_settle",
         "summary": "Semantic delivery escrow: intent rubric + schema before release/refund",
-        "description": "Semantic delivery escrow: intent rubric + schema before release/refund — $0.12 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Semantic delivery escrow: intent rubric + schema before release/refund \u2014 $0.12 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "tier1",
           "escrow",
@@ -5014,7 +5007,7 @@
                   "ok": true,
                   "allowed": true,
                   "mode": "semantic",
-                  "summary": "Semantic+schema score 88 ≥ 72 — release approved",
+                  "summary": "Semantic+schema score 88 \u2265 72 \u2014 release approved",
                   "semanticScore": 92,
                   "schemaScore": 100,
                   "qualityScore": 88,
@@ -5182,7 +5175,7 @@
       "post": {
         "operationId": "post_mandate_diff",
         "summary": "Compare mandate scope to MCP tool trace before x402 payment",
-        "description": "Compare mandate scope to MCP tool trace before x402 payment — $0.04 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Compare mandate scope to MCP tool trace before x402 payment \u2014 $0.04 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "tier1",
           "mandate",
@@ -5231,7 +5224,7 @@
                   "mandateValid": true,
                   "withinMandateScope": true,
                   "violations": [],
-                  "summary": "Tool trace within mandate scope — proceed to x402 payment"
+                  "summary": "Tool trace within mandate scope \u2014 proceed to x402 payment"
                 }
               }
             }
@@ -5367,7 +5360,7 @@
       "post": {
         "operationId": "post_merchant_trust_certify",
         "summary": "Certify seller: KYM pass, signed badge, buyer policy",
-        "description": "Certify seller: KYM pass, signed badge, buyer policy — $0.15 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Certify seller: KYM pass, signed badge, buyer policy \u2014 $0.15 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "tier1",
           "certification",
@@ -5561,7 +5554,7 @@
       "post": {
         "operationId": "post_trust_network_buyer_gate",
         "summary": "Certified seller buyer gate before payment",
-        "description": "Certified seller buyer gate before payment — $0.03 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Certified seller buyer gate before payment \u2014 $0.03 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "tier1",
           "trust-network",
@@ -5607,7 +5600,7 @@
                   "ok": true,
                   "allowed": true,
                   "certifiedSeller": true,
-                  "summary": "Buyer passes certified seller gate — proceed to x402 payment",
+                  "summary": "Buyer passes certified seller gate \u2014 proceed to x402 payment",
                   "violations": []
                 }
               }
@@ -5684,7 +5677,7 @@
       "post": {
         "operationId": "post_trust_network_transaction_auth",
         "summary": "/api/trust-network/transaction-auth",
-        "description": "/api/trust-network/transaction-auth — $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "/api/trust-network/transaction-auth \u2014 $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "tier1",
           "x402"
@@ -5773,7 +5766,7 @@
       "post": {
         "operationId": "post_trust_network_insurance_attest",
         "summary": "Cryptographically sign transaction liability insurance based on active merchant bonds",
-        "description": "Cryptographically sign transaction liability insurance based on active merchant bonds — $0.06 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Cryptographically sign transaction liability insurance based on active merchant bonds \u2014 $0.06 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "tier1",
           "trust-network",
@@ -5889,7 +5882,7 @@
       "post": {
         "operationId": "post_escrow_metered_open",
         "summary": "/api/escrow/metered/open",
-        "description": "/api/escrow/metered/open — $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "/api/escrow/metered/open \u2014 $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "enterprise",
           "x402"
@@ -5978,7 +5971,7 @@
       "post": {
         "operationId": "post_escrow_metered_charge",
         "summary": "/api/escrow/metered/charge",
-        "description": "/api/escrow/metered/charge — $0.01 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "/api/escrow/metered/charge \u2014 $0.01 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "enterprise",
           "x402"
@@ -6067,7 +6060,7 @@
       "post": {
         "operationId": "post_escrow_metered_close",
         "summary": "/api/escrow/metered/close",
-        "description": "/api/escrow/metered/close — $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "/api/escrow/metered/close \u2014 $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "enterprise",
           "x402"
@@ -6156,7 +6149,7 @@
       "post": {
         "operationId": "post_mcp_tools_call",
         "summary": "/api/mcp/tools/call",
-        "description": "/api/mcp/tools/call — $0.02 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "/api/mcp/tools/call \u2014 $0.02 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "core",
           "x402"
@@ -6245,7 +6238,7 @@
       "get": {
         "operationId": "get_dashboard_summary",
         "summary": "/api/dashboard/summary",
-        "description": "/api/dashboard/summary — Free endpoint.",
+        "description": "/api/dashboard/summary \u2014 Free endpoint.",
         "tags": [
           "core",
           "x402"
@@ -6275,7 +6268,7 @@
       "get": {
         "operationId": "get_solana_pay_action_agent_verify",
         "summary": "/api/solana-pay/action/agent-verify",
-        "description": "/api/solana-pay/action/agent-verify — Free endpoint.",
+        "description": "/api/solana-pay/action/agent-verify \u2014 Free endpoint.",
         "tags": [
           "identity",
           "x402"
@@ -6314,7 +6307,7 @@
       "post": {
         "operationId": "post_solana_pay_action_agent_verify",
         "summary": "/api/solana-pay/action/agent-verify",
-        "description": "/api/solana-pay/action/agent-verify — Free endpoint.",
+        "description": "/api/solana-pay/action/agent-verify \u2014 Free endpoint.",
         "tags": [
           "identity",
           "x402"
@@ -6355,7 +6348,7 @@
       "post": {
         "operationId": "post_pipeline_trust_v2",
         "summary": "Trust v2 bundle: mandate diff + KYM + guard + buyer gate",
-        "description": "Trust v2 bundle: mandate diff + KYM + guard + buyer gate — $0.35 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Trust v2 bundle: mandate diff + KYM + guard + buyer gate \u2014 $0.35 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "tier1",
           "pipeline",
@@ -6556,7 +6549,7 @@
       "post": {
         "operationId": "post_trust_network_bond_slash",
         "summary": "Slash seller virtual bond after failed delivery",
-        "description": "Slash seller virtual bond after failed delivery — $0.03 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Slash seller virtual bond after failed delivery \u2014 $0.03 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "tier1",
           "bond",
@@ -6672,7 +6665,7 @@
       "post": {
         "operationId": "post_protocol_pipeline_full_trust",
         "summary": "Agent Trust Protocol v4 full pipeline before x402 payment",
-        "description": "Agent Trust Protocol v4 full pipeline before x402 payment — $0.45 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Agent Trust Protocol v4 full pipeline before x402 payment \u2014 $0.45 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "protocol",
           "protocol",
@@ -6823,7 +6816,7 @@
       "post": {
         "operationId": "post_protocol_passport_issue",
         "summary": "Issue Agent Passport DID verifiable credential",
-        "description": "Issue Agent Passport DID verifiable credential — $0.06 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Issue Agent Passport DID verifiable credential \u2014 $0.06 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "protocol",
           "protocol",
@@ -6940,7 +6933,7 @@
       "post": {
         "operationId": "post_protocol_passport_verify",
         "summary": "Verify Agent Passport credential signature",
-        "description": "Verify Agent Passport credential signature — $0.02 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Verify Agent Passport credential signature \u2014 $0.02 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "protocol",
           "protocol",
@@ -7041,7 +7034,7 @@
       "post": {
         "operationId": "post_protocol_trust_score_v2",
         "summary": "TrustScore v2 with tamper-resistant HMAC proof",
-        "description": "TrustScore v2 with tamper-resistant HMAC proof — $0.08 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "TrustScore v2 with tamper-resistant HMAC proof \u2014 $0.08 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "protocol",
           "protocol",
@@ -7156,7 +7149,7 @@
       "post": {
         "operationId": "post_protocol_fraud_scan",
         "summary": "Graph fraud scan for Sybil and wash trading",
-        "description": "Graph fraud scan for Sybil and wash trading — $0.10 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Graph fraud scan for Sybil and wash trading \u2014 $0.10 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "protocol",
           "protocol",
@@ -7271,7 +7264,7 @@
       "post": {
         "operationId": "post_protocol_oracle_consensus",
         "summary": "Trust oracle quorum consensus",
-        "description": "Trust oracle quorum consensus — $0.12 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Trust oracle quorum consensus \u2014 $0.12 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "protocol",
           "protocol",
@@ -7401,7 +7394,7 @@
       "post": {
         "operationId": "post_protocol_execution_issue",
         "summary": "Proof of Execution task receipt",
-        "description": "Proof of Execution task receipt — $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Proof of Execution task receipt \u2014 $0.05 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "protocol",
           "protocol",
@@ -7552,7 +7545,7 @@
       "post": {
         "operationId": "post_protocol_execution_verify",
         "summary": "Verify Proof of Execution receipt",
-        "description": "Verify Proof of Execution receipt — $0.03 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Verify Proof of Execution receipt \u2014 $0.03 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "protocol",
           "protocol",
@@ -7653,7 +7646,7 @@
       "post": {
         "operationId": "post_protocol_reasoning_commit",
         "summary": "Commit reasoning audit Merkle tree",
-        "description": "Commit reasoning audit Merkle tree — $0.08 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Commit reasoning audit Merkle tree \u2014 $0.08 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "protocol",
           "protocol",
@@ -7810,7 +7803,7 @@
       "post": {
         "operationId": "post_protocol_reasoning_disclose",
         "summary": "Selective disclosure of reasoning audit leaves",
-        "description": "Selective disclosure of reasoning audit leaves — $0.04 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Selective disclosure of reasoning audit leaves \u2014 $0.04 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "protocol",
           "protocol",
@@ -7922,7 +7915,7 @@
       "post": {
         "operationId": "post_protocol_replay_bind",
         "summary": "Replay-safe payment binding",
-        "description": "Replay-safe payment binding — $0.02 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Replay-safe payment binding \u2014 $0.02 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "protocol",
           "protocol",
@@ -8043,7 +8036,7 @@
       "post": {
         "operationId": "post_protocol_replay_verify",
         "summary": "Verify and consume replay binding",
-        "description": "Verify and consume replay binding — $0.02 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Verify and consume replay binding \u2014 $0.02 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "protocol",
           "protocol",
@@ -8163,7 +8156,7 @@
       "post": {
         "operationId": "post_protocol_zk_prove",
         "summary": "ZK-style proof of budget, reputation, or compliance",
-        "description": "ZK-style proof of budget, reputation, or compliance — $0.15 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "ZK-style proof of budget, reputation, or compliance \u2014 $0.15 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "protocol",
           "protocol",
@@ -8303,7 +8296,7 @@
       "post": {
         "operationId": "post_protocol_credit_score",
         "summary": "AI Agent Credit Bureau 300-900",
-        "description": "AI Agent Credit Bureau 300-900 — $0.06 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "AI Agent Credit Bureau 300-900 \u2014 $0.06 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "protocol",
           "protocol",
@@ -8418,7 +8411,7 @@
       "post": {
         "operationId": "post_protocol_compliance_assess",
         "summary": "Enterprise AML/KYC compliance assess",
-        "description": "Enterprise AML/KYC compliance assess — $0.10 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
+        "description": "Enterprise AML/KYC compliance assess \u2014 $0.10 USDC via x402 (Dexter facilitator https://x402.dexter.cash).",
         "tags": [
           "protocol",
           "protocol",

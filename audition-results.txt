@@ -1,0 +1,549 @@
+﻿=== /api/mandate/verify ===
+node.exe : npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm 
+help npmrc` for supported config options.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\mimra\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm warn Unknow...config options.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{
+  "ok": true,
+  "origin": "https://x402trustlayer.xyz",
+  "source": "probe",
+  "summary": {
+    "total": 1,
+    "registered": 1,
+    "failed": 0,
+    "siwx": 0,
+    "skipped": 0,
+    "avgScore": null
+  },
+  "routes": [
+    {
+      "url": "https://x402trustlayer.xyz/api/mandate/verify",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "incomplete",
+      "incompleteReason": "OpenDexter could not settle a test payment on a chain this route accepts. This is on our side ΓÇö please retry shortly.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "skipped",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Verifies a mandate signature and checks that a proposed USDC payment scope matches the mandate before allowing the spend.",
+        "service_type": "mandate-verify",
+        "input_semantics": [
+          {
+            "field": "mandateId",
+            "meaning": "Identifier of the previously compiled mandate whose signature and scope should be verified."
+          },
+          {
+            "field": "proposed.amountUsdc",
+            "meaning": "Proposed payment amount in USDC to be checked against the mandate scope."
+          },
+          {
+            "field": "proposed.merchant",
+            "meaning": "Proposed merchant (destination/host) to be validated against the mandate scope."
+          },
+          {
+            "field": "proposed.category",
+            "meaning": "Proposed payment category label to be validated against the mandate scope."
+          },
+          {
+            "field": "proposed.rail",
+            "meaning": "Proposed payment rail/method to be validated against the mandate scope."
+          }
+        ],
+        "good_response_looks_like": "A JSON verification result indicating whether the mandate signature is valid and whether the proposed fields match scope (e.g., valid/invalid plus scope match details).",
+        "ideal_test_input_guidance": "Use a known mandateId and test both a matching and a deliberately mismatched proposed amount/merchant/category/rail to exercise scope rejection paths."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    }
+  ],
+  "warnings": []
+}
+
+
+=== /api/mpp/session ===
+node.exe : npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm 
+help npmrc` for supported config options.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\mimra\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm warn Unknow...config options.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{
+  "ok": true,
+  "origin": "https://x402trustlayer.xyz",
+  "source": "probe",
+  "summary": {
+    "total": 1,
+    "registered": 1,
+    "failed": 0,
+    "siwx": 0,
+    "skipped": 0,
+    "avgScore": null
+  },
+  "routes": [
+    {
+      "url": "https://x402trustlayer.xyz/api/mpp/session",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "incomplete",
+      "incompleteReason": "OpenDexter could not settle a test payment on a chain this route accepts. This is on our side ΓÇö please retry shortly.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "skipped",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Creates or closes an MPP (multi-payment) session, optionally issuing a voucher, for x402-funded USDC settlement via the x402 Trust Layer.",
+        "service_type": "mpp-session-voucher-close",
+        "input_semantics": [
+          {
+            "field": "action",
+            "meaning": "Selects the MPP session operation to perform (open, voucher, or close)."
+          },
+          {
+            "field": "expectedCalls",
+            "meaning": "Communicates how many downstream calls/payments the session is expected to cover for settlement batching."
+          },
+          {
+            "field": "avgPricePerCallUsdc",
+            "meaning": "Sets the average USDC price per expected call used for session settlement pricing."
+          },
+          {
+            "field": "chain",
+            "meaning": "Indicates the blockchain network where the x402 execution/settlement context should apply."
+          },
+          {
+            "field": "agentId",
+            "meaning": "Identifies the agent making the request so the session can be tracked against that agent payment infrastructure context."
+          }
+        ],
+        "good_response_looks_like": "A JSON response confirming the requested MPP action, including a session identifier/receipt and any voucher/close details needed for subsequent steps.",
+        "ideal_test_input_guidance": "Test action=open then voucher then close on a known chain/agentId, with realistic expectedCalls and avgPricePerCallUsdc to exercise batching logic."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    }
+  ],
+  "warnings": []
+}
+
+
+=== /api/seller/audition-coach ===
+node.exe : npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm 
+help npmrc` for supported config options.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\mimra\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm warn Unknow...config options.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{
+  "ok": true,
+  "origin": "https://x402trustlayer.xyz",
+  "source": "probe",
+  "summary": {
+    "total": 1,
+    "registered": 1,
+    "failed": 0,
+    "siwx": 0,
+    "skipped": 0,
+    "avgScore": null
+  },
+  "routes": [
+    {
+      "url": "https://x402trustlayer.xyz/api/seller/audition-coach",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "incomplete",
+      "incompleteReason": "OpenDexter could not settle a test payment on a chain this route accepts. This is on our side ΓÇö please retry shortly.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "skipped",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Preflights and orchestrates USDC/X402 ΓÇ£seller audition coachΓÇ¥ flows for trusted downstream payment/merchant settlement.",
+        "service_type": "seller-audition-coach",
+        "input_semantics": [
+          {
+            "field": "origin",
+            "meaning": "Identifies the calling source/environment for trust scoring and routing decisions."
+          },
+          {
+            "field": "maxRoutes",
+            "meaning": "Caps how many alternative payment routes/paths the service may consider."
+          }
+        ],
+        "good_response_looks_like": "A JSON decision object indicating trust/preflight status and the selected/allowed execution routes (e.g., route count or route identifiers), not a 402 required-probe result.",
+        "ideal_test_input_guidance": "Use a realistic origin string and vary maxRoutes (e.g., 1 vs higher) to test route limiting and trust/preflight behavior."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    }
+  ],
+  "warnings": []
+}
+
+
+=== /api/x402/proxy ===
+node.exe : npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm 
+help npmrc` for supported config options.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\mimra\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm warn Unknow...config options.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{
+  "ok": true,
+  "origin": "https://x402trustlayer.xyz",
+  "source": "probe",
+  "summary": {
+    "total": 1,
+    "registered": 1,
+    "failed": 0,
+    "siwx": 0,
+    "skipped": 0,
+    "avgScore": null
+  },
+  "routes": [
+    {
+      "url": "https://x402trustlayer.xyz/api/x402/proxy",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "incomplete",
+      "incompleteReason": "OpenDexter could not settle a test payment on a chain this route accepts. This is on our side ΓÇö please retry shortly.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "skipped",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Proxy endpoint that enforces guard/security checks and can issue an attestation before allowing an x402 payment flow.",
+        "service_type": "x402-proxy-guard-attestation",
+        "input_semantics": [
+          {
+            "field": "agentId",
+            "meaning": "Identifier of the paid agent/session using this proxy call."
+          },
+          {
+            "field": "walletAddress",
+            "meaning": "Wallet address that will be associated with/used for the proxied x402 payment."
+          },
+          {
+            "field": "targetUrl",
+            "meaning": "Destination URL the proxy should allow/forward to after applying checks."
+          },
+          {
+            "field": "estimatedCostUsdc",
+            "meaning": "Estimated USDC cost for the proxied operation to support cap/policy enforcement."
+          },
+          {
+            "field": "policy.dailyCapUsdc",
+            "meaning": "Maximum total USDC the agent/session is allowed to spend per day."
+          },
+          {
+            "field": "policy.perCallCapUsdc",
+            "meaning": "Maximum USDC allowed for this single proxied call."
+          },
+          {
+            "field": "issueAttestation",
+            "meaning": "Whether the service should issue an attestation for use in subsequent partner calls."
+          }
+        ],
+        "good_response_looks_like": "A JSON response indicating the proxied request is permitted and including any issued attestation material/record plus success/status fields.",
+        "ideal_test_input_guidance": "Use a fresh agentId/walletAddress/targetUrl, vary estimatedCostUsdc around the perCallCapUsdc, and test both issueAttestation=true and false."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    }
+  ],
+  "warnings": []
+}
+
+
+=== /api/market/buy-advisor ===
+node.exe : npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm 
+help npmrc` for supported config options.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\mimra\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm warn Unknow...config options.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{
+  "ok": true,
+  "origin": "https://x402trustlayer.xyz",
+  "source": "probe",
+  "summary": {
+    "total": 1,
+    "registered": 1,
+    "failed": 0,
+    "siwx": 0,
+    "skipped": 0,
+    "avgScore": null
+  },
+  "routes": [
+    {
+      "url": "https://x402trustlayer.xyz/api/market/buy-advisor",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "incomplete",
+      "incompleteReason": "OpenDexter could not settle a test payment on a chain this route accepts. This is on our side ΓÇö please retry shortly.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "skipped",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Calculates an x402 buy quote/advice for a specified agent and wallet under policy constraints, using USDC limits and expected call count.",
+        "service_type": "x402-buy-advisor",
+        "input_semantics": [
+          {
+            "field": "intent",
+            "meaning": "The purchase intent string describing what the quote is for."
+          },
+          {
+            "field": "agentId",
+            "meaning": "The agent identifier whose buy advisor/terms are being requested."
+          },
+          {
+            "field": "walletAddress",
+            "meaning": "The wallet address that will receive or use the quoted purchase."
+          },
+          {
+            "field": "preferNetwork",
+            "meaning": "The preferred network (e.g., chain) to price/route the quote for."
+          },
+          {
+            "field": "maxPriceUsdc",
+            "meaning": "The maximum USDC price the caller is willing to pay for the quote."
+          },
+          {
+            "field": "expectedCalls",
+            "meaning": "The expected number of downstream calls/steps the quote should account for."
+          },
+          {
+            "field": "policy",
+            "meaning": "The trust/payment policy including per-call and daily USDC caps and the list of allowed hostnames."
+          },
+          {
+            "field": "policy.dailyCapUsdc",
+            "meaning": "The total daily USDC cap enforced for the transaction flow."
+          },
+          {
+            "field": "policy.perCallCapUsdc",
+            "meaning": "The maximum USDC cap enforced per individual call."
+          },
+          {
+            "field": "policy.allowedHosts",
+            "meaning": "The list of hostnames that are permitted for any required downstream requests."
+          },
+          {
+            "field": "dryRunTarget",
+            "meaning": "If true, requests a simulation/dry-run rather than an actual spend/quote settlement."
+          }
+        ],
+        "good_response_looks_like": "A JSON quote/advice payload containing an outcome price/amount in USDC (or accept/reject), policy compliance info, and any required next-step fields for x402 execution.",
+        "ideal_test_input_guidance": "Use realistic intent/agentId/wallet and vary maxPriceUsdc and policy caps/allowedHosts to test acceptance vs rejection, plus dryRunTarget true/false."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    }
+  ],
+  "warnings": []
+}
+
+
+=== /api/quality-escrow/settle ===
+node.exe : npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm 
+help npmrc` for supported config options.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\mimra\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm warn Unknow...config options.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{
+  "ok": true,
+  "origin": "https://x402trustlayer.xyz",
+  "source": "probe",
+  "summary": {
+    "total": 1,
+    "registered": 1,
+    "failed": 0,
+    "siwx": 0,
+    "skipped": 0,
+    "avgScore": null
+  },
+  "routes": [
+    {
+      "url": "https://x402trustlayer.xyz/api/quality-escrow/settle",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "incomplete",
+      "incompleteReason": "OpenDexter could not settle a test payment on a chain this route accepts. This is on our side ΓÇö please retry shortly.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "skipped",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Settles a quality-gated escrow by verifying the payerΓÇÖs response against an expected profile and releasing funds or triggering auto-refund.",
+        "service_type": "quality-escrow-settlement",
+        "input_semantics": [
+          {
+            "field": "action",
+            "meaning": "Specifies the settlement action to perform for the escrow."
+          },
+          {
+            "field": "payerAgentId",
+            "meaning": "Identifies the agent funding or originating the escrow settlement."
+          },
+          {
+            "field": "payeeMerchant",
+            "meaning": "Identifies the merchant receiving escrow funds if conditions are met."
+          },
+          {
+            "field": "amountUsdc",
+            "meaning": "The USDC amount at stake for this escrow settlement."
+          },
+          {
+            "field": "releaseThreshold",
+            "meaning": "The minimum condition/score threshold required to release escrow funds."
+          },
+          {
+            "field": "expectedProfile",
+            "meaning": "Describes the required shape of the payerΓÇÖs response (required keys, min body size, and whether empty bodies are forbidden)."
+          },
+          {
+            "field": "actualResponse",
+            "meaning": "The response being verified, including which body keys are present, its byte length, and whether it is empty."
+          }
+        ],
+        "good_response_looks_like": "A structured settlement result indicating whether escrow was released or refunded, plus verification outcome fields derived from expectedProfile vs actualResponse.",
+        "ideal_test_input_guidance": "Test both pass and fail cases by varying requiredKeys/byteLength/empty to cross the releaseThreshold and trigger release vs auto-refund."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    }
+  ],
+  "warnings": []
+}
+
+
+=== /api/payment-intent/compile ===
+node.exe : npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm 
+help npmrc` for supported config options.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\mimra\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm warn Unknow...config options.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{
+  "ok": true,
+  "origin": "https://x402trustlayer.xyz",
+  "source": "probe",
+  "summary": {
+    "total": 1,
+    "registered": 1,
+    "failed": 0,
+    "siwx": 0,
+    "skipped": 0,
+    "avgScore": null
+  },
+  "routes": [
+    {
+      "url": "https://x402trustlayer.xyz/api/payment-intent/compile",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "incomplete",
+      "incompleteReason": "OpenDexter could not settle a test payment on a chain this route accepts. This is on our side ΓÇö please retry shortly.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "skipped",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Compiles a multi-step x402 execution plan from a natural-language task to spend a USDC budget via the specified agent, using an external call cost estimate.",
+        "service_type": "payment-intent-compile",
+        "input_semantics": [
+          {
+            "field": "task",
+            "meaning": "Natural-language description of the payment/execution you want the x402 plan to accomplish."
+          },
+          {
+            "field": "maxBudgetUsdc",
+            "meaning": "Maximum USDC amount allowed for the overall compiled payment plan."
+          },
+          {
+            "field": "agentId",
+            "meaning": "Identifier of the agent/facilitator profile to use when compiling the x402 execution plan."
+          },
+          {
+            "field": "externalCallEstimateUsdc",
+            "meaning": "Estimated USDC cost for external calls that the compiled plan may include."
+          }
+        ],
+        "good_response_looks_like": "A JSON response containing the compiled multi-step x402 plan/orchestration details and amounts, with any needed execution parameters for later execution.",
+        "ideal_test_input_guidance": "Use a realistic payment task within a small maxBudgetUsdc and a consistent externalCallEstimateUsdc for a known agentId to exercise multi-step planning."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    }
+  ],
+  "warnings": []
+}
+
+

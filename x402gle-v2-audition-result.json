@@ -1,0 +1,26 @@
+{
+  "origin": "https://x402trustlayer.xyz",
+  "generatedAt": "2026-06-01T13:53:29.062Z",
+  "passCount": 0,
+  "total": 3,
+  "results": [
+    {
+      "path": "/api/pipeline/trust-v2",
+      "url": "https://x402trustlayer.xyz/api/pipeline/trust-v2",
+      "ok": false,
+      "error": "cooldown_active"
+    },
+    {
+      "path": "/api/quality-escrow/semantic-settle",
+      "url": "https://x402trustlayer.xyz/api/quality-escrow/semantic-settle",
+      "ok": false,
+      "error": "cooldown_active"
+    },
+    {
+      "path": "/api/mandate/diff",
+      "url": "https://x402trustlayer.xyz/api/mandate/diff",
+      "ok": false,
+      "error": "cooldown_active"
+    }
+  ]
+}

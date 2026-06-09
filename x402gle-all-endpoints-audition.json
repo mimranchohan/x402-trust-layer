@@ -1,0 +1,24 @@
+{
+  "origin": "https://x402trustlayer.xyz",
+  "onlyMissing": true,
+  "delayMs": 12000,
+  "cooldown": false,
+  "needFixCount": 2,
+  "results": [
+    {
+      "path": "/api/a2a/execute",
+      "ok": false,
+      "score": null,
+      "status": "skipped",
+      "exitCode": 0
+    },
+    {
+      "path": "/api/bedrock/preflight",
+      "ok": false,
+      "score": null,
+      "status": "skipped",
+      "exitCode": 0
+    }
+  ],
+  "at": "2026-06-04T22:18:23.899Z"
+}

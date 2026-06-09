@@ -1,0 +1,1387 @@
+﻿node.exe : npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm 
+help npmrc` for supported config options.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\mimra\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm warn Unknow...config options.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{
+  "ok": true,
+  "origin": "https://x402trustlayer.xyz",
+  "source": "openapi",
+  "summary": {
+    "total": 31,
+    "registered": 31,
+    "failed": 0,
+    "siwx": 0,
+    "skipped": 0,
+    "avgScore": null
+  },
+  "routes": [
+    {
+      "url": "https://x402trustlayer.xyz/api/mpp/session",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Creates or finalizes an MPP session (open, voucher, or close) for a $0.03 USDC x402 payment batch settlement via the Dexter facilitator.",
+        "service_type": "mpp-session-open-voucher-close",
+        "input_semantics": [
+          {
+            "field": "action",
+            "meaning": "Selects the MPP session operation: open, voucher, or close."
+          },
+          {
+            "field": "expectedCalls",
+            "meaning": "Declares the number of downstream calls expected in this MPP settlement batch."
+          },
+          {
+            "field": "avgPricePerCallUsdc",
+            "meaning": "Sets the expected average USDC price per downstream call for pricing/accounting."
+          },
+          {
+            "field": "chain",
+            "meaning": "Specifies the blockchain network the MPP session should be executed against."
+          },
+          {
+            "field": "agentId",
+            "meaning": "Identifies the agent/billing party to associate with this MPP session."
+          }
+        ],
+        "good_response_looks_like": "JSON confirming the requested MPP action and session details (e.g., session identifiers/state) and the charged/authorized USDC amount for the x402 flow.",
+        "ideal_test_input_guidance": "Test with action=open then voucher then close, varying chain and expectedCalls while keeping avgPricePerCallUsdc consistent with the expected $0.03 USDC batch pricing."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/seller/audition-coach",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Runs preflight checks and orchestrates a paid x402-based seller audition workflow, returning coached JSON after payment signing.",
+        "service_type": "seller-audition-coach",
+        "input_semantics": [
+          {
+            "field": "origin",
+            "meaning": "Identifies the caller/originating context for routing, attribution, or trust checks."
+          },
+          {
+            "field": "maxRoutes",
+            "meaning": "Caps how many downstream routes/attempts the workflow may consider."
+          }
+        ],
+        "good_response_looks_like": "A paid JSON response (not a 402 probe) containing coached outcome data, likely including status/results and any computed trust/route information tied to the request.",
+        "ideal_test_input_guidance": "Use a realistic origin value and a small maxRoutes (e.g., 1ΓÇô3) to verify routing limits and that signed paid requests return full coached JSON instead of 402."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/market/buy-advisor",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Creates a buy quote/advice for an x402 USDC-based agent transaction, including policy-aware pricing constraints.",
+        "service_type": "market-buy-advisor",
+        "input_semantics": [
+          {
+            "field": "intent",
+            "meaning": "Describes the desired buy/transaction goal as an instruction string for the quoting/advice engine."
+          },
+          {
+            "field": "agentId",
+            "meaning": "Identifies which x402 agent or advisor is being requested to generate the quote."
+          },
+          {
+            "field": "walletAddress",
+            "meaning": "The buyerΓÇÖs wallet address the quote is intended for."
+          },
+          {
+            "field": "preferNetwork",
+            "meaning": "Selects the preferred execution network/venue for the quote (e.g., Base or Solana as supported by the flow)."
+          },
+          {
+            "field": "maxPriceUsdc",
+            "meaning": "The maximum USDC price the buyer is willing to pay, used to cap the advice."
+          },
+          {
+            "field": "expectedCalls",
+            "meaning": "An estimate of how many downstream calls the transaction will require, used for planning caps."
+          },
+          {
+            "field": "policy",
+            "meaning": "Policy constraints for the quote such as daily/per-call USDC caps and which hosts are allowed."
+          },
+          {
+            "field": "dryRunTarget",
+            "meaning": "If true, requests a non-spend dry run/target evaluation rather than an actual payment."
+          }
+        ],
+        "good_response_looks_like": "A JSON quote/advice payload with a computed price/limits in USDC and fields indicating feasibility under the provided policy (and likely a transaction/buy plan record).",
+        "ideal_test_input_guidance": "Use realistic agentId/walletAddress, set maxPriceUsdc near policy caps, include allowedHosts, and test both dryRunTarget true/false to verify cap handling."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/attestation/registry",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Queries the attestation registry to look up attestations for use in downstream trust flows.",
+        "service_type": "attestation-registry-query",
+        "input_semantics": [],
+        "good_response_looks_like": "A paid JSON response containing a registry lookup result (e.g., one or more attestation records with identifiers and status/details).",
+        "ideal_test_input_guidance": "Send a properly authorized POST query that targets an existing attestation entry and verify the response includes record details; also try a non-existent identifier."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/x402/proxy",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Creates a guarded x402 proxy flow that performs security/attestation checks for a target URL and prepares a USDC-funded call.",
+        "service_type": "x402-proxy-attestation-guard",
+        "input_semantics": [
+          {
+            "field": "agentId",
+            "meaning": "Identifies the paying agent/integration requesting the proxy call."
+          },
+          {
+            "field": "walletAddress",
+            "meaning": "The blockchain wallet address that will be associated with the payment/proxy request."
+          },
+          {
+            "field": "targetUrl",
+            "meaning": "The destination URL the guarded x402 proxy should call on your behalf."
+          },
+          {
+            "field": "estimatedCostUsdc",
+            "meaning": "Your expected USDC cost for the requested operation used for payment estimation/limits."
+          },
+          {
+            "field": "policy",
+            "meaning": "Spending limits for this request, including daily and per-call USDC caps."
+          },
+          {
+            "field": "issueAttestation",
+            "meaning": "Whether the service should issue an attestation that the caller can pass to downstream partner calls."
+          }
+        ],
+        "good_response_looks_like": "A JSON response with proxy/guard outcome details and, if requested, an attestation payload/token plus any fields needed to complete the x402 call flow.",
+        "ideal_test_input_guidance": "Use a valid Base/Solana-compatible targetUrl, realistic USDC cost, tight caps, and toggle issueAttestation to verify guarded vs attested responses."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/attestation/verify",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Verifies an attestation signature for a given attestation ID and returns the verification result.",
+        "service_type": "attestation-verify",
+        "input_semantics": [
+          {
+            "field": "attestationId",
+            "meaning": "The identifier of the attestation whose signature should be verified."
+          }
+        ],
+        "good_response_looks_like": "JSON containing the attestation verification outcome (e.g., valid/invalid) and any accompanying metadata about the attestation check.",
+        "ideal_test_input_guidance": "Use a real attestationId obtained from a prior /api/attestation/issue call to test both valid and invalid cases."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/attestation/issue",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Issues a signed preflight attestation (paid with x402/USDC) for a given agent, wallet, and target URL.",
+        "service_type": "attestation-issue-preflight",
+        "input_semantics": [
+          {
+            "field": "agentId",
+            "meaning": "Identifier for the requesting agent that will own the attestation context."
+          },
+          {
+            "field": "walletAddress",
+            "meaning": "Wallet address that will be associated with the payment and attestation."
+          },
+          {
+            "field": "targetUrl",
+            "meaning": "The downstream host/URL for which the preflight attestation is being issued."
+          },
+          {
+            "field": "estimatedCostUsdc",
+            "meaning": "Client-estimated USDC cost for this attestation request to support payment/signing flow."
+          },
+          {
+            "field": "policy",
+            "meaning": "Attestation spending limits specifying the maximum USDC allowed per day and per call."
+          },
+          {
+            "field": "policy.dailyCapUsdc",
+            "meaning": "The maximum total USDC allowed for this agent per day under this request policy."
+          },
+          {
+            "field": "policy.perCallCapUsdc",
+            "meaning": "The maximum USDC allowed for this specific attestation call under this request policy."
+          }
+        ],
+        "good_response_looks_like": "JSON containing an issued attestation value/signature/token and metadata sufficient for the caller to set an X-Suite-Attestation header on partner calls.",
+        "ideal_test_input_guidance": "Use realistic agentId/walletAddress/targetUrl and boundary policy caps, and ensure prior x402 payment/required auth headers are provided to receive full JSON."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/guard/pre-x402",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Runs a preflight ΓÇ£pre-x402ΓÇ¥ guard that checks spend, identity, and risk in one call before allowing an x402 USDC payment.",
+        "service_type": "pre-x402-guard",
+        "input_semantics": [
+          {
+            "field": "agentId",
+            "meaning": "Identifies the agent making or authorizing the pre-x402 guard request."
+          },
+          {
+            "field": "walletAddress",
+            "meaning": "Specifies the wallet address whose spend/identity is being checked for the guard."
+          },
+          {
+            "field": "targetUrl",
+            "meaning": "Indicates the destination host/URL that the downstream x402 payment will be made to (for risk/host checks)."
+          },
+          {
+            "field": "estimatedCostUsdc",
+            "meaning": "Estimated USDC amount to be spent, used to evaluate caps and risk before payment."
+          },
+          {
+            "field": "network",
+            "meaning": "Selects the blockchain/network context for the pre-x402 guard evaluation."
+          },
+          {
+            "field": "policy",
+            "meaning": "Provides the guard constraints such as per-call/daily caps and the list of allowed target hosts."
+          }
+        ],
+        "good_response_looks_like": "A JSON response indicating whether the preflight guard passes, along with any structured evaluation details (e.g., allowed/blocked decision and relevant checks) rather than an unpaid 402.",
+        "ideal_test_input_guidance": "Use a known allowedHosts targetUrl with an estimatedCostUsdc under perCallCapUsdc, then repeat with an over-cap or disallowed host to verify pass vs block."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/pipeline/execute",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Executes a one-shot trust/plan/facilitation pipeline and routes a $0.25+ x402 (USDC) payment for the target URL.",
+        "service_type": "x402-pipeline-execute",
+        "input_semantics": [
+          {
+            "field": "agentId",
+            "meaning": "Identifies the requesting agent running the pipeline."
+          },
+          {
+            "field": "walletAddress",
+            "meaning": "The sender wallet address used to pay via x402/USDC."
+          },
+          {
+            "field": "targetUrl",
+            "meaning": "The destination URL the pipeline will guard and route toward execution."
+          },
+          {
+            "field": "estimatedCostUsdc",
+            "meaning": "Estimated USDC cost used for budgeting and caps enforcement."
+          },
+          {
+            "field": "network",
+            "meaning": "Blockchain network context for payment and execution routing (e.g., Base/Solana)."
+          },
+          {
+            "field": "policy",
+            "meaning": "Payment/usage policy including daily cap, per-call cap, and allowed host list for targetUrl."
+          },
+          {
+            "field": "task",
+            "meaning": "High-level task description guiding the pipeline planning and routing."
+          },
+          {
+            "field": "maxBudgetUsdc",
+            "meaning": "Maximum USDC budget the caller is willing to spend for this pipeline run."
+          },
+          {
+            "field": "marketplaceQuery",
+            "meaning": "Marketplace routing query string used to select the right route/facilitator/venue."
+          },
+          {
+            "field": "preferNetwork",
+            "meaning": "Preference for which network to route through when multiple options exist."
+          }
+        ],
+        "good_response_looks_like": "Returns a JSON result for the orchestrated run, typically including pipeline status/summary and payment/receipt details (or an error if payment/guard checks fail).",
+        "ideal_test_input_guidance": "Use a known allowed targetUrl host, realistic caps/budgets, and vary policy/host to test guard failures and successful payment orchestration."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/payment-intent/compile",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Compiles a multi-step x402 execution plan from a natural-language task constrained by a USDC budget for a specified agent.",
+        "service_type": "x402-payment-intent-compile",
+        "input_semantics": [
+          {
+            "field": "task",
+            "meaning": "Natural-language description of the multi-step x402 actions you want compiled into an execution plan."
+          },
+          {
+            "field": "maxBudgetUsdc",
+            "meaning": "Maximum allowed spend in USDC for the compiled x402 plan."
+          },
+          {
+            "field": "agentId",
+            "meaning": "Identifier of the x402 agent/facilitator context to run under."
+          },
+          {
+            "field": "externalCallEstimateUsdc",
+            "meaning": "Estimated USDC cost for any external calls the plan may require, used during compilation."
+          }
+        ],
+        "good_response_looks_like": "A successful JSON response containing an execution-plan/pipeline structure describing steps for x402 within the provided budget constraints (plus any related metadata).",
+        "ideal_test_input_guidance": "Provide a clear multi-step task (e.g., token spend/route actions), with tight maxBudgetUsdc and a realistic externalCallEstimateUsdc for that flow."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/facilitator/failover",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Ranks available facilitators and recommends a failover path for an x402 USDC payment to a target URL.",
+        "service_type": "x402-facilitator-failover",
+        "input_semantics": [
+          {
+            "field": "targetUrl",
+            "meaning": "The downstream URL that the x402 payment/failover should target."
+          },
+          {
+            "field": "preferNetwork",
+            "meaning": "The preferred network/route context for selecting the best failover path."
+          },
+          {
+            "field": "fastProbe",
+            "meaning": "Whether to use a quicker probe mode when ranking/selecting the failover path."
+          }
+        ],
+        "good_response_looks_like": "A JSON body with a recommended failover path plus ranking details for facilitators (e.g., ordered list/score per facilitator) suitable for choosing the next route.",
+        "ideal_test_input_guidance": "Use a realistic targetUrl and vary preferNetwork and fastProbe to observe different ranked failover recommendations."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/mpp/session-plan",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Estimates how much USDC you can save by using an MPP session versus settling per call through x402.",
+        "service_type": "mpp-session-plan-estimator",
+        "input_semantics": [
+          {
+            "field": "action",
+            "meaning": "Selects which MPP session step to plan (e.g., open, voucher, or close) for the savings estimate."
+          },
+          {
+            "field": "expectedCalls",
+            "meaning": "Provides the number of downstream calls the plan will cover to model per-call vs session settlement."
+          },
+          {
+            "field": "avgPricePerCallUsdc",
+            "meaning": "Sets the average USDC cost per call when settling individually, used to compute the savings."
+          }
+        ],
+        "good_response_looks_like": "A JSON response including the requested action with computed savings figures (e.g., estimated session cost and/or per-call savings in USDC).",
+        "ideal_test_input_guidance": "Test multiple actions (open/voucher/close) with varying expectedCalls and avgPricePerCallUsdc to verify savings changes monotonically."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/identity-gate/check",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Checks a walletΓÇÖs identity tier and returns a risk score used to gate x402 payments.",
+        "service_type": "identity-tier-risk-check",
+        "input_semantics": [
+          {
+            "field": "walletAddress",
+            "meaning": "The wallet address whose identity tier and risk are being evaluated."
+          },
+          {
+            "field": "maxTierSpendUsdc",
+            "meaning": "The maximum USDC spend amount you intend to allow for the walletΓÇÖs tier."
+          }
+        ],
+        "good_response_looks_like": "JSON containing the walletΓÇÖs resolved identity tier and associated numeric risk score/assessment, plus any gating or allowed-spend decision fields.",
+        "ideal_test_input_guidance": "Use a valid walletAddress and vary maxTierSpendUsdc around likely tier thresholds to observe different tiers/risk outcomes."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/spend-governor/check",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Checks and enforces whether a proposed agent spend is within configured daily and per-call USDC caps for the target host.",
+        "service_type": "spend-governor-check",
+        "input_semantics": [
+          {
+            "field": "agentId",
+            "meaning": "Identifies the agent whose spend caps and history are being checked."
+          },
+          {
+            "field": "estimatedCostUsdc",
+            "meaning": "The proposed USDC amount for this call to be validated against caps."
+          },
+          {
+            "field": "targetUrl",
+            "meaning": "The destination URL whose host is compared against the policy allowedHosts list."
+          },
+          {
+            "field": "network",
+            "meaning": "The blockchain/network context used for the spend governance check."
+          },
+          {
+            "field": "policy",
+            "meaning": "Cap and allowlist settings including dailyCapUsdc, perCallCapUsdc, and allowedHosts used to evaluate the request."
+          }
+        ],
+        "good_response_looks_like": "A JSON result indicating pass/fail (allowed or blocked) with cap evaluation details for daily and per-call limits.",
+        "ideal_test_input_guidance": "Use an allowed host and test both cases: estimatedCostUsdc below caps and above perCallUsdc or dailyCapUsdc to verify rejection/acceptance."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/router/route",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "POSTs a route capability query to pick the best x402-based path for sending USDC to a target.",
+        "service_type": "x402-route-capability-query",
+        "input_semantics": [
+          {
+            "field": "query",
+            "meaning": "The natural-language or encoded query describing the desired x402 route/capability request."
+          },
+          {
+            "field": "preferNetwork",
+            "meaning": "The preferred network context to consider when selecting an x402 route (e.g., Base or Solana)."
+          },
+          {
+            "field": "maxPriceUsdc",
+            "meaning": "The maximum acceptable price, denominated in USDC, to constrain the chosen route."
+          },
+          {
+            "field": "skipProbes",
+            "meaning": "When true, avoids unpaid probe behavior and directly queries for the route capability instead."
+          }
+        ],
+        "good_response_looks_like": "A JSON response indicating selected route/capability details, including an estimated USDC cost/price and route capability/availability information for the requested network.",
+        "ideal_test_input_guidance": "Use a realistic query for USDC transfer routing, vary preferNetwork, and set maxPriceUsdc around expected/too-low limits to test selection vs rejection."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/refund-arbiter/evaluate",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Evaluates refund eligibility from verification signals for a prospective refund arbiter flow.",
+        "service_type": "refund-arbiter-evaluate",
+        "input_semantics": [
+          {
+            "field": "verificationScore",
+            "meaning": "Numeric score representing how strongly the provided verification signals support refund eligibility."
+          },
+          {
+            "field": "responseEmpty",
+            "meaning": "Indicates whether the upstream verification/response content was empty."
+          },
+          {
+            "field": "responseGeneric",
+            "meaning": "Indicates whether the upstream response appeared generic rather than specific to the case."
+          },
+          {
+            "field": "endpointReachable",
+            "meaning": "Indicates whether the relevant verification endpoint was reachable at the time of verification."
+          }
+        ],
+        "good_response_looks_like": "A JSON result indicating the refund eligibility outcome/decision derived from the inputs, including any structured decision fields (e.g., eligible/denied) and possibly a computed confidence score.",
+        "ideal_test_input_guidance": "Use boundary and contrasting cases (high vs low verificationScore; reachable vs not; empty/generic vs not) to verify eligibility decisions flip appropriately."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/risk-gate/scan",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Scans a target URL for security/eligibility and enforces x402 payment gating, returning detailed gate results on paid requests.",
+        "service_type": "risk-gate-url-scan",
+        "input_semantics": [
+          {
+            "field": "targetUrl",
+            "meaning": "The URL whose security and access risk must be evaluated by the risk gate scan."
+          },
+          {
+            "field": "estimatedCostUsdc",
+            "meaning": "The callerΓÇÖs expected x402 USDC cost for performing the scan, used for payment gating."
+          },
+          {
+            "field": "policy",
+            "meaning": "Risk-gate limits describing allowed USDC spend caps for the request and over the day."
+          },
+          {
+            "field": "policy.dailyCapUsdc",
+            "meaning": "The maximum total USDC spend allowed for the caller per day under this scan policy."
+          },
+          {
+            "field": "policy.perCallCapUsdc",
+            "meaning": "The maximum USDC spend allowed for this scan call under this scan policy."
+          }
+        ],
+        "good_response_looks_like": "A paid POST returns a JSON body with scan/risk gate outcome details (e.g., pass/fail or scores) and related eligibility/requirements metadata; unpaid probes return 402.",
+        "ideal_test_input_guidance": "Use a mix of safe and clearly risky targetUrl values with tight perCallCapUsdc/dailyCapUsdc to verify correct gating and result fields on paid calls."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/research/brief",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Generates a research pipeline plan and an estimated cost for executing it via x402 USDC.",
+        "service_type": "research-brief-cost-estimate",
+        "input_semantics": [
+          {
+            "field": "topic",
+            "meaning": "The research subject the pipeline plan and cost estimate should be for."
+          },
+          {
+            "field": "includePrice",
+            "meaning": "Whether the response should include the estimated USDC cost details."
+          },
+          {
+            "field": "fastProbe",
+            "meaning": "Whether to perform a quick/low-latency mode suitable for probing the plan and cost."
+          }
+        ],
+        "good_response_looks_like": "JSON containing a pipeline/step plan for the given topic, andΓÇöif includePrice is trueΓÇöan estimated USDC cost amount and related breakdown/metadata.",
+        "ideal_test_input_guidance": "Use a realistic research topic and toggle includePrice and fastProbe to ensure the plan is returned and price fields appear only when requested."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/receipt-auditor/verify",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Verifies an x402 settlement receipt on-chain for a given transaction and expected USDC amount.",
+        "service_type": "receipt-auditor-verify",
+        "input_semantics": [
+          {
+            "field": "network",
+            "meaning": "Blockchain network identifier used to locate the on-chain receipt data."
+          },
+          {
+            "field": "expectedAmountUsdc",
+            "meaning": "The USDC amount you expect the receipt to reflect for verification."
+          },
+          {
+            "field": "transactionHash",
+            "meaning": "The on-chain transaction hash whose receipt will be audited."
+          },
+          {
+            "field": "settlement.transaction",
+            "meaning": "The settlement transaction identifier referenced by the receipt."
+          },
+          {
+            "field": "settlement.amountUsdc",
+            "meaning": "The USDC amount contained in the settlement details to compare during verification."
+          },
+          {
+            "field": "settlement.network",
+            "meaning": "Network name associated with the settlement details in the request."
+          },
+          {
+            "field": "settlement.payer",
+            "meaning": "The address or identifier of the payer included in the settlement details."
+          }
+        ],
+        "good_response_looks_like": "A structured JSON result indicating whether the receipt is verified (e.g., verified/valid flag), plus receipt/settlement match details for the transaction and amounts.",
+        "ideal_test_input_guidance": "Use a real (or known) Base/Solana transaction hash and make expectedAmountUsdc match and then mismatch to test verification outcomes."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/settlement-graph/next",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Suggests the next paid x402-related API steps to take after a settlement.",
+        "service_type": "settlement-graph-next",
+        "input_semantics": [
+          {
+            "field": "lastEndpointPath",
+            "meaning": "The API path that was last called in the settlement flow, used to choose the next recommended step."
+          },
+          {
+            "field": "lastTopic",
+            "meaning": "A label for the last settlement-related topic/event, used to drive the recommendation logic."
+          }
+        ],
+        "good_response_looks_like": "A JSON response listing the recommended next paid API endpoints (and likely an ordered sequence) to call, based on lastEndpointPath and lastTopic.",
+        "ideal_test_input_guidance": "Provide a realistic prior path/topic pair from the documented flow (e.g., a pre-x402 or post-settlement step) to see different next-step recommendations."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/quality-monitor/probe",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Regression probe that runs quality checks against up to 10 x402 URLs and returns results when paid via x402.",
+        "service_type": "x402-quality-monitor-probe",
+        "input_semantics": [
+          {
+            "field": "urls",
+            "meaning": "List of x402 endpoint URLs (up to 10) to probe for regression/quality results."
+          }
+        ],
+        "good_response_looks_like": "A JSON response containing per-URL probe results/records (e.g., status and any failure/quality metrics), with the probe outcome for each requested URL.",
+        "ideal_test_input_guidance": "Provide 1-10 valid x402 URLs plus at least one intentionally failing/invalid URL to verify both success and error result reporting."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/budget-allocator/run",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Allocates a shared USDC pool across an agent fleet based on each agentΓÇÖs priority and requested amount.",
+        "service_type": "budget-allocator-run",
+        "input_semantics": [
+          {
+            "field": "fleetId",
+            "meaning": "Identifies the agent fleet whose USDC allocations are being planned."
+          },
+          {
+            "field": "poolRemainingUsdc",
+            "meaning": "Specifies how much USDC remains in the shared pool available for allocation."
+          },
+          {
+            "field": "agents",
+            "meaning": "Lists each agent with its requested USDC and daily remaining budget to guide allocation decisions."
+          }
+        ],
+        "good_response_looks_like": "A JSON result indicating the allocated USDC per agent (and/or final pool usage), with numbers totaling consistently to the available pool.",
+        "ideal_test_input_guidance": "Use a fleetId with multiple agents, varying priority and requestedUsdc, and ensure poolRemainingUsdc is tight to force partial allocations."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/evidence-locker/export",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Exports a compliance audit bundle for settlements, including USDC amounts associated with specified endpoints, networks, and timestamps.",
+        "service_type": "evidence-locker-export",
+        "input_semantics": [
+          {
+            "field": "organizationId",
+            "meaning": "Identifies the organization whose settlement evidence bundle should be exported."
+          },
+          {
+            "field": "records",
+            "meaning": "Lists the settlement evidence items to include, each with endpoint, USDC amount, network, and timestamp."
+          }
+        ],
+        "good_response_looks_like": "A JSON export result containing an audit/compliance bundle (e.g., bundle identifier and/or downloadable/exported evidence records) corresponding to the requested organizationId and records.",
+        "ideal_test_input_guidance": "Use multiple records covering different networks/endpoints and varying amountUsdc/timestamp values to verify correct bundle assembly and record inclusion."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/agent-escrow",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Creates, checks status, or releases an agent-to-agent USDC escrow mediated by x402.",
+        "service_type": "agent-escrow-usdc",
+        "input_semantics": [
+          {
+            "field": "action",
+            "meaning": "Specifies whether to create, query escrow status, or release the escrow."
+          },
+          {
+            "field": "payerAgentId",
+            "meaning": "Identifies the agent funding the USDC escrow from the payer side."
+          },
+          {
+            "field": "payeeAgentId",
+            "meaning": "Identifies the agent receiving the USDC escrow on the payee side."
+          },
+          {
+            "field": "amountUsdc",
+            "meaning": "The USDC amount to escrow between the payer and payee agents."
+          },
+          {
+            "field": "releaseCondition",
+            "meaning": "A condition string describing what must be met to allow escrow release."
+          }
+        ],
+        "good_response_looks_like": "A JSON escrow record indicating action result, including escrow/transaction identifiers, current status, and the agreed amount/participants (and any release outcome when applicable).",
+        "ideal_test_input_guidance": "Test create then status then release using consistent payer/payee IDs, a realistic amountUsdc, and a releaseCondition that matches the release path."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/merchant-trust/score",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Computes a pre-payment merchant trust and wash-trading score for a given host/target URL to support KYM checks.",
+        "service_type": "merchant-trust-score",
+        "input_semantics": [
+          {
+            "field": "host",
+            "meaning": "The merchant hostname being evaluated for trust scoring."
+          },
+          {
+            "field": "targetUrl",
+            "meaning": "The specific URL associated with the merchant/payment flow being assessed."
+          },
+          {
+            "field": "observedTxns",
+            "meaning": "The number of merchant transactions observed in the scoring window."
+          },
+          {
+            "field": "observedVolumeUsdc",
+            "meaning": "The observed traded volume for the merchant measured in USDC."
+          },
+          {
+            "field": "washTradePct",
+            "meaning": "The estimated percentage of wash trading detected for the merchant."
+          },
+          {
+            "field": "verifiedResources",
+            "meaning": "Count of resources for the merchant that were verified as legitimate."
+          },
+          {
+            "field": "totalResources",
+            "meaning": "Total number of merchant-related resources considered in the scoring set."
+          },
+          {
+            "field": "p50LatencyMs",
+            "meaning": "The median (p50) observed latency associated with merchant activity."
+          },
+          {
+            "field": "probe",
+            "meaning": "Whether this request is a non-payment probe to evaluate scoring behavior."
+          }
+        ],
+        "good_response_looks_like": "A JSON payload with merchant trust and wash-trading related numeric scores (and/or categorical risk/flags) derived from the provided metrics.",
+        "ideal_test_input_guidance": "Use a known/edge-case host/URL with extreme washTradePct and volume/txn values and set probe=true to validate risk scoring boundaries."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/rail-optimizer/route",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Chooses the best USDC rail (e.g., Visa CLI, Stripe MPP, Circle, Base, Solana) for a given payment route via x402.",
+        "service_type": "rail-optimizer-route",
+        "input_semantics": [
+          {
+            "field": "amountUsdc",
+            "meaning": "The payment amount denominated in USDC used to evaluate rail suitability and cost."
+          },
+          {
+            "field": "disputable",
+            "meaning": "Whether the payment may be disputed, affecting rail selection and risk handling."
+          },
+          {
+            "field": "latencySensitive",
+            "meaning": "Whether the payment needs low latency, affecting selection toward faster rails."
+          },
+          {
+            "field": "expectedCalls",
+            "meaning": "The expected number of downstream calls/steps to optimize the routing plan."
+          }
+        ],
+        "good_response_looks_like": "A JSON route decision including the selected rail and related routing details (e.g., chosen rail name and parameters) plus any optimization metadata/cost/latency indicators.",
+        "ideal_test_input_guidance": "Test multiple combinations of amountUsdc, disputes, latencySensitive, and expectedCalls to verify rail changes and optimization metadata are coherent."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/mandate/compile",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Compiles a signed, scoped AP2-style payment mandate from an intent for a specified agent and USDC constraints via the x402 facilitator.",
+        "service_type": "mandate-compile-ap2",
+        "input_semantics": [
+          {
+            "field": "principal",
+            "meaning": "The principal identity authorizing the mandate compilation."
+          },
+          {
+            "field": "agentId",
+            "meaning": "The x402 agent identifier to scope the mandate."
+          },
+          {
+            "field": "intent",
+            "meaning": "The payment intent payload to be transformed into an AP2-style mandate."
+          },
+          {
+            "field": "maxPerTxUsdc",
+            "meaning": "The maximum USDC spend allowed per transaction."
+          },
+          {
+            "field": "dailyCapUsdc",
+            "meaning": "The maximum total USDC spend allowed per day."
+          },
+          {
+            "field": "allowedMerchants",
+            "meaning": "List of merchant hostnames/domains permitted under the mandate."
+          },
+          {
+            "field": "allowedCategories",
+            "meaning": "List of allowed merchant categories permitted under the mandate."
+          },
+          {
+            "field": "allowedRails",
+            "meaning": "List of allowed payment rails/paths permitted under the mandate."
+          },
+          {
+            "field": "ttlMinutes",
+            "meaning": "How long the compiled mandate remains valid in minutes."
+          }
+        ],
+        "good_response_looks_like": "A JSON response containing the compiled signed mandate (e.g., mandate string/object) plus any identifiers/metadata needed for later /api/mandate/verify.",
+        "ideal_test_input_guidance": "Use tight caps and a short TTL with one allowed merchant/category/rail, and ensure the intent is non-empty to exercise signing and scoping."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/mandate/verify",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Verifies a provided mandate by submitting required verification details to the verify endpoint and returning the verification result.",
+        "service_type": "mandate-verify",
+        "input_semantics": [],
+        "good_response_looks_like": "A JSON result indicating whether the mandate verification succeeded or failed, typically with status/decision and optional reason/details fields.",
+        "ideal_test_input_guidance": "Send a mandate identifier/details that are both valid and invalid to confirm the endpoint returns correct success vs rejection outcomes."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/quality-escrow/settle",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Submits a settlement action for a quality escrow contract, finalizing the outcome for the involved parties.",
+        "service_type": "quality-escrow-settlement",
+        "input_semantics": [],
+        "good_response_looks_like": "A JSON response indicating settlement success (e.g., status/result), the escrow/transaction identifier, and any returned settlement details.",
+        "ideal_test_input_guidance": "Provide a valid escrow/settlement reference (if required by the API) for an in-progress escrow and verify the response reflects finalization."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/compliance/ledger",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Submits spend records for a period and returns SOC2/CFO-grade compliance reconciliation with policy checks and tamper hash evidence.",
+        "service_type": "compliance-ledger-reconciliation",
+        "input_semantics": [
+          {
+            "field": "organizationId",
+            "meaning": "The tenant/account identifier whose ledger compliance is being evaluated."
+          },
+          {
+            "field": "period",
+            "meaning": "The reporting window identifier for which spend reconciliation is performed."
+          },
+          {
+            "field": "records",
+            "meaning": "The list of spend events to be reconciled, including merchant, amount, and transaction evidence fields."
+          },
+          {
+            "field": "policy.monthlyCapUsdc",
+            "meaning": "The maximum allowed total monthly spend used for policy validation."
+          },
+          {
+            "field": "policy.perMerchantCapUsdc",
+            "meaning": "The maximum allowed spend per merchant used for policy validation."
+          },
+          {
+            "field": "policy.requireTxHash",
+            "meaning": "Whether each record must include a transaction hash for compliance purposes."
+          }
+        ],
+        "good_response_looks_like": "A JSON object with per-record reconciliation results and policy flag outcomes, including a tamper-hash or integrity evidence field plus any compliance errors.",
+        "ideal_test_input_guidance": "Use multiple records across merchants with varying amounts and timestamps, include/omit transactionHash to exercise requireTxHash and cap-limit flags."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    },
+    {
+      "url": "https://x402trustlayer.xyz/api/dispute/resolve",
+      "outcome": "registered",
+      "registered": true,
+      "auditOutcome": "pending",
+      "incompleteReason": "Route registered. Whole-server auditions skip the live paid test ΓÇö x402gle will score this route automatically in the background. Audition a specific endpoint URL for an immediate paid score.",
+      "score": null,
+      "previousScore": null,
+      "delta": null,
+      "auditionId": null,
+      "shareUrl": null,
+      "status": "pending",
+      "verdict": null,
+      "fixInstructions": null,
+      "synthesizedSkill": null,
+      "mcpTool": null,
+      "serviceProfile": {
+        "summary": "Builds a Visa chargeback dossier or an on-chain refund claim for resolution and payout via x402 USDC using provided dispute details and evidence.",
+        "service_type": "dispute-resolve-builder",
+        "input_semantics": [
+          {
+            "field": "rail",
+            "meaning": "Specifies the settlement rail/context to use for the dispute resolution request."
+          },
+          {
+            "field": "merchant",
+            "meaning": "Identifies the merchant/party the dispute is associated with."
+          },
+          {
+            "field": "amountUsdc",
+            "meaning": "The dispute resolution amount denominated in USDC."
+          },
+          {
+            "field": "reason",
+            "meaning": "A human-readable explanation for why the dispute/chargeback or refund claim is being resolved."
+          },
+          {
+            "field": "evidence.actualResponseEmpty",
+            "meaning": "Indicates whether the payer/merchant actual response was empty for the dispute record."
+          },
+          {
+            "field": "evidence.receiptValid",
+            "meaning": "Indicates whether the relevant receipt for the dispute is considered valid."
+          }
+        ],
+        "good_response_looks_like": "A JSON payload indicating the created/compiled dispute-resolution dossier/claim, including resolution/claim details and x402 payment/disbursement artifacts or references.",
+        "ideal_test_input_guidance": "Use a realistic merchant and amount with a clear reason, and vary evidence flags (empty vs non-empty response, receipt valid vs invalid) to test claim resolution outcomes."
+      },
+      "inputSourceTier": null,
+      "graderSourceTier": null
+    }
+  ],
+  "warnings": []
+}

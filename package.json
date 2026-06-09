@@ -1,7 +1,7 @@
 {
   "name": "x402-trust-layer",
-  "version": "5.2.0",
-  "description": "x402 Trust Layer — 63 live endpoints (57 paid, 6 free) including native Alchemy webhooks, 2026 simulation shield, and Solana Blink actions. Live at x402trustlayer.xyz. Dexter facilitator, Base/Solana/Polygon.",
+  "version": "5.2.1",
+  "description": "x402 Trust Layer \u00e2\u20ac\u201d 63 live endpoints (57 paid, 6 free) including native Alchemy webhooks, 2026 simulation shield, and Solana Blink actions. Live at x402trustlayer.xyz. Dexter facilitator, Base/Solana/Polygon.",
   "type": "module",
   "main": "dist/index.js",
   "files": [

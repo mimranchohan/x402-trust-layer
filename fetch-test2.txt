@@ -1,0 +1,27 @@
+﻿node.exe : npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm 
+help npmrc` for supported config options.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\mimra\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm warn Unknow...config options.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+opendexter fetch <url>
+
+Fetch an x402-protected resource with automatic payment
+
+Positionals:
+  url                                                        [string] [required]
+
+Options:
+  --version     Show version number                                    [boolean]
+  --dev         Use localhost endpoints instead of production
+                                                      [boolean] [default: false]
+  --help        Show help                                              [boolean]
+  --method            [choices: "GET", "POST", "PUT", "DELETE"] [default: "GET"]
+  --max-amount  Optional per-call spend cap override in USDC            [number]
+  --body        JSON request body                                       [string]
+
+Unknown argument: mandateId\:\mdt_verifier_probe_example\,\proposed\:{\amountUsdc\:0.05,\merchant\:\api.myceliasignal.c
+om\,\category\:\oracle\,\rail\:\base-x402\}}

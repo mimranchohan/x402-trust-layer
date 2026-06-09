@@ -1,0 +1,74 @@
+﻿node.exe : npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm 
+help npmrc` for supported config options.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\mimra\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm warn Unknow...config options.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{
+  "status": 200,
+  "data": {
+    "ok": true,
+    "valid": true,
+    "withinScope": true,
+    "reason": "Valid mandate, proposed payment within scope",
+    "record": {
+      "mandateId": "mdt_verifier_probe_example",
+      "issuedAt": "2026-05-31T10:28:52.577Z",
+      "principal": "cardholder:dexter-verifier",
+      "agentId": "dexter-verifier-probe",
+      "intent": "Buy ETH/USD oracle data for a trading bot, under $1 per call, daily $10 cap",
+      "intentHash": "d5130ceb175f109942c015292666a81ee35fc4d3ce88f6d80ecb083ff5b22bc4",
+      "scope": {
+        "maxPerTxUsdc": 0.5,
+        "dailyCapUsdc": 10,
+        "allowedMerchants": [
+          "myceliasignal.com",
+          "dexter.cash",
+          "api.myceliasignal.com"
+        ],
+        "allowedCategories": [
+          "market-data",
+          "oracle"
+        ],
+        "allowedRails": [
+          "base-x402",
+          "solana-x402",
+          "visa-cli"
+        ],
+        "expiresAt": "2027-05-31T10:28:52.577Z"
+      },
+      "suiteVersion": "3.1.0",
+      "signature": "4ed0c43bd099d1aa3a27de7d99a8bb230c275135d68e4325fa06f98958d060e3"
+    },
+    "violations": [],
+    "confidence": 0.93,
+    "checks_passed": [
+      "signature_ok",
+      "scope_ok",
+      "not_expired"
+    ],
+    "sources": [
+      "mandate-notary",
+      "hmac-verify"
+    ],
+    "accuracy_note": "Heuristic preflight only ΓÇö not a guarantee of downstream API quality or settlement success."
+  },
+  "payment": {
+    "settled": true,
+    "details": {
+      "amountPaid": "20000",
+      "network": "eip155:8453",
+      "transaction": "0x4df72ebcf49669b80022d6dfebca972fe6b29f77ccb849f5d210e02665394e25",
+      "success": true,
+      "payer": "0x09c1C46b26746Db082AB842Ff6b9B87d9Ad3b434",
+      "extensions": {
+        "dexter-timing": {
+          "settleDurationMs": 485
+        }
+      }
+    }
+  }
+}

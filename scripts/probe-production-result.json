@@ -1,25 +1,25 @@
 {
   "origin": "https://x402trustlayer.xyz",
-  "at": "2026-06-07T02:12:04.299Z",
-  "expectedPaidRoutes": 60,
+  "at": "2026-06-08T15:38:10.233Z",
+  "expectedPaidRoutes": 65,
   "checks": {
     "health": {
       "status": 200,
-      "endpointCount": 63,
-      "gitCommit": "39e00d7",
+      "endpointCount": 68,
+      "gitCommit": "8231c06",
       "agenticReady": true,
       "agentCashReady": true
     },
     "wellKnown": {
       "status": 200,
-      "resourceCount": 63,
-      "syncOk": true,
+      "resourceCount": 67,
+      "syncOk": false,
       "ownershipProofs": 2
     },
     "openapi": {
       "status": 200,
-      "pathCount": 62,
-      "postRouteCount": 60,
+      "pathCount": 67,
+      "postRouteCount": 65,
       "hasHealth": false,
       "hasGuidance": true
     }
@@ -192,6 +192,14 @@
       ]
     },
     {
+      "path": "/api/identity-gate/check",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
       "path": "/api/mandate/compile",
       "status": 402,
       "pass402": true,
@@ -241,6 +249,22 @@
     },
     {
       "path": "/api/mpp/session",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/mpp/session-plan",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
+      "path": "/api/payment-intent/compile",
       "status": 402,
       "pass402": true,
       "keys": [
@@ -440,6 +464,14 @@
       ]
     },
     {
+      "path": "/api/risk-gate/scan",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
+      ]
+    },
+    {
       "path": "/api/router/route",
       "status": 402,
       "pass402": true,
@@ -470,6 +502,14 @@
       "keys": [
         "transaction",
         "message"
+      ]
+    },
+    {
+      "path": "/api/spend-governor/check",
+      "status": 402,
+      "pass402": true,
+      "keys": [
+        "error"
       ]
     },
     {
@@ -514,9 +554,9 @@
     }
   ],
   "summary": {
-    "total": 60,
-    "pass402Count": 60,
+    "total": 65,
+    "pass402Count": 65,
     "fail402Paths": [],
-    "discoveryInSync": true
+    "discoveryInSync": false
   }
 }

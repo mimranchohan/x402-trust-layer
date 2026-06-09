@@ -1,0 +1,16 @@
+{
+  "origin": "https://x402trustlayer.xyz",
+  "missing": [
+    "/api/a2a/execute"
+  ],
+  "delayMs": 8000,
+  "results": [
+    {
+      "path": "/api/a2a/execute",
+      "ok": false,
+      "error": "cooldown_active",
+      "exitCode": 3221226505
+    }
+  ],
+  "at": "2026-06-08T15:53:58.058Z"
+}
