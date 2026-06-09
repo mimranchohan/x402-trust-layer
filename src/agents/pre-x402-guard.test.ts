@@ -69,8 +69,19 @@ vi.mock("./identity-gate.js", () => ({
 }));
 
 vi.mock("../lib/agent-response.js", () => ({
-  withAgentTrust: vi.fn((payload: unknown, meta: unknown) => ({ ...(payload as object), agentTrust: meta })),
-  agentTrustMeta: vi.fn((_trust: unknown) => ({ tier: "GOLD", trustScore: 72, flags: [] })),
+  // Real withAgentTrust spreads meta fields (confidence, checks_passed, sources, accuracy_note)
+  // onto the payload — it does NOT create an `agentTrust` key. The payload's own
+  // `agentTrust` field (null or object) is preserved through the spread.
+  withAgentTrust: vi.fn((payload: unknown, meta: unknown) => ({
+    ...(payload as object),
+    ...(meta as object),
+  })),
+  agentTrustMeta: vi.fn((_checks: unknown, _opts?: unknown) => ({
+    confidence: 0.86,
+    checks_passed: [],
+    sources: [],
+    accuracy_note: "mock",
+  })),
 }));
 
 // ── Imports after mocks ───────────────────────────────────────────────────────
@@ -99,11 +110,22 @@ function makeInput(overrides: Record<string, unknown> = {}) {
   };
 }
 
+// Default mock return values — reused in beforeEach to reset after timeout test
+const DEFAULT_SPEND = { allowed: true, reason: "ok", spentTodayUsdc: 0, remainingDailyUsdc: 100, perCallCapUsdc: 1 };
+const DEFAULT_RISK  = { safe: true, riskScore: 5, securityGrade: "A", reasons: [] };
+const DEFAULT_IDENTITY = { allowed: true, tier: "GOLD", trustScore: 72, reasons: [] };
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe("runPreX402Guard", () => {
   beforeEach(() => {
+    // clearAllMocks resets call history only — implementations survive.
+    // The timeout test restores runSpendGovernor inline so subsequent tests
+    // don't inherit the hanging Promise.
     vi.clearAllMocks();
+    (runSpendGovernor as ReturnType<typeof vi.fn>).mockResolvedValue(DEFAULT_SPEND);
+    (runRiskGate      as ReturnType<typeof vi.fn>).mockResolvedValue(DEFAULT_RISK);
+    (runIdentityGate  as ReturnType<typeof vi.fn>).mockResolvedValue(DEFAULT_IDENTITY);
   });
 
   afterEach(() => {
@@ -205,6 +227,10 @@ describe("runPreX402Guard", () => {
     await vi.advanceTimersByTimeAsync(13_000);
 
     await expect(promise).rejects.toThrow(/pre-x402-guard timed out after 12000ms/i);
+
+    // Restore real timers + default mock so subsequent tests don't inherit the hanging Promise
+    vi.useRealTimers();
+    (runSpendGovernor as ReturnType<typeof vi.fn>).mockResolvedValue(DEFAULT_SPEND);
   });
 
   // ── agentTrust attached to result ───────────────────────────────────────────
