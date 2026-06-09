@@ -44,6 +44,8 @@ export type PipelineExecuteResult = {
 const SEPARATE_GUARD_USDC = 0.16;
 const SEPARATE_PIPELINE_CORE_USDC = 0.27;
 
+const PIPELINE_TIMEOUT_MS = Number(process.env.PIPELINE_TIMEOUT_MS ?? "8000");
+
 /** Single paid call: guard + optional plan, failover, router, receipt audit hints. */
 const PIPELINE_TIMEOUT_MS = Number(process.env.PIPELINE_TIMEOUT_MS ?? "8000");
 
