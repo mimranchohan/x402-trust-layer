@@ -1,0 +1,122 @@
+{
+  "schema": "agentic-market/agent-listing/v1",
+
+  "agent": {
+    "name": "x402 Trust Layer",
+    "handle": "x402-trust-layer",
+    "version": "5.5.0",
+    "tagline": "Production AI-agent payment infrastructure — x402 V2, wallet sessions, ERC-8004, A2A v1.2, AP2",
+    "description": "x402 Trust Layer is a fully production-deployed payment infrastructure service purpose-built for AI agents. It implements the complete x402 V2 protocol stack on Base, Polygon, and Solana mainnet.\n\nKey capabilities:\n• 59 paid x402 APIs (67 total) covering fraud detection, trust scoring, AI routing, mandate compilation, attestation, and blocklist enforcement\n• Wallet Sessions — agents pay $0.10 USDC once, receive a 7-day HMAC-signed session token, and make unlimited API calls without per-call settlement\n• ERC-8004 on-chain identity — integrates with the live Base mainnet registry (16,500+ verified agents)\n• Multi-stablecoin rails — USDC (primary), EURC (MiCA/EU), PYUSD (Stripe/PayPal), USDT (tertiary)\n• Google A2A v1.2 + AP2 protocol discovery via .well-known endpoints\n• Compatible with Stripe x402, AWS Bedrock AgentCore, Google Cloud AP2, Coinbase CDP",
+    "type": "api_service",
+    "category": "payments",
+    "tags": [
+      "x402", "payments", "stablecoin", "USDC", "Base", "Solana", "Polygon",
+      "AI-agents", "ERC-8004", "A2A", "AP2", "trust-layer",
+      "fraud-detection", "wallet-sessions", "multi-chain", "production"
+    ]
+  },
+
+  "urls": {
+    "homepage": "https://x402trustlayer.xyz",
+    "api_base": "https://x402trustlayer.xyz",
+    "github": "https://github.com/mimranchohan/x402-trust-layer",
+    "agent_card": "https://x402trustlayer.xyz/.well-known/agent.json",
+    "x402_discovery": "https://x402trustlayer.xyz/.well-known/x402.json",
+    "ap2_discovery": "https://x402trustlayer.xyz/.well-known/ap2.json",
+    "health": "https://x402trustlayer.xyz/health",
+    "catalog": "https://x402trustlayer.xyz/api/catalog"
+  },
+
+  "protocols": ["x402-v2", "a2a-v1.2", "ap2-v1.0", "erc-8004"],
+
+  "pricing": {
+    "model": "pay-per-call + session-token",
+    "currency": "USDC",
+    "session_token": {
+      "price": "0.10",
+      "ttl_days": 7,
+      "benefit": "Unlimited API calls for 7 days — no per-call settlement"
+    },
+    "per_call_range": {
+      "min": "0.001",
+      "max": "0.10"
+    },
+    "free_endpoints": 8,
+    "sample_prices": {
+      "fraud_scan": "0.005",
+      "trust_score": "0.003",
+      "ai_routing": "0.010",
+      "attestation_issue": "0.005",
+      "mandate_compile": "0.008",
+      "pre_x402_guard": "0.002",
+      "wallet_session_create": "0.10",
+      "wallet_session_verify": "0.01"
+    }
+  },
+
+  "networks": [
+    {
+      "caip2": "eip155:8453",
+      "name": "Base",
+      "assets": ["USDC", "EURC", "PYUSD"],
+      "usdc_contract": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    },
+    {
+      "caip2": "eip155:137",
+      "name": "Polygon",
+      "assets": ["USDC", "USDT"],
+      "usdc_contract": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359"
+    },
+    {
+      "caip2": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+      "name": "Solana",
+      "assets": ["USDC"],
+      "usdc_contract": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+    }
+  ],
+
+  "quickstart": {
+    "step1": "GET https://x402trustlayer.xyz/.well-known/x402.json — discover supported chains and stablecoins",
+    "step2": "POST https://x402trustlayer.xyz/api/session/create — attach x402 payment header ($0.10 USDC), receive x-session-token",
+    "step3": "Use x-session-token header on any of the 59 paid endpoints for 7 days",
+    "example_curl": "curl -H 'x-session-token: <token>' https://x402trustlayer.xyz/api/guard/pre-x402 -d '{\"agentId\":\"0xABC\",\"amount\":\"0.05\",\"recipient\":\"0xDEF\"}'"
+  },
+
+  "integration_examples": [
+    {
+      "name": "Claude / Anthropic agent",
+      "description": "Use wallet session + fraud guard before each x402 payment"
+    },
+    {
+      "name": "OpenAI function calling",
+      "description": "Call trust-score endpoint to verify counterpart agent before transfer"
+    },
+    {
+      "name": "LangChain tool",
+      "description": "Wrap x402 Trust Layer endpoints as LangChain tools for autonomous payment workflows"
+    },
+    {
+      "name": "AWS Bedrock AgentCore",
+      "description": "Register as AgentCore payment tool — AP2 discovery auto-configures the integration"
+    },
+    {
+      "name": "Google Cloud A2A",
+      "description": "Agent card at /.well-known/agent.json with x-agent-card-signature header — drop-in A2A v1.2 compatible"
+    }
+  ],
+
+  "erc8004": {
+    "identity_registry": "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+    "reputation_registry": "0x8004BAa17C55a88189AE136b182e5fdA19dE9b63",
+    "network": "Base mainnet (eip155:8453)",
+    "verified_agents": "16500+"
+  },
+
+  "open_source": true,
+  "license": "MIT",
+  "github_stars_approx": 0,
+  "production_ready": true,
+  "deployed_since": "2026-01",
+  "contact": "info.woodartpk@gmail.com",
+  "submitted_at": "2026-06-10"
+}

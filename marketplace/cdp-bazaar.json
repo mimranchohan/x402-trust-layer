@@ -1,0 +1,160 @@
+{
+  "schema": "cdp-agent-marketplace/v1",
+  "submission_type": "agent_service",
+
+  "identity": {
+    "name": "x402 Trust Layer",
+    "slug": "x402-trust-layer",
+    "version": "5.5.0",
+    "tagline": "Production x402 payment gateway with 59 paid APIs, wallet sessions, ERC-8004 trust, and multi-chain stablecoin support",
+    "description": "x402 Trust Layer is a fully deployed AI agent payment infrastructure service on Base, Polygon, and Solana. It implements the x402 V2 payment protocol with CAIP-2 chain IDs, multi-stablecoin rails (USDC/EURC/PYUSD/USDT), HMAC-signed wallet sessions, ERC-8004 on-chain agent identity, and Google A2A v1.2 + AP2 protocol discovery. Agents pay $0.10 USDC once to receive a session token that unlocks 59 paid APIs — including fraud scanning, AI-assisted routing, mandate compilation, trust scoring, blocklist checks, and real-time x402 payment guards — without per-call settlement overhead.",
+    "category": "payment_infrastructure",
+    "subcategory": "ai_agent_payments",
+    "tags": [
+      "x402", "payments", "stablecoin", "USDC", "Base", "Solana", "Polygon",
+      "AI-agents", "ERC-8004", "A2A", "AP2", "wallet-sessions", "trust-layer",
+      "fraud-detection", "payment-guard", "multi-chain"
+    ],
+    "logo_url": "https://x402trustlayer.xyz/logo.png",
+    "website": "https://x402trustlayer.xyz",
+    "github": "https://github.com/mimranchohan/x402-trust-layer",
+    "contact_email": "info.woodartpk@gmail.com"
+  },
+
+  "protocols": {
+    "x402": {
+      "version": "2.0",
+      "discovery": "https://x402trustlayer.xyz/.well-known/x402.json",
+      "chain_ids": ["eip155:8453", "eip155:137", "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],
+      "stablecoins": ["USDC", "EURC", "PYUSD", "USDT"]
+    },
+    "a2a": {
+      "version": "1.2",
+      "agent_card": "https://x402trustlayer.xyz/.well-known/agent.json",
+      "signed": true,
+      "algorithm": "hmac-sha256"
+    },
+    "ap2": {
+      "version": "1.0",
+      "discovery": "https://x402trustlayer.xyz/.well-known/ap2.json"
+    },
+    "erc8004": {
+      "caip2": "eip155:8453",
+      "identity_registry": "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+      "reputation_registry": "0x8004BAa17C55a88189AE136b182e5fdA19dE9b63"
+    }
+  },
+
+  "wallet_sessions": {
+    "supported": true,
+    "create_endpoint": "https://x402trustlayer.xyz/api/session/create",
+    "session_price_usdc": "0.10",
+    "ttl_seconds": 604800,
+    "benefit": "Pay once, call all 59 APIs without per-call settlement for 7 days"
+  },
+
+  "payment_rails": [
+    {
+      "network": "eip155:8453",
+      "name": "Base",
+      "asset": "USDC",
+      "contract": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "min_amount_usdc": "0.001",
+      "max_amount_usdc": "100.0"
+    },
+    {
+      "network": "eip155:8453",
+      "name": "Base",
+      "asset": "EURC",
+      "contract": "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
+      "min_amount_usdc": "0.001",
+      "max_amount_usdc": "100.0"
+    },
+    {
+      "network": "eip155:137",
+      "name": "Polygon",
+      "asset": "USDC",
+      "contract": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+      "min_amount_usdc": "0.001",
+      "max_amount_usdc": "100.0"
+    },
+    {
+      "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+      "name": "Solana",
+      "asset": "USDC",
+      "contract": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "min_amount_usdc": "0.001",
+      "max_amount_usdc": "100.0"
+    }
+  ],
+
+  "api_catalog": {
+    "total_endpoints": 67,
+    "paid_endpoints": 59,
+    "free_endpoints": 8,
+    "pricing_range_usdc": "0.001–0.10 per call",
+    "categories": [
+      {
+        "name": "Payment Guard",
+        "endpoints": 4,
+        "description": "Pre-x402 fraud screening, mandate compilation, payment guardrails"
+      },
+      {
+        "name": "Trust & Identity",
+        "endpoints": 8,
+        "description": "ERC-8004 registry lookups, trust score, reputation history, on-chain verification"
+      },
+      {
+        "name": "AI Services",
+        "endpoints": 12,
+        "description": "AI-assisted routing, text analysis, NLP enrichment, agent classification"
+      },
+      {
+        "name": "Fraud & Risk",
+        "endpoints": 10,
+        "description": "Fraud scan, blocklist check, spend governor, anomaly detection"
+      },
+      {
+        "name": "Wallet Sessions",
+        "endpoints": 4,
+        "description": "Session create/verify/revoke/info — pay once, reuse token"
+      },
+      {
+        "name": "Attestation",
+        "endpoints": 6,
+        "description": "HMAC attestation issue + verify, agent cards, signed credentials"
+      },
+      {
+        "name": "Catalog & Discovery",
+        "endpoints": 3,
+        "description": "Endpoint catalog, well-known discovery files (x402/A2A/AP2)"
+      },
+      {
+        "name": "Admin & Webhooks",
+        "endpoints": 12,
+        "description": "Webhook management, blocklist admin, session admin, metrics"
+      }
+    ]
+  },
+
+  "deployment": {
+    "provider": "Railway",
+    "region": "us-west-2",
+    "base_url": "https://x402trustlayer.xyz",
+    "uptime_sla": "99.9%",
+    "status_page": "https://x402trustlayer.xyz/health"
+  },
+
+  "ecosystem_fit": {
+    "stripe_x402": true,
+    "aws_bedrock_agentcore": true,
+    "google_cloud_a2a": true,
+    "google_ap2": true,
+    "coinbase_developer_platform": true,
+    "mcp_compatible": true
+  },
+
+  "open_source": true,
+  "license": "MIT",
+  "submitted_at": "2026-06-10"
+}
