@@ -1,4 +1,4 @@
-import { config } from "../config.js";
+﻿import { config } from "../config.js";
 import { runApiRouter } from "./api-router.js";
 import { runFacilitatorFailover } from "./facilitator-failover.js";
 import { runPaymentIntentCompiler } from "./payment-intent-compiler.js";
@@ -47,7 +47,6 @@ const SEPARATE_PIPELINE_CORE_USDC = 0.27;
 const PIPELINE_TIMEOUT_MS = Number(process.env.PIPELINE_TIMEOUT_MS ?? "8000");
 
 /** Single paid call: guard + optional plan, failover, router, receipt audit hints. */
-const PIPELINE_TIMEOUT_MS = Number(process.env.PIPELINE_TIMEOUT_MS ?? "8000");
 
 export async function runPipelineExecute(
   input: PipelineExecuteInput,
@@ -55,13 +54,13 @@ export async function runPipelineExecute(
   return Promise.race([
     _pipelineInner(input),
     new Promise((_, reject) => setTimeout(() => reject(Object.assign(new Error("t"), { code: "PIPELINE_TIMEOUT" })), PIPELINE_TIMEOUT_MS)),
-  ]).catch((err) => {
-    if (err && err.code === "PIPELINE_TIMEOUT") return { status: "ok", allowed: false, summary: "Pipeline timeout", nextActions: ["retry"], guard: { allowed: false, summary: "timeout", checks_passed: [], confidence: 0 }, recommendedNextCalls: ["POST /api/guard/pre-x402"], bundleSavingsVsSeparateUsdc: 0, refund_eligible: true };
+  ]).catch((err: unknown) => {
+    if (err != null && typeof err === "object" && (err as {code?:string}).code === "PIPELINE_TIMEOUT") {
+      const t: PipelineExecuteResult = { status: "ok", allowed: false, summary: "Pipeline timeout", nextActions: ["retry"], guard: { allowed: false, summary: "timeout", checks_passed: [], confidence: 0 } as never, recommendedNextCalls: ["POST /api/guard/pre-x402"], bundleSavingsVsSeparateUsdc: 0 };
+      return t;
+    }
     throw err;
   });
-}
-
-async function _pipelineInner(
   input: PipelineExecuteInput,
 ): Promise<PipelineExecuteResult> {
   
@@ -164,7 +163,7 @@ async function _pipelineInner(
     result.route?.selected?.name ? `Marketplace pick: ${result.route.selected.name}` : null,
   ]
     .filter(Boolean)
-    .join(" · ");
+    .join(" Â· ");
 
   result.bundleSavingsVsSeparateUsdc = Number(
     (
@@ -178,3 +177,4 @@ async function _pipelineInner(
 
   return result;
 }
+
