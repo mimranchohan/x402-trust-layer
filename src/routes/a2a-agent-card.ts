@@ -186,4 +186,95 @@ export function registerA2AAgentCard(app: Express): void {
       .setHeader("Cache-Control", "public, max-age=300")
       .json(discovery);
   });
+
+  // -- /.well-known/ap2.json --------------------------------------------------
+  // Google Cloud AP2 (Agents-to-Payments) protocol discovery endpoint.
+  // AP2 is Google's dedicated agent-payment protocol (Jun 2025), complementary
+  // to A2A v1.2. Separate from A2A — specifically for payment capability discovery.
+  app.get("/.well-known/ap2.json", (_req, res) => {
+    const networks = config.chains
+      .map((c) => CHAIN_IDS[c as ChainKey])
+      .filter(Boolean) as string[];
+
+    const ap2 = {
+      // AP2 spec identity
+      protocol: "ap2",
+      version: "1.0",
+
+      // Provider info
+      provider: {
+        name: "x402 Trust Layer",
+        url: config.publicBaseUrl,
+        agentCard: `${config.publicBaseUrl}/.well-known/agent.json`,
+      },
+
+      // Payment methods this agent accepts / provides
+      paymentMethods: [
+        {
+          type: "x402",
+          protocolVersion: "2.0",
+          networks,
+          accepts: buildAccepts(),
+          payTo: config.payTo || config.payToEvm,
+          stablecoins: {
+            primary: "USDC",
+            supported: ["USDC", "EURC", "PYUSD", "USDT"],
+          },
+        },
+      ],
+
+      // AP2 authorization endpoints
+      authorization: {
+        sessionEndpoint: `${config.publicBaseUrl}/api/session/create`,
+        verifyEndpoint: `${config.publicBaseUrl}/api/session/verify`,
+        revokeEndpoint: `${config.publicBaseUrl}/api/session/revoke`,
+        attestationEndpoint: `${config.publicBaseUrl}/api/attestation/issue`,
+        mandateEndpoint: `${config.publicBaseUrl}/api/mandate/compile`,
+        scheme: "x402-payment",
+      },
+
+      // Wallet session info
+      walletSessions: {
+        supported: true,
+        createEndpoint: `${config.publicBaseUrl}/api/session/create`,
+        sessionPrice: pricing.walletSessionCreate,
+        maxTtlSeconds: 604800,
+      },
+
+      // Trust & on-chain identity
+      trust: {
+        erc8004: {
+          caip2: "eip155:8453",
+          identityRegistry: config.erc8004IdentityRegistry || DEFAULT_IDENTITY_REGISTRY,
+          reputationRegistry: config.erc8004ReputationRegistry || DEFAULT_REPUTATION_REGISTRY,
+        },
+        hmacAlgorithm: "hmac-sha256",
+        guardEndpoint: `${config.publicBaseUrl}/api/guard/pre-x402`,
+      },
+
+      // Cross-protocol discovery links
+      discovery: {
+        a2a: `${config.publicBaseUrl}/.well-known/agent.json`,
+        x402: `${config.publicBaseUrl}/.well-known/x402.json`,
+        ap2: `${config.publicBaseUrl}/.well-known/ap2.json`,
+      },
+
+      // Capabilities matrix
+      capabilities: {
+        walletSessions: true,
+        multiChain: networks.length > 1,
+        multiStablecoin: true,
+        streaming: false,
+        batchPayments: true,
+        escrow: true,
+        fraudScan: true,
+        refundArbiter: true,
+      },
+    };
+
+    res
+      .setHeader("Content-Type", "application/json")
+      .setHeader("Cache-Control", "public, max-age=300")
+      .json(ap2);
+  });
 }
