@@ -362,6 +362,12 @@ function sendDiscoverCatalog(_req: Request, res: Response): void {
 app.get("/x402/api/discover", sendDiscoverCatalog);
 /** Redirects — canonical path is /x402/api/discover */
 app.get("/x402/discover", (_req, res) => res.redirect(301, "/x402/api/discover"));
+
+app.use((req, res, next) => {
+  if ((req.headers.host || "").startsWith("x402trustscore."))
+    return void res.redirect(301, "https://x402trustlayer.xyz" + req.originalUrl);
+  next();
+});
 app.get("/discover", (_req, res) => res.redirect(301, "/x402/api/discover"));
 
 app.get("/", (req, res) => {
