@@ -80,7 +80,7 @@ export function isAllowedNetwork(caip2Network: string): boolean {
   return ALLOWED_NETWORKS.has(n);
 }
 
-/** CDP facilitator — required for CDP Bazaar catalog indexing on agentic.market */
+/** CDP facilitator -- required for CDP Bazaar catalog indexing on agentic.market */
 export const CDP_FACILITATOR_URL =
   "https://api.cdp.coinbase.com/platform/v2/x402/facilitator";
 
@@ -166,9 +166,9 @@ export const config = {
   zkSimulateAllowed:
     env("ALLOW_ZK_SIMULATE") === "1" ||
     !(process.env.NODE_ENV === "production" || !!process.env.RAILWAY_ENVIRONMENT),
-  /** EVM private key for A2A orchestrator — read once and scrubbed from process.env */
+  /** EVM private key for A2A orchestrator -- read once and scrubbed from process.env */
   evmPrivateKey: _evmPrivateKey,
-  /** Solana private key for A2A orchestrator — read once and scrubbed from process.env */
+  /** Solana private key for A2A orchestrator -- read once and scrubbed from process.env */
   solanaPrivateKey: _solanaPrivateKey,
 };
 
@@ -239,6 +239,8 @@ export const pricing = {
   mcpCall: "0.02",
   payloadSandbox: "0.04",
   insuranceAttest: "0.06",
+  walletSessionCreate: "0.10",
+  walletSessionVerify: "0.01",
 } as const;
 
 function isProductionEnv(): boolean {
@@ -263,7 +265,6 @@ export function assertProductionSecrets(): void {
       process.exit(1);
     }
   }
-  // At least one payer key is required for A2A orchestration
   if (config.a2aOrchestratorEnabled && !config.evmPrivateKey && !config.solanaPrivateKey) {
     console.error(
       "FATAL: A2A_ORCHESTRATOR_ENABLED=1 but neither EVM_PRIVATE_KEY nor SOLANA_PRIVATE_KEY is set.",
@@ -271,7 +272,7 @@ export function assertProductionSecrets(): void {
     process.exit(1);
   }
   if (!config.zkSimulateAllowed) {
-    logger.warn({}, "[config] ALLOW_ZK_SIMULATE not set — POST /api/protocol/zk/prove returns 503 in production.");
+    logger.warn({}, "[config] ALLOW_ZK_SIMULATE not set -- POST /api/protocol/zk/prove returns 503 in production.");
   }
 }
 
@@ -289,7 +290,11 @@ export function assertConfig(): void {
   ) {
     logger.warn(
       { publicBaseUrl: config.publicBaseUrl },
-      `[config] PUBLIC_BASE_URL not set — discovery URLs use ${config.publicBaseUrl}. Set PUBLIC_BASE_URL=${DEFAULT_CANONICAL_ORIGIN} for x402trustlayer.xyz indexing.`,
+      "[config] PUBLIC_BASE_URL not set -- discovery URLs use " +
+        config.publicBaseUrl +
+        ". Set PUBLIC_BASE_URL=" +
+        DEFAULT_CANONICAL_ORIGIN +
+        " for x402trustlayer.xyz indexing.",
     );
   }
 }

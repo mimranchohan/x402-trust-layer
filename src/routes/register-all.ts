@@ -12,6 +12,7 @@ import { registerOtherRoutes } from "./other-routes.js";
 import { registerCoreAgentRoutes } from "./core-agent-routes.js";
 import { registerAdminDashboard } from "./admin-dashboard.js";
 import { registerBlocklistRoutes } from "../middleware/wallet-blocklist.js";
+import { registerSessionRoutes } from "./session-routes.js";
 
 export function registerRoutes(
   app: Express,
@@ -28,6 +29,7 @@ export function registerRoutes(
   registerAlchemyRoutes(ctx);
   registerSolanaRoutes(ctx);
   registerOtherRoutes(ctx);
+  registerSessionRoutes(ctx);
 
   registerAdminDashboard(app);
   registerBlocklistRoutes(app);

@@ -137,6 +137,27 @@ const MIGRATIONS: Migration[] = [
       CREATE INDEX IF NOT EXISTS idx_escrow_state ON escrows(state, updated_at);
     `,
   },
+  {
+    version: 10,
+    sql: `
+      CREATE TABLE IF NOT EXISTS wallet_sessions (
+        session_id TEXT PRIMARY KEY,
+        wallet_address TEXT NOT NULL,
+        agent_id TEXT,
+        network TEXT NOT NULL,
+        stablecoin TEXT NOT NULL DEFAULT 'USDC',
+        amount_paid TEXT NOT NULL,
+        created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+        expires_at INTEGER NOT NULL,
+        revoked_at INTEGER,
+        call_count INTEGER NOT NULL DEFAULT 0,
+        max_calls INTEGER,
+        metadata JSON
+      );
+      CREATE INDEX IF NOT EXISTS idx_ws_wallet ON wallet_sessions(wallet_address, expires_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_ws_expires ON wallet_sessions(expires_at);
+    `,
+  },
 ];
 
 export function runMigrations(db: SqliteDatabase): void {

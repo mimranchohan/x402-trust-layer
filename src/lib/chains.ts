@@ -18,6 +18,65 @@ export const USDC_ASSET: Record<ChainKey, string> = {
   solana_devnet: "4zMMC9srt5Ri5X14GAgXhaHii3GnPEPBNLW2nN2H4V2",
 };
 
+/**
+ * EURC (Euro Coin) -- Circle's EUR-backed stablecoin.
+ * Keyrock 2026 risk report: USDC 98.6% concentration -> EURC as EUR-denominated fallback.
+ * x402 V2 multi-rail: agents in EU / SEPA zones prefer EURC for MiCA compliance.
+ */
+export const EURC_ASSET: Partial<Record<ChainKey, string>> = {
+  base: "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1aDB42",
+  polygon: "0xc52D7F23a2e460248Db6eE192Cb23dD12BDDcbf6",
+};
+
+/**
+ * PYUSD (PayPal USD) -- PayPal + Paxos, NYDFS-regulated.
+ * x402 V2 fallback for US-regulated commerce flows (Stripe MPP compatible).
+ */
+export const PYUSD_ASSET: Partial<Record<ChainKey, string>> = {
+  base: "0x6c3ea9036406852006290770BEdFcAbA0e23A0e8",
+  polygon: "0xd8cB8f79E46BB93f1fA17D8F4bE4F24Bb7c31ff",
+};
+
+/**
+ * USDT (Tether) -- highest global liquidity, tertiary fallback.
+ */
+export const USDT_ASSET: Partial<Record<ChainKey, string>> = {
+  base: "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2",
+  polygon: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+};
+
+/** Supported stablecoin rails in priority order (x402 V2 multi-stablecoin) */
+export type StablecoinRail = "USDC" | "EURC" | "PYUSD" | "USDT";
+export const STABLECOIN_RAILS: StablecoinRail[] = ["USDC", "EURC", "PYUSD", "USDT"];
+
+/** Resolve token contract address for a stablecoin rail on a specific chain. */
+export function stablecoinAsset(
+  rail: StablecoinRail,
+  chain: ChainKey,
+): string | undefined {
+  switch (rail) {
+    case "USDC": return USDC_ASSET[chain];
+    case "EURC": return EURC_ASSET[chain];
+    case "PYUSD": return PYUSD_ASSET[chain];
+    case "USDT": return USDT_ASSET[chain];
+  }
+}
+
+/**
+ * All available stablecoins on a chain, in priority order.
+ * Used to build x402 V2 multi-stablecoin `accepts` array -- payer picks first match.
+ */
+export function availableStablecoins(
+  chain: ChainKey,
+): Array<{ rail: StablecoinRail; asset: string }> {
+  const result: Array<{ rail: StablecoinRail; asset: string }> = [];
+  for (const rail of STABLECOIN_RAILS) {
+    const asset = stablecoinAsset(rail, chain);
+    if (asset) result.push({ rail, asset });
+  }
+  return result;
+}
+
 export function usdcAssetForCaip2(network: string): string | undefined {
   for (const key of Object.keys(CHAIN_IDS) as ChainKey[]) {
     if (CHAIN_IDS[key] === network) return USDC_ASSET[key];
@@ -52,7 +111,7 @@ export function caip2Networks(chains: ChainKey[]): string[] {
   return chains.map((c) => CHAIN_IDS[c]);
 }
 
-/** Human chain keys → CAIP-2 (x402 v2 discovery). */
+/** Human chain keys -> CAIP-2 (x402 v2 discovery). */
 export const NETWORK_ALIAS_TO_CAIP2: Record<string, string> = {
   base: CHAIN_IDS.base,
   solana: CHAIN_IDS.solana,
