@@ -13,6 +13,7 @@ const _isProdSolana =
   !!process.env.RAILWAY_PUBLIC_DOMAIN;
 if (_isProdSolana && !_solanaRpcUrl) {
   logger.warn(
+    {},
     "[solana-actions] SOLANA_RPC_URL not set — using public fallback which is rate-limited. " +
       "Set SOLANA_RPC_URL to a dedicated RPC endpoint (Helius, QuickNode, etc.).",
   );

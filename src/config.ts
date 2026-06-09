@@ -271,7 +271,7 @@ export function assertProductionSecrets(): void {
     process.exit(1);
   }
   if (!config.zkSimulateAllowed) {
-    logger.warn("[config] ALLOW_ZK_SIMULATE not set — POST /api/protocol/zk/prove returns 503 in production.");
+    logger.warn({}, "[config] ALLOW_ZK_SIMULATE not set — POST /api/protocol/zk/prove returns 503 in production.");
   }
 }
 
@@ -288,6 +288,7 @@ export function assertConfig(): void {
     !env("CANONICAL_PUBLIC_URL")
   ) {
     logger.warn(
+      { publicBaseUrl: config.publicBaseUrl },
       `[config] PUBLIC_BASE_URL not set — discovery URLs use ${config.publicBaseUrl}. Set PUBLIC_BASE_URL=${DEFAULT_CANONICAL_ORIGIN} for x402trustlayer.xyz indexing.`,
     );
   }

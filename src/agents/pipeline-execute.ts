@@ -56,7 +56,7 @@ export async function runPipelineExecute(
 ): Promise<PipelineExecuteResult> {
   return Promise.race([
     _pipelineInner(input),
-    new Promise((_, reject) => setTimeout(() => reject(Object.assign(new Error("t"), { code: "PIPELINE_TIMEOUT" })), PIPELINE_TIMEOUT_MS)),
+    new Promise<never>((_, reject) => setTimeout(() => reject(Object.assign(new Error("t"), { code: "PIPELINE_TIMEOUT" })), PIPELINE_TIMEOUT_MS)),
   ]).catch((err: unknown) => {
     if (err != null && typeof err === "object" && (err as {code?:string}).code === "PIPELINE_TIMEOUT") {
       const t: PipelineExecuteResult = { status: "ok", allowed: false, summary: "Pipeline timeout", nextActions: ["retry"], guard: { allowed: false, summary: "timeout", checks_passed: [], confidence: 0 } as never, recommendedNextCalls: ["POST /api/guard/pre-x402"], bundleSavingsVsSeparateUsdc: 0 };
@@ -64,9 +64,11 @@ export async function runPipelineExecute(
     }
     throw err;
   });
+}
+
+async function _pipelineInner(
   input: PipelineExecuteInput,
 ): Promise<PipelineExecuteResult> {
-  
   const guard = await runPreX402Guard(input);
 
   const result: PipelineExecuteResult = {
