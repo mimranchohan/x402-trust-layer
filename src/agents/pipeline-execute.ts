@@ -45,10 +45,25 @@ const SEPARATE_GUARD_USDC = 0.16;
 const SEPARATE_PIPELINE_CORE_USDC = 0.27;
 
 /** Single paid call: guard + optional plan, failover, router, receipt audit hints. */
+const PIPELINE_TIMEOUT_MS = Number(process.env.PIPELINE_TIMEOUT_MS ?? "8000");
+
 export async function runPipelineExecute(
   input: PipelineExecuteInput,
 ): Promise<PipelineExecuteResult> {
-  const guard = await runPreX402Guard(input);
+  return Promise.race([
+    _pipelineInner(input),
+    new Promise((_, reject) => setTimeout(() => reject(Object.assign(new Error("t"), { code: "PIPELINE_TIMEOUT" })), PIPELINE_TIMEOUT_MS)),
+  ]).catch((err) => {
+    if (err && err.code === "PIPELINE_TIMEOUT") return { status: "ok", allowed: false, summary: "Pipeline timeout", nextActions: ["retry"], guard: { allowed: false, summary: "timeout", checks_passed: [], confidence: 0 }, recommendedNextCalls: ["POST /api/guard/pre-x402"], bundleSavingsVsSeparateUsdc: 0, refund_eligible: true };
+    throw err;
+  });
+}
+
+async function _pipelineInner(
+  input: PipelineExecuteInput,
+): Promise<PipelineExecuteResult> {
+  
+  const guard = await runPreX402Guard(input);const guard = await runPreX402Guard(input);
 
   const result: PipelineExecuteResult = {
     status: "ok",
