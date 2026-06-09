@@ -44,23 +44,28 @@ import { isKnownAgenticGateway, isExpectedAgenticGatewayProbeStatus } from "../l
 // Default mock implementations
 // ---------------------------------------------------------------------------
 const safeProbeResult = {
+  url: "https://api.example.com/agent",
   status: 402,
   requiresPayment: true,
+  authMode: "paid" as const,
   priceUsdc: 0.10,
-  headers: {},
+  network: "base",
+  payTo: "0xabcdef1234567890abcdef1234567890abcdef12",
+  paymentOptions: [],
+  warnings: [],
 };
 
 const safeSecurityResult = {
-  recommendations: [],
-  threats: [],
+  recommendations: [] as string[],
+  threats: [] as string[],
   score: 0,
-  grade: "A",
+  grade: "A" as const,
 };
 
 const safeMergedResult = {
   riskScore: 10,
-  securityGrade: "A",
-  combinedThreats: [],
+  securityGrade: "A" as const,
+  combinedThreats: [] as string[],
 };
 
 beforeEach(() => {

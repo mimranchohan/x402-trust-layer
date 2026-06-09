@@ -39,6 +39,7 @@ import { ensureVerifierProbeProtocol } from "./lib/verifier-probe-protocol.js";
 import { SUITE_VERSION } from "./lib/version.js";
 import { refreshFacilitatorExtras, startFacilitatorExtrasRefresh } from "./lib/facilitator-extra.js";
 import { rateLimitPerMinute, rateLimitUnpaidProbes, rateLimitAgentLookup } from "./lib/rate-limit.js";
+import { walletBlocklistMiddleware } from "./middleware/wallet-blocklist.js";
 
 /** Default per-IP hourly cap for free lookup endpoints. Override with RATE_LIMIT_AGENT_LOOKUP_PER_HOUR. */
 const AGENT_LOOKUP_DEFAULT_PER_HOUR = 60;
@@ -121,6 +122,7 @@ app.use("/api", (req, _res, next) => {
   next();
 });
 app.use("/api", replayBindingMiddleware);
+app.use("/api", walletBlocklistMiddleware());
 app.use("/api", attachPaymentIdentity);
 
 /** Trust Layer brand landing page — served to browsers at `/`; machines still get JSON. */
@@ -567,6 +569,7 @@ process.on("uncaughtException", (err) => {
   void shutdown("uncaughtException");
 });
 
-process.on("unhandledRejection", (err) => {
-  logger.error({ err }, "Unhandled rejection");
+process.on("unhandledRejection", (reason) => {
+  logger.error({ reason }, "Unhandled rejection");
+  void shutdown("unhandledRejection");
 });

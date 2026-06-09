@@ -46,8 +46,9 @@ function makeInput(overrides: Partial<SpendGovernorInput> = {}): SpendGovernorIn
 }
 
 beforeEach(() => {
+  vi.clearAllMocks();
   vi.mocked(getSpentToday).mockResolvedValue(0);
-  vi.mocked(recordSpend).mockResolvedValue(undefined);
+  vi.mocked(recordSpend).mockResolvedValue(0);
   vi.mocked(hostBlocked).mockReturnValue(false);
   vi.mocked(hostAllowed).mockReturnValue(true);
 });

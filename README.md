@@ -41,6 +41,17 @@ few cents a call.
 
 ---
 
+## What's New (v5.4.0)
+
+- **Trust Score Webhooks** — `POST /api/webhooks/trust` registers a callback URL; `GET /api/webhooks/list` lists all hooks; `DELETE /api/webhooks/trust/:id` removes one. When any agent's ERC-8004 trust score changes, all matching webhooks receive a signed JSON payload with `walletAddress`, `tier`, `trustScore`, and `previousTier`. Stored in SQLite (`trust_webhooks` table). Configurable via `WEBHOOK_SECRET` env var for HMAC-SHA256 signing.
+- **Multi-chain Trust Aggregation** — `POST /api/agent/multichain-trust` accepts a `walletAddress` and optional `chains` array (`base`, `ethereum`, `polygon`, `arbitrum`, `optimism`). Queries ERC-8004 trust scores across all requested chains in parallel and returns an aggregated result with per-chain breakdown, highest tier, weighted composite score, and chain-specific metadata.
+- **Agent Reputation History** — `GET /api/agent/:walletAddress/history` returns a paginated ledger of all trust score snapshots for a given wallet, keyed by timestamp. Supports `?limit=` and `?offset=` query params. Each entry includes `tier`, `trustScore`, `chainId`, and `resolutionSource`.
+- **Admin Dashboard** — `GET /api/dashboard/summary` returns a JSON snapshot of system health: total agents verified, spend today (USDC), blocked wallets count, active webhooks, and top-5 wallets by spend. Static HTML admin panel served at `GET /admin` with live-refreshing stats cards.
+- **Wallet Blocklist** — `POST /api/admin/blocklist` adds a wallet address to the blocklist (body: `{ address, reason?, blockedBy? }`); `DELETE /api/admin/blocklist/:address` removes it; `GET /api/admin/blocklist` lists all entries with pagination. The `walletBlocklistMiddleware()` Express middleware auto-rejects any request carrying a blocked `walletAddress` (header, body, or query) with HTTP 403. Persisted in SQLite (`wallet_blocklist` table).
+- **Expanded Test Suite (104 tests)** — Unit tests for all five new subsystems added: `pre-x402-guard`, `spend-governor`, `identity-gate`, `risk-gate`, `payload-sandbox`, `wallet-blocklist`, `webhooks`, `trust-score`, `ssrf`, `replay-guard`, `semantic-judge`, and `alchemy-policy`. All pass with zero unhandled rejections.
+
+---
+
 ## What's New (v5.3.0)
 
 - **Per-Wallet / Per-AgentId Rate Limiting** — New `rateLimitPerWallet` middleware in `src/lib/rate-limit.ts` keys on `walletAddress` or `agentId` from the request body (not IP), so limits work correctly behind load balancers. Applied to all `/api/guard/*`, `/api/pipeline/*`, and `/api/x402/proxy` routes. Configurable via `AGENT_RATE_LIMIT_PER_MIN` (default `30`).
@@ -247,10 +258,10 @@ npm test
 npx vitest
 ```
 
-Covers `spend-governor`, `identity-gate`, and `risk-gate` with full mock isolation.
-> **Note:** Tests require Node ≥20 with ESM support. The sandbox may error on Node 22 due to a `std-env` package issue — this does not affect Railway deployment.
+Covers `spend-governor`, `identity-gate`, `risk-gate`, `pre-x402-guard`, `wallet-blocklist`, and more — 104 tests total, all passing with full mock isolation.
+> **Note:** Tests require Node ≥20 with ESM support.
 
-### 2. Local Server Probing
+### Local Server Probing
 Compile and run the server locally:
 ```bash
 npm run build

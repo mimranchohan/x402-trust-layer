@@ -10,6 +10,8 @@ import { registerAlchemyRoutes } from "./alchemy-routes.js";
 import { registerSolanaRoutes } from "./solana-routes.js";
 import { registerOtherRoutes } from "./other-routes.js";
 import { registerCoreAgentRoutes } from "./core-agent-routes.js";
+import { registerAdminDashboard } from "./admin-dashboard.js";
+import { registerBlocklistRoutes } from "../middleware/wallet-blocklist.js";
 
 export function registerRoutes(
   app: Express,
@@ -27,6 +29,8 @@ export function registerRoutes(
   registerSolanaRoutes(ctx);
   registerOtherRoutes(ctx);
 
+  registerAdminDashboard(app);
+  registerBlocklistRoutes(app);
   registerProtocolRoutes(app, paid, asyncRoute);
 
   return ctx.postHandlers;

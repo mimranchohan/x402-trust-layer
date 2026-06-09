@@ -33,7 +33,7 @@ function isSolanaAddress(addr: string): boolean {
 
 export async function runIdentityGate(input: IdentityGateInput): Promise<IdentityGateResult> {
   const reasons: string[] = [];
-  let riskScore = 10;
+  let riskScore = 25;
   const addr = input.walletAddress.trim();
 
   if (!isSolanaAddress(addr) && !isEvmAddress(addr)) {

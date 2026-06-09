@@ -5,6 +5,8 @@ import { runIdentityGate } from "../agents/identity-gate.js";
 import { runRiskGate } from "../agents/risk-gate.js";
 import { runPaymentIntentCompiler } from "../agents/payment-intent-compiler.js";
 import { runMppSessionBroker } from "../agents/mpp-session-broker.js";
+import { aggregateMultiChainTrust, type SupportedChain } from "../agents/multichain-trust.js";
+import { getReputationHistory, getLatestReputation } from "../lib/reputation-store.js";
 import { pricing } from "../config.js";
 import { parseWithVerifierFallback } from "../lib/parse-with-verifier-fallback.js";
 import { policySchema } from "./schemas.js";
@@ -118,6 +120,79 @@ export function registerCoreAgentRoutes(ctx: RouteContext) {
       );
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       res.json(runMppSessionBroker(parsed.data));
+    },
+  );
+
+  // -----------------------------------------------------------------------
+  // Multi-chain trust aggregation
+  // -----------------------------------------------------------------------
+
+  ctx.app.get(
+    "/api/agent/multichain-trust",
+    async (req: Request, res: Response): Promise<void> => {
+      const wallet = typeof req.query.wallet === "string" ? req.query.wallet.trim() : "";
+      if (!wallet) {
+        res.status(400).json({ error: "wallet query parameter required (EVM address)" });
+        return;
+      }
+
+      const skipCache = req.query.skipCache === "true" || req.query.skipCache === "1";
+
+      // Optional chain filter: ?chains=base,ethereum
+      const chainsRaw = typeof req.query.chains === "string" ? req.query.chains : "";
+      const VALID: SupportedChain[] = ["base", "ethereum", "polygon", "arbitrum"];
+      const chains: SupportedChain[] | undefined = chainsRaw
+        ? (chainsRaw
+            .split(",")
+            .map((c) => c.trim().toLowerCase())
+            .filter((c): c is SupportedChain => VALID.includes(c as SupportedChain)) as SupportedChain[])
+        : undefined;
+
+      if (chainsRaw && (!chains || chains.length === 0)) {
+        res.status(400).json({
+          error: `Invalid chains filter. Supported: ${VALID.join(", ")}`,
+        });
+        return;
+      }
+
+      const result = await aggregateMultiChainTrust(wallet, { skipCache, chains });
+      res.json({ ok: true, ...result });
+    },
+  );
+
+  // -----------------------------------------------------------------------
+  // Agent Reputation History  GET /api/agent/:walletAddress/history
+  // -----------------------------------------------------------------------
+
+  ctx.app.get(
+    "/api/agent/:walletAddress/history",
+    (req: Request, res: Response): void => {
+      const { walletAddress } = req.params;
+      if (!walletAddress || walletAddress.trim().length < 16) {
+        res.status(400).json({ error: "Invalid walletAddress" });
+        return;
+      }
+
+      const limit = Math.min(
+        Number.isFinite(Number(req.query.limit)) ? Number(req.query.limit) : 50,
+        200,
+      );
+      const offset = Number.isFinite(Number(req.query.offset)) ? Number(req.query.offset) : 0;
+      const chain = typeof req.query.chain === "string" ? req.query.chain.trim() || undefined : undefined;
+
+      const { entries, total } = getReputationHistory(walletAddress, { limit, offset, chain });
+      const latest = getLatestReputation(walletAddress);
+
+      res.json({
+        ok: true,
+        walletAddress: walletAddress.trim().toLowerCase(),
+        total,
+        limit,
+        offset,
+        latestTier: latest?.tier ?? null,
+        latestScore: latest?.trustScore ?? null,
+        history: entries,
+      });
     },
   );
 }

@@ -9,6 +9,11 @@ import {
   registerWebhook,
   type WebhookEvent,
 } from "./webhooks.js";
+import {
+  deactivateTrustWebhook,
+  listTrustWebhooks,
+  registerTrustWebhook,
+} from "./trust-events.js";
 import { requireWebhookAdmin } from "./webhook-auth.js";
 
 function isProduction(): boolean {
@@ -122,5 +127,51 @@ export function registerWebhookRoutes(app: Express): void {
       parsed.data.fleetId,
     );
     res.json({ ok: true, ...result });
+  });
+
+  // ------------------------------------------------------------------
+  // Trust-tier webhook subscriptions
+  // ------------------------------------------------------------------
+
+  /** POST /api/webhooks/trust — subscribe to tier.changed events */
+  app.post("/api/webhooks/trust", (req: Request, res: Response) => {
+    if (!requireWebhookAdmin(req, res)) return;
+    const parsed = z
+      .object({ url: z.string().url() })
+      .safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.flatten() });
+      return;
+    }
+    try {
+      const sub = registerTrustWebhook(parsed.data.url);
+      res.status(201).json({
+        ok: true,
+        subscription: { id: sub.id, url: sub.url, createdAt: sub.createdAt },
+        secret: sub.secret,
+        note: "POST to this URL on tier.changed; signed with x-hub-signature-256 (HMAC-SHA256).",
+      });
+    } catch (err) {
+      const msg = err instanceof UnsafeUrlError ? err.message : "Invalid webhook URL";
+      res.status(400).json({ error: msg });
+    }
+  });
+
+  /** GET /api/webhooks/trust — list active trust-tier subscriptions */
+  app.get("/api/webhooks/trust", (req: Request, res: Response) => {
+    if (!requireWebhookAdmin(req, res)) return;
+    const subs = listTrustWebhooks();
+    res.json({ ok: true, count: subs.length, subscriptions: subs.map((s) => ({ id: s.id, url: s.url, createdAt: s.createdAt })) });
+  });
+
+  /** DELETE /api/webhooks/trust/:id — deactivate a trust-tier subscription */
+  app.delete("/api/webhooks/trust/:id", (req: Request, res: Response) => {
+    if (!requireWebhookAdmin(req, res)) return;
+    const ok = deactivateTrustWebhook(req.params.id);
+    if (!ok) {
+      res.status(404).json({ error: "Trust webhook subscription not found" });
+      return;
+    }
+    res.json({ ok: true, deactivated: req.params.id });
   });
 }

@@ -221,12 +221,18 @@ describe("runPreX402Guard", () => {
       new Promise(() => {}),
     );
 
-    const promise = runPreX402Guard(makeInput());
+    const guardPromise = runPreX402Guard(makeInput());
+
+    // Attach the rejection handler BEFORE advancing fake timers.
+    // Without this, guardPromise rejects inside advanceTimersByTimeAsync and
+    // vitest flags it as an unhandled rejection (no .catch attached yet).
+    const assertion = expect(guardPromise).rejects.toThrow(
+      /pre-x402-guard timed out after 12000ms/i,
+    );
 
     // Advance past the 12 000 ms default GUARD_TIMEOUT_MS
     await vi.advanceTimersByTimeAsync(13_000);
-
-    await expect(promise).rejects.toThrow(/pre-x402-guard timed out after 12000ms/i);
+    await assertion;
 
     // Restore real timers + default mock so subsequent tests don't inherit the hanging Promise
     vi.useRealTimers();
