@@ -22,3 +22,12 @@ docs/sales/videos/**/*.mp4
 docs/sales/videos/scripts/
 docs/sales/videos/recorder.html
 docs/sales/videos/ASSETS.md
+# temp/test files
+*.txt
+node
+npm
+tsx
+x402-trust-layer@*
+scratch/
+x402gle-*audition*.json
+full-audition.json
