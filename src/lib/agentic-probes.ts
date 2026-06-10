@@ -36,8 +36,8 @@ function paidGetProbe(core: RequestHandler): RequestHandler {
 }
 
 /**
- * x402gle/Dexter often pay for GET after 402. Mount the same core handler as POST
- * (payment verified on GET only — no second x402 middleware).
+ * Agentic / Bazaar crawlers often pay for GET after 402.
+ * Mount the same core handler as POST (payment verified on GET only).
  */
 export function registerAgenticProbes(
   app: Express,
@@ -52,7 +52,11 @@ export function registerAgenticProbes(
     if (!core) continue;
 
     const amount = ep.price.replace(/^\$/, "");
-    const description = `x402 paid probe for ${path} — GET/HEAD returns same JSON as POST`;
+    // Skip free or non-numeric prices - they have no x402 gate
+    const amountNum = parseFloat(amount);
+    if (!amount || isNaN(amountNum) || amountNum <= 0) continue;
+
+    const description = "x402 probe: " + path;
     const paidMw = paid(amount, description);
 
     app.get(path, paidMw, paidGetProbe(core));
