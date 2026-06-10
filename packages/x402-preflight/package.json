@@ -1,7 +1,7 @@
 {
   "name": "x402-agent-suite-preflight",
-  "version": "1.3.0",
-  "description": "Default preflight helper — calls x402 Agent Suite proxy before paid API calls",
+  "version": "1.4.0",
+  "description": "Drop-in preflight guard for AI agents — one call to the x402 Trust Layer (guard + security grade + attestation) before any paid x402_fetch. Works with any agent framework (LangChain, CrewAI, Coinbase AgentKit).",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -12,7 +12,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "peerDependencies": {
     "@dexterai/x402": ">=2.0.0"
@@ -27,17 +28,25 @@
   },
   "keywords": [
     "x402",
-    "agent",
+    "ai-agents",
+    "agentic-payments",
     "preflight",
+    "guard",
+    "trust-layer",
     "dexter",
-    "trust-layer"
+    "usdc",
+    "langchain",
+    "agentkit"
   ],
   "author": "Mimran Chohan",
   "homepage": "https://x402trustlayer.xyz",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mimranchohan/x402-trust-layer/issues"
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mimranchohan/x402-agent-suite.git",
+    "url": "git+https://github.com/mimranchohan/x402-trust-layer.git",
     "directory": "packages/x402-preflight"
   }
 }

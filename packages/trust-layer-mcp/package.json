@@ -1,7 +1,7 @@
 {
   "name": "@mimranakb/trust-layer-mcp",
-  "version": "5.2.0",
-  "description": "MCP server — Trust Layer v4 protocol tools (full-trust pipeline, trust v2, fraud, PoE, credit bureau, semantic settle)",
+  "version": "5.5.0",
+  "description": "MCP server for the x402 Trust Layer — 13 agent-payment trust tools (preflight guard, KYM merchant score, mandate diff, semantic escrow, receipt audit, Agent Trust Protocol v4: passport, fraud scan, credit score). Pay-per-call in USDC over x402; no API keys.",
   "type": "module",
   "bin": {
     "x402trustlayer-mcp": "dist/index.js"
@@ -22,14 +22,31 @@
     "@types/node": "^22.13.10",
     "typescript": "^5.8.2"
   },
-  "keywords": ["x402", "mcp", "trust-layer", "agent"],
+  "keywords": [
+    "x402",
+    "mcp",
+    "model-context-protocol",
+    "trust-layer",
+    "ai-agents",
+    "agentic-payments",
+    "usdc",
+    "erc-8004",
+    "agent-trust-protocol",
+    "dexter",
+    "base",
+    "solana"
+  ],
   "license": "MIT",
+  "author": "Mimran Chohan",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mimranchohan/x402-trust-layer.git",
+    "url": "git+https://github.com/mimranchohan/x402-trust-layer.git",
     "directory": "packages/trust-layer-mcp"
   },
   "homepage": "https://x402trustlayer.xyz",
+  "bugs": {
+    "url": "https://github.com/mimranchohan/x402-trust-layer/issues"
+  },
   "publishConfig": {
     "access": "public"
   }

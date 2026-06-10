@@ -40,7 +40,7 @@ const policySchema = z.object({
 
 const server = new McpServer({
   name: "x402-trust-layer",
-  version: "5.0.0",
+  version: "5.5.0",
 });
 
 server.tool(
@@ -305,7 +305,7 @@ server.tool(
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("[x402-trust-layer-mcp] v3 ready — base=" + BASE);
+  console.error("[x402-trust-layer-mcp] v5.5.0 ready — base=" + BASE);
 }
 
 main().catch((err) => {

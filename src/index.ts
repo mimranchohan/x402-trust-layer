@@ -145,6 +145,12 @@ app.get("/dashboard", (_req, res) => {
   res.sendFile(join(process.cwd(), "public", "dashboard.html"));
 });
 
+/** Public status page — reads live /health. */
+app.get("/status", (_req, res) => {
+  res.setHeader("Cache-Control", "public, max-age=30");
+  res.sendFile(join(process.cwd(), "public", "status.html"));
+});
+
 /** Static public files (landing.js, data, assets). index.html served via GET / negotiation. */
 app.use(
   express.static(join(process.cwd(), "public"), {
