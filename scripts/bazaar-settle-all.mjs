@@ -23,40 +23,34 @@ const delayMs = Number(process.env.DELAY_MS ?? 2500);
 const useCdp = process.env.USE_CDP_FACILITATOR === "1";
 const out = join(dirname(fileURLToPath(import.meta.url)), "bazaar-settle-result.json");
 
-const CDP_FACILITATOR_URL = "https://api.cdp.coinbase.com/platform/v2/x402/facilitator";
+const CDP_FACILITATOR_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 
 // ────────────────────────────────────────────────
 // CDP JWT helpers (standalone -- no TS imports)
 // Ed25519 / EdDSA signing (CDP API key algorithm)
+//
+// CDP Ed25519 key format: base64-encoded 64 bytes
+//   = seed(32 bytes) || pubkey(32 bytes)
+// Load via JWK OKP — NOT PEM format.
 // ────────────────────────────────────────────────
-
-function normalizePem(raw) {
-  // Handle \\n escaped newlines (Railway env vars)
-  let pem = raw.includes("\\n") ? raw.replace(/\\n/g, "\n") : raw;
-  // Handle base64-encoded PEM (decode first)
-  if (!pem.includes("-----BEGIN")) {
-    try {
-      const decoded = Buffer.from(pem, "base64").toString("utf8");
-      if (decoded.includes("-----BEGIN")) pem = decoded;
-    } catch { /* not base64, use as-is */ }
-  }
-  return pem;
-}
 
 function buildCdpJwt(keyId, privateKeyRaw, reqMethod, url) {
   const urlObj = new URL(url);
   const uri = reqMethod.toUpperCase() + " " + urlObj.host + urlObj.pathname;
   const now = Math.floor(Date.now() / 1000);
   const nonce = crypto.randomBytes(16).toString("hex");
-  // Ed25519 key => EdDSA algorithm
   const headerObj = { alg: "EdDSA", kid: keyId, nonce, typ: "JWT" };
-  const payloadObj = { iss: "coinbase-cloud", nbf: now, exp: now + 120, sub: keyId, uri };
+  const payloadObj = { iss: "cdp", aud: ["cdp_service"], nbf: now, exp: now + 120, sub: keyId, uri };
   const headerB64 = Buffer.from(JSON.stringify(headerObj)).toString("base64url");
   const payloadB64 = Buffer.from(JSON.stringify(payloadObj)).toString("base64url");
   const sigInput = headerB64 + "." + payloadB64;
-  const pem = normalizePem(privateKeyRaw);
-  const privateKey = crypto.createPrivateKey({ key: pem, format: "pem" });
-  // Ed25519: sign(null, data, key) — no hash algorithm needed
+  // CDP key is base64-encoded 64 bytes: first 32 = Ed25519 seed
+  const rawKey = Buffer.from(privateKeyRaw.trim(), "base64");
+  const seed = rawKey.slice(0, 32);
+  const privateKey = crypto.createPrivateKey({
+    key: { kty: "OKP", crv: "Ed25519", d: seed.toString("base64url") },
+    format: "jwk",
+  });
   const rawSig = crypto.sign(null, Buffer.from(sigInput), privateKey);
   return sigInput + "." + rawSig.toString("base64url");
 }
@@ -124,15 +118,20 @@ if (useCdp) {
   installCdpFetchInterceptor();
   console.log("[cdp] JWT fetch interceptor installed");
 
-  const { wrapFetch } = await import("@dexterai/x402/client");
+  // Build viem account + ExactEvmScheme + x402Client
+  const { privateKeyToAccount } = await import("viem/accounts");
+  const { ExactEvmScheme, registerExactEvmScheme } = await import("@x402/evm/exact/client");
+  const { x402Client, wrapFetchWithPayment } = await import("@x402/fetch");
 
-  const x402Fetch = wrapFetch(fetch, {
-    evmPrivateKey: evmKey,
-    facilitatorUrl: CDP_FACILITATOR_URL,
-    preferredNetwork: "eip155:8453",
-    verbose: true,
-  });
-  console.log("[cdp] x402 fetch wrapper ready\n");
+  const normalizedKey = evmKey.startsWith("0x") ? evmKey : "0x" + evmKey;
+  const account = privateKeyToAccount(/** @type {`0x${string}`} */ (normalizedKey));
+  console.log("[cdp] EVM account:", account.address);
+
+  const client = new x402Client();
+  registerExactEvmScheme(client, { signer: account });
+
+  const x402Fetch = wrapFetchWithPayment(fetch, client);
+  console.log("[cdp] x402 fetch wrapper ready (CDP facilitator:", CDP_FACILITATOR_URL, ")\n");
 
   for (const url of urls) {
     process.stdout.write(url + " ... ");
@@ -195,9 +194,4 @@ const summary = {
   at: new Date().toISOString(),
   total: results.length,
   settled: results.filter((r) => r.settled).length,
-  failed: results.filter((r) => !r.settled).length,
-  results,
-};
-writeFileSync(out, JSON.stringify(summary, null, 2), "utf8");
-console.log("\nDone: " + summary.settled + "/" + summary.total + " settled (" + summary.mode + "). Wrote " + out);
-if (summary.failed) process.exit(1);
+  failed: results.filter(

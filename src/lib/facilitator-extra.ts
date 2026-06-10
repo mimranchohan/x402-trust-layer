@@ -7,48 +7,30 @@ import { logger } from "./logger.js";
 // ─── CDP JWT Auth ──────────────────────────────────────────────────────────────
 
 /**
- * Convert DER-encoded ECDSA signature to raw R||S format (IEEE P1363) for JWT ES256.
- * Node.js crypto.createSign() returns DER; JWT spec requires raw 64-byte R||S.
+ * Build a CDP API Key JWT (EdDSA / Ed25519) for authenticating to api.cdp.coinbase.com.
+ *
+ * CDP Ed25519 key format: base64-encoded 64 bytes = seed(32) || pubkey(32).
+ * We load it as a JWK OKP key using only the 32-byte seed.
  */
-function derEcdsaToJwtSig(der: Buffer): Buffer {
-  let pos = 2;
-  if (der[1] & 0x80) pos += der[1] & 0x7f;
-  pos++;
-  const rLen = der[pos++];
-  let r: Buffer = der.slice(pos, pos + rLen);
-  pos += rLen;
-  pos++;
-  const sLen = der[pos++];
-  let s: Buffer = der.slice(pos, pos + sLen);
-  while (r.length > 32 && r[0] === 0x00) r = r.slice(1);
-  while (s.length > 32 && s[0] === 0x00) s = s.slice(1);
-  const out = Buffer.alloc(64);
-  r.copy(out, 32 - r.length);
-  s.copy(out, 64 - s.length);
-  return out;
-}
-
-/**
- * Build a CDP API Key JWT (ES256) for authenticating to api.cdp.coinbase.com.
- */
-function buildCdpJwt(keyId: string, privateKeyPem: string, method: string, url: string): string {
+function buildCdpJwt(keyId: string, keySecret: string, method: string, url: string): string {
   const urlObj = new URL(url);
   const uri = `${method.toUpperCase()} ${urlObj.host}${urlObj.pathname}`;
   const now = Math.floor(Date.now() / 1000);
   const nonce = crypto.randomBytes(16).toString("hex");
-  const headerObj = { alg: "ES256", kid: keyId, nonce, typ: "JWT" };
-  const payloadObj = { iss: "coinbase-cloud", nbf: now, exp: now + 120, sub: keyId, uri };
+  const headerObj = { alg: "EdDSA", kid: keyId, nonce, typ: "JWT" };
+  const payloadObj = { iss: "cdp", aud: ["cdp_service"], nbf: now, exp: now + 120, sub: keyId, uri };
   const headerB64 = Buffer.from(JSON.stringify(headerObj)).toString("base64url");
   const payloadB64 = Buffer.from(JSON.stringify(payloadObj)).toString("base64url");
   const sigInput = `${headerB64}.${payloadB64}`;
-  const pem = privateKeyPem.includes("\\n")
-    ? privateKeyPem.replace(/\\n/g, "\n")
-    : privateKeyPem;
-  const privateKey = crypto.createPrivateKey({ key: pem, format: "pem" });
-  const sign = crypto.createSign("SHA256");
-  sign.update(sigInput);
-  const derSig = sign.sign(privateKey);
-  const rawSig = derEcdsaToJwtSig(derSig);
+  // CDP key is base64-encoded 64 bytes: first 32 = Ed25519 seed
+  const rawKey = Buffer.from(keySecret.trim(), "base64");
+  const seed = rawKey.slice(0, 32);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const privateKey = crypto.createPrivateKey({
+    key: { kty: "OKP", crv: "Ed25519", d: seed.toString("base64url") } as any,
+    format: "jwk",
+  });
+  const rawSig = crypto.sign(null, Buffer.from(sigInput), privateKey);
   return `${sigInput}.${rawSig.toString("base64url")}`;
 }
 

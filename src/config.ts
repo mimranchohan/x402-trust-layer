@@ -82,7 +82,7 @@ export function isAllowedNetwork(caip2Network: string): boolean {
 
 /** CDP facilitator -- required for CDP Bazaar catalog indexing on agentic.market */
 export const CDP_FACILITATOR_URL =
-  "https://api.cdp.coinbase.com/platform/v2/x402/facilitator";
+  "https://api.cdp.coinbase.com/platform/v2/x402";
 
 const ALLOWED_FACILITATOR_ORIGINS = new Set([
   "https://x402.dexter.cash",

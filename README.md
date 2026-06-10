@@ -13,12 +13,17 @@
 <a href="https://dexter.cash/sellers/9c7tE587KpGYBjiNQrjw3nGvxQHhSYKU4Ba6WRgQsHkt"><img src="https://img.shields.io/badge/Dexter-seller-green" alt="Dexter"/></a>
 <a href="https://www.npmjs.com/package/x402-trust-layer"><img src="https://img.shields.io/badge/npm-x402--trust--layer-CB3837" alt="npm"/></a>
 <a href="https://github.com/mimranchohan/x402-trust-layer"><img src="https://img.shields.io/badge/GitHub-x402--trust--layer-24292f" alt="github"/></a>
+<img src="https://img.shields.io/badge/version-v5.5.0-blue" alt="v5.5.0"/>
+<img src="https://img.shields.io/badge/Stripe-x402%20Compatible-635BFF" alt="Stripe x402"/>
+<img src="https://img.shields.io/badge/A2A-v1.2-4285F4" alt="A2A v1.2"/>
+<img src="https://img.shields.io/badge/ERC--8004-mainnet-orange" alt="ERC-8004 mainnet"/>
+<img src="https://img.shields.io/badge/Wallet%20Sessions-enabled-16C7C0" alt="Wallet Sessions"/>
 </p>
 
 ---
 
-> **x402 Trust Layer** *(x402 Agent Suite Pro)* — **57 paid x402 APIs** (63 total endpoints) for guard,
-> attestation, caching, compliance, settlement, and **Agent Trust Protocol v4**. Live at **https://x402trustlayer.xyz**
+> **x402 Trust Layer** *(x402 Agent Suite Pro)* — **59 paid x402 APIs** (67 total endpoints) for guard,
+> attestation, caching, compliance, settlement, **Wallet Sessions**, and **Agent Trust Protocol v4**. Live at **https://x402trustlayer.xyz**
 
 A control plane for autonomous agent commerce. Fifty-seven paid x402 APIs that an
 AI agent calls *before, during, and after* it spends money — to decide whether a
@@ -38,6 +43,17 @@ few cents a call.
 | **03. Performance** | Tamper-Proof 10x faster caching for on-chain identity & reputation | `/api/agent/verify` (uses memory registry TTL cache) |
 | **04. Compliance** | Ledgers, evidence bundles, dispute resolution, refund auditing | `/api/compliance/ledger` · `/api/dispute/resolve` · `/api/refund-arbiter/evaluate` |
 | **05. Settlement Ops** | Rail optimization, metered sessions, escrows, receipt auditing | `/api/rail-optimizer/route` · `/api/escrow/metered/*` · `/api/receipt-auditor/verify` |
+
+---
+
+## What's New (v5.5.0)
+
+- **x402 V2 Header Compatibility** — Full [CAIP-2](https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md) chain ID support (`eip155:8453`, `eip155:137`, `solana:5eykt4...`). The `accepts` array now carries structured multi-stablecoin objects per the x402 V2 spec — compatible with Stripe x402 (Feb 2026), AWS Bedrock AgentCore Payments, and Travala's MCP integration.
+- **Wallet Sessions** — Pay **$0.10 USDC** once → receive an HMAC-signed session token → attach `x-session-token` header on subsequent calls to skip per-call settlement. Sessions expire after 24 h (configurable), support `max_calls` caps, and persist in SQLite (`wallet_sessions` table). Four new endpoints: `POST /api/session/create`, `GET /api/session/verify`, `DELETE /api/session/revoke`, `GET /api/session/info`.
+- **ERC-8004 Mainnet Live Registry** — Agent identity and reputation registries on Base mainnet (`0x8004A169…` and `0x8004BAa1…`). Joins the [16,500+ verified agents](https://eips.ethereum.org/EIPS/eip-8004) already on-chain since the ERC-8004 ratification (Jan 29, 2026). Responses cached with 120 s TTL for sub-15 ms lookup.
+- **A2A v1.2 Signed Agent Cards** — `GET /.well-known/agent.json` now returns an A2A protocol v1.2 agent card signed with `x-agent-card-signature` (HMAC-SHA256). Advertises wallet sessions, ERC-8004 registry, multi-stablecoin `accepts`, and all 59 paid capabilities. Compatible with Azure AI Foundry, Amazon Bedrock, and Google Cloud A2A native integrations.
+- **Multi-Stablecoin Fallback** — Full EURC (MiCA/EU compliance), PYUSD (Stripe regulated), and USDT (tertiary) support on Base and Polygon, alongside primary USDC. The `availableStablecoins(chain)` helper and `/api/session/create` accept any of the four coins.
+- **x402 Discovery Endpoint** — `GET /.well-known/x402.json` returns a fully-structured x402 V2 discovery manifest: CAIP-2 chain IDs, multi-stablecoin accepts array, wallet session terms, ERC-8004 registry links, and endpoint catalog.
 
 ---
 
@@ -120,6 +136,10 @@ This suite is the missing *judgement and security plane* for autonomous agent co
 - `POST /api/merchant-trust/certify` ($0.15) — Certifies seller host with trust badges and virtual bonds.
 
 ### 3. Escrow, Sessions & Settlement
+- `POST /api/session/create` ($0.10) — Pay once, receive an HMAC-signed session token valid for 24 h (or `max_calls`). Attach as `x-session-token` header to skip per-call settlement on subsequent requests.
+- `GET /api/session/verify` ($0.01) — Validates a session token and returns remaining TTL and call count.
+- `DELETE /api/session/revoke` (Free) — Immediately revokes a session token.
+- `GET /api/session/info` (Free) — Debug: returns raw session record for a token.
 - `POST /api/mpp/session` ($0.03) — Opens, queries, or closes batch micropayment sessions.
 - `POST /api/escrow/metered/open` ($0.05) — Establishes a usage-based micro-billing session.
 - `POST /api/escrow/metered/charge` ($0.01) — Micro-charges active metered budget and checks overdrafts.
