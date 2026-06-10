@@ -91,3 +91,27 @@ export function getEscrowFromDb(id: string): EscrowRecord | null {
     return null;
   }
 }
+
+const releaseEscrowStmt = db.prepare(`
+  UPDATE escrow_records
+     SET status = 'released', released_at = ?, payload = ?
+   WHERE escrow_id = ? AND status = 'pending'
+`);
+
+/**
+ * Atomically transition an escrow from `pending` to `released`.
+ * The conditional `WHERE status = 'pending'` guarantees that under concurrent
+ * release attempts only ONE writer succeeds (changes === 1); all others get null.
+ */
+export function releaseEscrowInDb(id: string, releasedAtIso: string): EscrowRecord | null {
+  const current = getEscrowFromDb(id);
+  if (!current || current.status !== "pending") return null;
+  const released: EscrowRecord = { ...current, status: "released", releasedAt: releasedAtIso };
+  const info = releaseEscrowStmt.run(
+    Math.floor(new Date(releasedAtIso).getTime() / 1000),
+    JSON.stringify(released),
+    id,
+  );
+  if (info.changes !== 1) return null;
+  return released;
+}

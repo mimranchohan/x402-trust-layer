@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>x402 Trust Layer — Agent Features Dashboard</title>
+<meta name="description" content="Live dashboard of all x402 Trust Layer AI-agent features: 68 endpoints across Guard, Attestation, Compliance and Settlement. Prices, tiers, and copy-ready curl per endpoint."/>
+<link rel="icon" href="/assets/x402-trustlayer-logo.png"/>
+<style>
+  :root{
+    --bg:#0a0e0f; --panel:#101718; --panel2:#0d1314; --line:#1c2829;
+    --txt:#e6f0ef; --muted:#8aa3a1; --dim:#5d7472;
+    --teal:#16C7C0; --teal2:#0fa39d;
+    --blue:#3B82F6; --purple:#8B5CF6; --green:#34D399; --amber:#F5A623;
+    --orange:#F97316; --violet:#A78BFA; --pink:#E879F9; --gold:#FBBF24;
+    --radius:14px; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 600px at 80% -10%,rgba(22,199,192,.08),transparent),var(--bg);color:var(--txt);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:var(--teal);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1240px;margin:0 auto;padding:0 22px}
+  .mono{font-family:var(--mono)}
+
+  header.top{border-bottom:1px solid var(--line);background:rgba(10,14,15,.85);backdrop-filter:blur(8px);position:sticky;top:0;z-index:40}
+  .top-row{display:flex;align-items:center;gap:16px;padding:14px 0;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--teal);box-shadow:0 0 12px var(--teal)}
+  .live-badge{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:6px 12px}
+  .live-badge .pulse{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 1.8s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .top-links{margin-left:auto;display:flex;gap:16px;font-size:13px;flex-wrap:wrap}
+
+  h1{font-size:26px;margin:26px 0 4px}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 22px}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:18px 0 10px}
+  .stat{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+  .stat .k{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim)}
+  .stat .v{font-size:28px;font-weight:700;margin-top:6px}
+  .stat .v small{font-size:14px;color:var(--muted);font-weight:500}
+
+  .meta-strip{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 20px;font-size:12px;color:var(--muted)}
+  .meta-strip .pill{border:1px solid var(--line);border-radius:8px;padding:5px 10px;background:var(--panel2)}
+  .meta-strip .pill b{color:var(--txt);font-weight:600}
+
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0 14px}
+  .search{flex:1;min-width:200px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px 14px;color:var(--txt);font-family:var(--mono);font-size:13px}
+  .search::placeholder{color:var(--dim)}
+  .seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .seg button{background:transparent;color:var(--muted);border:0;padding:10px 14px;font-size:13px;cursor:pointer}
+  .seg button.active{background:var(--teal);color:#04201f;font-weight:600}
+
+  .tiers{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+  .pill-btn{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:7px 14px;font-size:12.5px;cursor:pointer;transition:.15s}
+  .pill-btn:hover{border-color:var(--teal2);color:var(--txt)}
+  .pill-btn.active{background:var(--teal);color:#04201f;border-color:var(--teal);font-weight:600}
+
+  .layer-section{margin:26px 0}
+  .layer-head{display:flex;align-items:center;gap:12px;margin:0 0 12px}
+  .layer-num{font-family:var(--mono);font-size:13px;color:var(--teal);border:1px solid var(--teal2);border-radius:8px;padding:4px 9px}
+  .layer-head h2{font-size:18px;margin:0}
+  .layer-head .ct{margin-left:auto;font-size:12px;color:var(--dim)}
+  .layer-desc{color:var(--muted);font-size:13px;margin:0 0 14px}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+  .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:10px;transition:.15s}
+  .card:hover{border-color:var(--teal2);transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .card-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .tier-chip{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;border:1px solid;border-radius:6px;padding:3px 8px;font-weight:600}
+  .price{font-family:var(--mono);font-weight:700;font-size:15px}
+  .price.free{color:var(--green)}
+  .card h3{margin:0;font-size:15px}
+  .route{font-family:var(--mono);font-size:12px;color:var(--muted);word-break:break-all}
+  .route .m{color:var(--teal);font-weight:600}
+  .summary{font-size:13px;color:var(--muted);margin:0}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-size:11px;color:var(--dim);border:1px solid var(--line);border-radius:6px;padding:2px 7px}
+  .card-actions{display:flex;gap:8px;margin-top:auto;padding-top:6px}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:7px 11px;font-size:12px;cursor:pointer;transition:.15s}
+  .btn:hover{border-color:var(--teal2)}
+  .btn.copied{background:var(--green);color:#04201f;border-color:var(--green)}
+
+  .barwrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin:8px 0 24px}
+  .barwrap h3{margin:0 0 14px;font-size:14px;color:var(--txt)}
+  .bar-row{display:flex;align-items:center;gap:12px;margin:9px 0;font-size:13px}
+  .bar-row .lbl{width:120px;color:var(--muted);flex-shrink:0}
+  .bar-track{flex:1;background:var(--panel2);border-radius:6px;height:14px;overflow:hidden;border:1px solid var(--line)}
+  .bar-fill{height:100%;background:linear-gradient(90deg,var(--teal2),var(--teal));border-radius:6px}
+  .bar-row .val{width:54px;text-align:right;font-family:var(--mono);color:var(--txt)}
+
+  .empty{color:var(--muted);padding:40px;text-align:center;border:1px dashed var(--line);border-radius:var(--radius)}
+  footer{border-top:1px solid var(--line);margin-top:40px;padding:22px 0;color:var(--dim);font-size:12.5px}
+  .err{color:#ff8080;background:rgba(255,80,80,.08);border:1px solid rgba(255,80,80,.3);border-radius:10px;padding:14px;margin:14px 0;font-size:13px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-row">
+    <div class="brand"><span class="dot"></span> x402 Trust Layer</div>
+    <span class="live-badge"><span class="pulse"></span><span id="live-text">connecting…</span></span>
+    <nav class="top-links">
+      <a href="/">Home</a>
+      <a href="/openapi.json">OpenAPI</a>
+      <a href="/skill.md">skill.md</a>
+      <a href="/.well-known/x402.json">Discovery</a>
+      <a href="https://github.com/mimranchohan/x402-trust-layer">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1>Agent Features Dashboard</h1>
+  <p class="sub">Every paid &amp; free capability your AI agents can call — live from <span class="mono">/data/agents.json</span> and <span class="mono">/health</span>. No API keys; pay-per-call in USDC over x402.</p>
+
+  <div id="error-box"></div>
+
+  <section class="stats" id="stats">
+    <div class="stat"><div class="k">Total Endpoints</div><div class="v" id="st-total">—</div></div>
+    <div class="stat"><div class="k">Paid APIs</div><div class="v" id="st-paid">—</div></div>
+    <div class="stat"><div class="k">Free Utilities</div><div class="v" id="st-free">—</div></div>
+    <div class="stat"><div class="k">Cheapest Call</div><div class="v" id="st-min">—</div></div>
+    <div class="stat"><div class="k">Full-Suite Price</div><div class="v" id="st-sum">—</div></div>
+    <div class="stat"><div class="k">Chains</div><div class="v" id="st-chains">—</div></div>
+  </section>
+
+  <div class="meta-strip" id="meta-strip"></div>
+
+  <div class="barwrap" id="barwrap" style="display:none">
+    <h3>Endpoints by layer</h3>
+    <div id="bars"></div>
+  </div>
+
+  <div class="toolbar">
+    <input id="search" class="search" type="search" placeholder="Search features, paths, tags…" autocomplete="off"/>
+    <div class="seg" id="paid-seg">
+      <button data-paid="all" class="active">All</button>
+      <button data-paid="paid">Paid</button>
+      <button data-paid="free">Free</button>
+    </div>
+    <div class="seg" id="group-seg">
+      <button data-group="layer" class="active">By layer</button>
+      <button data-group="tier">By tier</button>
+    </div>
+  </div>
+
+  <div class="tiers" id="tier-nav"></div>
+
+  <div id="catalog"></div>
+</main>
+
+<footer>
+  <div class="wrap">
+    x402 Trust Layer · Agent Features Dashboard · data refreshes on load ·
+    <a href="/">landing</a> · <a href="https://www.npmjs.com/package/x402-trust-layer">npm</a> · © 2026
+  </div>
+</footer>
+
+<script src="/dashboard.js"></script>
+</body>
+</html>

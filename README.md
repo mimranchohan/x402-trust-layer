@@ -40,7 +40,7 @@ few cents a call.
 |-------|------|---------------|
 | **01. Guard** | Preflight spend, payload sandboxing, and risk checks before any payment | `/api/guard/pre-x402` · `/api/guard/payload-sandbox` · `/api/x402/proxy` |
 | **02. Attestation** | Issues, verifies, and indexes agent credentials, liability insurance, and mandates | `/api/attestation/*` · `/api/mandate/*` · `/api/trust-network/insurance/attest` |
-| **03. Performance** | Tamper-Proof 10x faster caching for on-chain identity & reputation | `/api/agent/verify` (uses memory registry TTL cache) |
+| **03. Performance** | Low-latency in-memory TTL cache for on-chain identity & reputation reads (sub-15 ms cached lookups; configurable TTL) | `/api/agent/verify` (uses memory registry TTL cache) |
 | **04. Compliance** | Ledgers, evidence bundles, dispute resolution, refund auditing | `/api/compliance/ledger` · `/api/dispute/resolve` · `/api/refund-arbiter/evaluate` |
 | **05. Settlement Ops** | Rail optimization, metered sessions, escrows, receipt auditing | `/api/rail-optimizer/route` · `/api/escrow/metered/*` · `/api/receipt-auditor/verify` |
 
@@ -94,11 +94,11 @@ few cents a call.
 ## What's New (v5.1.0)
 
 - **57 Paid Routes** — Full integration of Agent Trust Protocol v4 (`/api/protocol/*`), metered escrow sessions, bedrock preflight, and A2A orchestration.
-- **Tamper-Proof ERC-8004 Caching** — Built-in local store indexing in `src/lib/erc8004/registry.ts` with Address-normalized keys and custom TTL, enabling 10x faster responses on blockchain checks.
+- **ERC-8004 Read Caching** — Built-in in-memory store in `src/lib/erc8004/registry.ts` with address-normalized keys and configurable TTL. Cached reads return in sub-15 ms versus a fresh on-chain RPC round-trip; source of truth remains the on-chain registry (cache is a read accelerator, not a trust anchor).
 - **Strict Replay Binding & presets** — Promotes `Replay-Guard` middleware config in `public/skill.md` so template builders can pull integration directly.
 - **Advanced Security & Insurance** —
-  - `POST /api/guard/payload-sandbox`: Recursively audits request JSON schemas/payloads against advanced adversarial attacks (jailbreaks, prompt leaks, system override commands, SSRF, path traversals) aligned with Google Research's **Agentic Engineering** paradigms.
-  - `POST /api/trust-network/insurance/attest`: Cryptographically attests transaction liability coverage based on merchant bond thresholds, providing robust mitigation for Agent Scam Elucidation (CASE) frameworks.
+  - `POST /api/guard/payload-sandbox`: Recursively audits request JSON schemas/payloads against common adversarial patterns — prompt-injection / jailbreak strings, system-override commands, SSRF targets, and path traversals — using heuristic detectors. (Pattern-based screening, not a formal LLM-safety guarantee.)
+  - `POST /api/trust-network/insurance/attest`: Issues an HMAC-signed attestation voucher recording a merchant's declared liability-bond threshold, so downstream gateways can require proof of coverage before accepting payment. (Attestation is a signed claim, not an underwritten insurance policy.)
 - **SEO/GEO Vector Optimizations** — `public/llms.txt` is directly optimized for target keywords `"x402 standard payment check"` and `"Coinbase CDP wallet guardrail"`.
 
 ---
@@ -109,8 +109,8 @@ This suite is the missing *judgement and security plane* for autonomous agent co
 
 1. **Replay-Guard Integration**: Any agent framework using standard presets automatically wraps transactions in our middleware to prevent double-spending or duplicate charge attacks.
 2. **Coinbase CDP Wallet Guardrails**: The API intercepts outgoing payments to enforce limits and compliance rules before the private key signs the transaction.
-3. **Google-Aligned Prompt Injection Payload Sandbox**: Prevent malicious actors from hijacking your agent through complex indirect prompt injection payloads, system overrides, or command injections. The sandbox aligns with Google Research's safety and robustness paradigms for agentic architectures.
-4. **Agent Liability Insurance**: Smart contract routing gateways require our signed HMAC attestation voucher as proof of merchant-bonded liability coverage before accepting payments.
+3. **Prompt-Injection Payload Sandbox**: Heuristic screening that flags indirect prompt-injection payloads, system-override strings, and command-injection patterns before your agent acts on untrusted input. (Defense-in-depth screening, not a guarantee against all injection attacks.)
+4. **Liability Attestation Voucher**: A signed HMAC voucher recording a merchant's declared bond/coverage threshold, which routing gateways can require as a precondition before accepting payment. (A cryptographic claim, not an underwritten insurance product.)
 
 ---
 
@@ -179,7 +179,7 @@ This suite is the missing *judgement and security plane* for autonomous agent co
 - `POST /api/protocol/reasoning/disclose` ($0.04) — Selective disclosure of reasoning Merkle leaves.
 - `POST /api/protocol/replay/bind` ($0.02) — Binds nonces and payloads for replay-safe execution.
 - `POST /api/protocol/replay/verify` ($0.02) — Verifies and consumes replay binding nonces.
-- `POST /api/protocol/zk/prove` ($0.15) — Generates zero-knowledge proof of authorization or compliance.
+- `POST /api/protocol/zk/prove` ($0.15) — Commitment-based authorization/compliance proof (hash-commitment + selective disclosure). Note: this is a commitment scheme, **not** a true SNARK; in production it requires `ALLOW_ZK_SIMULATE=1` or returns HTTP 503. A real SNARK backend is on the roadmap.
 - `POST /api/protocol/credit/score` ($0.06) — Agent credit score bureau index.
 - `POST /api/protocol/compliance/assess` ($0.10) — Enterprise compliance assessment.
 

@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from "express";
-import { timingSafeEqual } from "node:crypto";
+import { constantTimeEqual } from "../protocol/crypto.js";
 import { z } from "zod";
 import { UnsafeUrlError } from "./ssrf.js";
 import {
@@ -101,10 +101,9 @@ export function registerWebhookRoutes(app: Express): void {
       const raw = req.headers["x-webhook-test-secret"];
       const provided = Array.isArray(raw) ? raw[0] : raw;
       const ok =
-        secret &&
+        !!secret &&
         typeof provided === "string" &&
-        secret.length === provided.length &&
-        timingSafeEqual(Buffer.from(secret, "utf8"), Buffer.from(provided, "utf8"));
+        constantTimeEqual(secret, provided);
       if (!ok) {
         res.status(403).json({ error: "Forbidden — set WEBHOOK_TEST_SECRET and X-Webhook-Test-Secret header" });
         return;

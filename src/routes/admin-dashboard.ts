@@ -12,7 +12,7 @@
  */
 
 import type { Express, Request, Response } from "express";
-import { timingSafeEqual } from "node:crypto";
+import { constantTimeEqual } from "../protocol/crypto.js";
 import { db } from "../lib/db.js";
 import { metricsPayload } from "../lib/telemetry.js";
 import { listTrustWebhooks } from "../lib/trust-events.js";
@@ -38,11 +38,7 @@ function requireAdmin(req: Request, res: Response): boolean {
   const fromHeader = Array.isArray(headerRaw) ? headerRaw[0] : headerRaw;
   const fromQuery = typeof req.query.secret === "string" ? req.query.secret : "";
   const provided = (fromHeader ?? fromQuery ?? "").trim();
-  if (
-    !provided ||
-    provided.length !== secret.length ||
-    !timingSafeEqual(Buffer.from(secret), Buffer.from(provided))
-  ) {
+  if (!provided || !constantTimeEqual(secret, provided)) {
     res.status(403).send("<h1>403 Forbidden</h1><p>Provide X-Admin-Secret header or ?secret= query param</p>");
     return false;
   }

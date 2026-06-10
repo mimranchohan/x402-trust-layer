@@ -9,14 +9,24 @@ export function hmacSign(payload: string): string {
   return createHmac("sha256", config.attestationHmacSecret).update(payload).digest("hex");
 }
 
-export function verifyHmac(payload: string, signature: string): boolean {
-  const expected = hmacSign(payload);
-  if (expected.length !== signature.length) return false;
+/**
+ * Constant-time string comparison that does not leak length.
+ * Both inputs are hashed to a fixed 32-byte digest before comparison, so the
+ * timing and the compared buffer length are independent of the input length.
+ */
+export function constantTimeEqual(a: string, b: string): boolean {
+  const ha = createHash("sha256").update(a, "utf8").digest();
+  const hb = createHash("sha256").update(b, "utf8").digest();
   try {
-    return timingSafeEqual(Buffer.from(expected, "utf8"), Buffer.from(signature, "utf8"));
+    return timingSafeEqual(ha, hb);
   } catch {
     return false;
   }
+}
+
+export function verifyHmac(payload: string, signature: string): boolean {
+  const expected = hmacSign(payload);
+  return constantTimeEqual(expected, signature);
 }
 
 export function merkleRoot(leaves: string[]): string {

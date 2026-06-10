@@ -139,6 +139,12 @@ app.get("/data/agents.json", (_req, res) => {
   res.sendFile(join(process.cwd(), "public", "data", "agents.json"));
 });
 
+/** Live agent-features dashboard — explorer over the full catalog + /health stats. */
+app.get("/dashboard", (_req, res) => {
+  res.setHeader("Cache-Control", "public, max-age=300");
+  res.sendFile(join(process.cwd(), "public", "dashboard.html"));
+});
+
 /** Static public files (landing.js, data, assets). index.html served via GET / negotiation. */
 app.use(
   express.static(join(process.cwd(), "public"), {

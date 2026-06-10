@@ -1,18 +1,13 @@
 import type { Request, Response } from "express";
-import { timingSafeEqual } from "node:crypto";
 import { config } from "../config.js";
+import { constantTimeEqual } from "../protocol/crypto.js";
 
 function isProduction(): boolean {
   return process.env.NODE_ENV === "production" || !!process.env.RAILWAY_ENVIRONMENT;
 }
 
 function secretsMatch(expected: string, provided: string): boolean {
-  if (expected.length !== provided.length) return false;
-  try {
-    return timingSafeEqual(Buffer.from(expected, "utf8"), Buffer.from(provided, "utf8"));
-  } catch {
-    return false;
-  }
+  return constantTimeEqual(expected, provided);
 }
 
 /** Require WEBHOOK_ADMIN_SECRET in production for webhook management routes. */

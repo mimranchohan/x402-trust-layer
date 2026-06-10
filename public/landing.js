@@ -341,6 +341,19 @@
     el.textContent = priceFmt(min);
   }
 
+  function syncCounts(total, paid, free) {
+    const set = (id, v) => { const el = $(id); if (el) el.textContent = String(v); };
+    set("#h2-total", total); set("#h2-paid", paid); set("#h2-free", free);
+    set("#foot-total", total); set("#foot-paid", paid); set("#foot-free", free);
+  }
+
+  function syncCountsFromCatalog() {
+    if (!catalog || !Array.isArray(catalog.agents)) return;
+    const total = catalog.agents.length;
+    const free = catalog.agents.filter((a) => !a.price || Number(a.price) === 0).length;
+    syncCounts(total, total - free, free);
+  }
+
   async function loadHealth() {
     try {
       const h = await fetch("/health").then((r) => r.json());
@@ -348,6 +361,10 @@
       if (badge && h.endpointCount) {
         const chainLabel = Array.isArray(h.chains) ? h.chains.join(" · ") : "Base · Solana · Polygon";
         badge.textContent = `${h.endpointCount} Live Endpoints · ${chainLabel}`;
+      }
+      if (h.endpointCount && catalog && Array.isArray(catalog.agents)) {
+        const free = catalog.agents.filter((a) => !a.price || Number(a.price) === 0).length;
+        syncCounts(h.endpointCount, h.endpointCount - free, free);
       }
     } catch (_) {}
   }
@@ -368,6 +385,7 @@
 
     renderLayers(catalog.layers);
     renderTiers(catalog.agents);
+    syncCountsFromCatalog();
     setStatsImmediate(catalog.agents);
     renderViews();
     updateCheapest(catalog.agents);

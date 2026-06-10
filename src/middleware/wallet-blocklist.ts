@@ -13,7 +13,7 @@
  */
 
 import type { Request, Response, NextFunction, Express, RequestHandler } from "express";
-import { timingSafeEqual } from "node:crypto";
+import { constantTimeEqual } from "../protocol/crypto.js";
 import { db } from "../lib/db.js";
 import { logger } from "../lib/logger.js";
 
@@ -163,11 +163,7 @@ function requireAdmin(req: Request, res: Response): boolean {
   if (!secret) { res.status(503).json({ error: "ADMIN_SECRET not configured" }); return false; }
   const raw = req.headers["x-admin-secret"];
   const provided = Array.isArray(raw) ? raw[0] : raw;
-  if (
-    !provided ||
-    secret.length !== provided.length ||
-    !timingSafeEqual(Buffer.from(secret), Buffer.from(provided))
-  ) {
+  if (!provided || !constantTimeEqual(secret, provided)) {
     res.status(401).json({ error: "Unauthorized" });
     return false;
   }

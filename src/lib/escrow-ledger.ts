@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import {
   getEscrowFromDb,
   saveEscrowToDb,
+  releaseEscrowInDb,
 } from "./db-persistence.js";
 import { syncLedgerEscrow } from "./escrow-unified.js";
 
@@ -38,8 +39,22 @@ async function writeStore(store: EscrowStore): Promise<void> {
   await writeFile(file, JSON.stringify(store, null, 2), "utf8");
 }
 
+/**
+ * Best-effort mirror of one record into the legacy JSON store.
+ * SQLite (escrow_records) is authoritative; the JSON file is export/debug only,
+ * so a mirror failure must never block or corrupt the authoritative DB write.
+ */
+async function mirrorToJson(record: EscrowRecord): Promise<void> {
+  try {
+    const store = await readStore();
+    store[record.id] = record;
+    await writeStore(store);
+  } catch {
+    /* non-authoritative mirror — ignore failures */
+  }
+}
+
 export async function createEscrow(input: Omit<EscrowRecord, "id" | "status" | "createdAt" | "releasedAt">): Promise<EscrowRecord> {
-  const store = await readStore();
   const record: EscrowRecord = {
     ...input,
     id: randomUUID(),
@@ -47,10 +62,9 @@ export async function createEscrow(input: Omit<EscrowRecord, "id" | "status" | "
     createdAt: new Date().toISOString(),
     releasedAt: null,
   };
-  store[record.id] = record;
-  await writeStore(store);
   saveEscrowToDb(record);
   syncLedgerEscrow(record);
+  await mirrorToJson(record);
   return record;
 }
 
@@ -62,13 +76,10 @@ export async function getEscrow(id: string): Promise<EscrowRecord | null> {
 }
 
 export async function releaseEscrow(id: string): Promise<EscrowRecord | null> {
-  const store = await readStore();
-  const record = store[id];
-  if (!record || record.status !== "pending") return null;
-  record.status = "released";
-  record.releasedAt = new Date().toISOString();
-  await writeStore(store);
-  saveEscrowToDb(record);
-  syncLedgerEscrow(record);
-  return record;
+  // Atomic, race-safe transition: only one concurrent caller wins.
+  const released = releaseEscrowInDb(id, new Date().toISOString());
+  if (!released) return null;
+  syncLedgerEscrow(released);
+  await mirrorToJson(released);
+  return released;
 }
