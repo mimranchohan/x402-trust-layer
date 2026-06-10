@@ -27,42 +27,37 @@ const CDP_FACILITATOR_URL = "https://api.cdp.coinbase.com/platform/v2/x402/facil
 
 // ────────────────────────────────────────────────
 // CDP JWT helpers (standalone -- no TS imports)
+// Ed25519 / EdDSA signing (CDP API key algorithm)
 // ────────────────────────────────────────────────
 
-function derEcdsaToJwtSig(der) {
-  let pos = 2;
-  if (der[1] & 0x80) pos += der[1] & 0x7f;
-  pos++; // skip INTEGER tag for r
-  const rLen = der[pos++];
-  let r = der.slice(pos, pos + rLen);
-  pos += rLen;
-  pos++; // skip INTEGER tag for s
-  const sLen = der[pos++];
-  let s = der.slice(pos, pos + sLen);
-  while (r.length > 32 && r[0] === 0x00) r = r.slice(1);
-  while (s.length > 32 && s[0] === 0x00) s = s.slice(1);
-  const out = Buffer.alloc(64);
-  r.copy(out, 32 - r.length);
-  s.copy(out, 64 - s.length);
-  return out;
+function normalizePem(raw) {
+  // Handle \\n escaped newlines (Railway env vars)
+  let pem = raw.includes("\\n") ? raw.replace(/\\n/g, "\n") : raw;
+  // Handle base64-encoded PEM (decode first)
+  if (!pem.includes("-----BEGIN")) {
+    try {
+      const decoded = Buffer.from(pem, "base64").toString("utf8");
+      if (decoded.includes("-----BEGIN")) pem = decoded;
+    } catch { /* not base64, use as-is */ }
+  }
+  return pem;
 }
 
-function buildCdpJwt(keyId, privateKeyPem, reqMethod, url) {
+function buildCdpJwt(keyId, privateKeyRaw, reqMethod, url) {
   const urlObj = new URL(url);
   const uri = reqMethod.toUpperCase() + " " + urlObj.host + urlObj.pathname;
   const now = Math.floor(Date.now() / 1000);
   const nonce = crypto.randomBytes(16).toString("hex");
-  const headerObj = { alg: "ES256", kid: keyId, nonce, typ: "JWT" };
+  // Ed25519 key => EdDSA algorithm
+  const headerObj = { alg: "EdDSA", kid: keyId, nonce, typ: "JWT" };
   const payloadObj = { iss: "coinbase-cloud", nbf: now, exp: now + 120, sub: keyId, uri };
   const headerB64 = Buffer.from(JSON.stringify(headerObj)).toString("base64url");
   const payloadB64 = Buffer.from(JSON.stringify(payloadObj)).toString("base64url");
   const sigInput = headerB64 + "." + payloadB64;
-  const pem = privateKeyPem.includes("\\n") ? privateKeyPem.replace(/\\n/g, "\n") : privateKeyPem;
+  const pem = normalizePem(privateKeyRaw);
   const privateKey = crypto.createPrivateKey({ key: pem, format: "pem" });
-  const sign = crypto.createSign("SHA256");
-  sign.update(sigInput);
-  const derSig = sign.sign(privateKey);
-  const rawSig = derEcdsaToJwtSig(derSig);
+  // Ed25519: sign(null, data, key) — no hash algorithm needed
+  const rawSig = crypto.sign(null, Buffer.from(sigInput), privateKey);
   return sigInput + "." + rawSig.toString("base64url");
 }
 
