@@ -312,8 +312,16 @@ export function enrichAcceptFromFacilitator(accept: {
   if (!accept.network) return;
   const scheme = accept.scheme ?? "exact";
   const facilitatorExtra = extrasByNetworkScheme.get(cacheKey(accept.network, scheme));
-  if (!facilitatorExtra) return;
-  accept.extra = { ...facilitatorExtra, ...accept.extra };
+  if (facilitatorExtra) {
+    accept.extra = { ...facilitatorExtra, ...accept.extra };
+    return;
+  }
+  // CDP facilitator does NOT include extras in /supported response.
+  // Inject hardcoded USDC EIP-712 domain values so @x402/evm/exact/client
+  // (ExactEvmScheme) can build the Permit2 typed-data payment payload.
+  if (config.cdpFacilitatorEnabled && accept.network.startsWith("eip155:")) {
+    accept.extra = { name: "USD Coin", version: "2", assetTransferMethod: "permit2", ...accept.extra };
+  }
 }
 
 export function startFacilitatorExtrasRefresh(intervalMs = CACHE_TTL_MS): void {
