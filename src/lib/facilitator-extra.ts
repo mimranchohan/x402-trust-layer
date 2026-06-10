@@ -7,31 +7,86 @@ import { logger } from "./logger.js";
 // ─── CDP JWT Auth ──────────────────────────────────────────────────────────────
 
 /**
- * Build a CDP API Key JWT (EdDSA / Ed25519) for authenticating to api.cdp.coinbase.com.
+ * Build a CDP API Key JWT for authenticating to api.cdp.coinbase.com.
  *
- * CDP Ed25519 key format: base64-encoded 64 bytes = seed(32) || pubkey(32).
- * We load it as a JWK OKP key using only the 32-byte seed.
+ * Auto-detects key type from the raw base64-decoded bytes:
+ *   - Starts with 0x30 (DER SEQUENCE) → PKCS#8 EC P-256 → ES256
+ *   - Otherwise → raw Ed25519 seed (64 bytes, first 32 = seed) → EdDSA
  */
+function derToJoseSig(der: Buffer): Buffer {
+  let i = 2;
+  if (der[1] & 0x80) i += der[1] & 0x7f;
+  const rLen = der[i + 1];
+  const r = der.slice(i + 2, i + 2 + rLen);
+  i += 2 + rLen;
+  const sLen = der[i + 1];
+  const s = der.slice(i + 2, i + 2 + sLen);
+  const out = Buffer.alloc(64, 0);
+  r.copy(out, 32 - Math.min(r.length, 32), Math.max(0, r.length - 32));
+  s.copy(out, 64 - Math.min(s.length, 32), Math.max(0, s.length - 32));
+  return out;
+}
+
 function buildCdpJwt(keyId: string, keySecret: string, method: string, url: string): string {
   const urlObj = new URL(url);
   const uri = `${method.toUpperCase()} ${urlObj.host}${urlObj.pathname}`;
   const now = Math.floor(Date.now() / 1000);
   const nonce = crypto.randomBytes(16).toString("hex");
-  const headerObj = { alg: "EdDSA", kid: keyId, nonce, typ: "JWT" };
+
+  // Strip PEM headers/footers if present (e.g. -----BEGIN EC PRIVATE KEY-----)
+  // and remove all whitespace before base64-decoding.
+  // This handles both raw base64 DER and PEM-formatted keys stored in env vars.
+  let b64 = keySecret
+    .replace(/-----BEGIN [^-]+-----/g, "")
+    .replace(/-----END [^-]+-----/g, "")
+    .replace(/\s+/g, "");
+  if (!b64) b64 = keySecret.trim().replace(/\s+/g, "");
+  const rawKey = Buffer.from(b64, "base64");
+
+  let alg: string;
+  let privateKey: crypto.KeyObject;
+
+  if (rawKey[0] === 0x30) {
+    // PKCS#8 DER-encoded EC P-256 key → ES256
+    alg = "ES256";
+    privateKey = crypto.createPrivateKey({ key: rawKey, format: "der", type: "pkcs8" });
+  } else {
+    // Raw Ed25519: first 32 bytes = seed → EdDSA
+    // Use DER PKCS#8 format (not JWK) to avoid the Node.js ≥18 requirement
+    // that OKP JWK keys include the "x" (public key) field alongside "d".
+    alg = "EdDSA";
+    const seed = rawKey.slice(0, 32);
+    // PKCS#8 DER structure for Ed25519 (OID 1.3.101.112 = 0x2b 0x65 0x70)
+    const pkcs8Header = Buffer.from([
+      0x30, 0x2e, // SEQUENCE (46 bytes)
+      0x02, 0x01, 0x00, // version INTEGER 0
+      0x30, 0x05, // SEQUENCE AlgorithmIdentifier (5 bytes)
+      0x06, 0x03, 0x2b, 0x65, 0x70, // OID 1.3.101.112 (Ed25519)
+      0x04, 0x22, // OCTET STRING (34 bytes)
+      0x04, 0x20, // inner OCTET STRING (32 bytes = seed)
+    ]);
+    privateKey = crypto.createPrivateKey({
+      key: Buffer.concat([pkcs8Header, seed]),
+      format: "der",
+      type: "pkcs8",
+    });
+  }
+
+  const headerObj = { alg, kid: keyId, nonce, typ: "JWT" };
   const payloadObj = { iss: "cdp", aud: ["cdp_service"], nbf: now, exp: now + 120, sub: keyId, uri };
   const headerB64 = Buffer.from(JSON.stringify(headerObj)).toString("base64url");
   const payloadB64 = Buffer.from(JSON.stringify(payloadObj)).toString("base64url");
   const sigInput = `${headerB64}.${payloadB64}`;
-  // CDP key is base64-encoded 64 bytes: first 32 = Ed25519 seed
-  const rawKey = Buffer.from(keySecret.trim(), "base64");
-  const seed = rawKey.slice(0, 32);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const privateKey = crypto.createPrivateKey({
-    key: { kty: "OKP", crv: "Ed25519", d: seed.toString("base64url") } as any,
-    format: "jwk",
-  });
-  const rawSig = crypto.sign(null, Buffer.from(sigInput), privateKey);
-  return `${sigInput}.${rawSig.toString("base64url")}`;
+
+  let sig: Buffer;
+  if (alg === "ES256") {
+    const derSig = crypto.sign("SHA256", Buffer.from(sigInput), privateKey);
+    sig = derToJoseSig(derSig);
+  } else {
+    sig = crypto.sign(null, Buffer.from(sigInput), privateKey);
+  }
+
+  return `${sigInput}.${sig.toString("base64url")}`;
 }
 
 /**
@@ -214,7 +269,14 @@ export async function refreshFacilitatorExtras(
         );
       }
     } else {
-      throw err;
+      // No local cache and no bundled fallback.
+      // CDP facilitator doesn't expose /supported — don't crash the server.
+      // Proceed with empty extras (Permit2 / feePayer enrichment skipped).
+      logger.warn(
+        { err: err instanceof Error ? err.message : String(err), facilitatorUrl },
+        "[facilitator-extra] network fetch failed, no local cache or bundled fallback — using empty extras",
+      );
+      body = { kinds: [] };
     }
   }
 
