@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>x402 Trust Layer — Legal, Terms & Privacy</title>
+<meta name="description" content="x402 Trust Layer terms of use, privacy notice, and disclaimers — including no-custody and no-insurance clarifications for agent payment tooling."/>
+<link rel="icon" href="/assets/x402-trustlayer-logo.png"/>
+<style>
+  :root{--bg:#0a0e0f;--panel:#101718;--line:#1c2829;--txt:#e6f0ef;--muted:#8aa3a1;--dim:#5d7472;--teal:#16C7C0;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--sans);line-height:1.65}
+  a{color:var(--teal);text-decoration:none}a:hover{text-decoration:underline}
+  .wrap{max-width:780px;margin:0 auto;padding:0 22px}
+  header.top{border-bottom:1px solid var(--line);padding:14px 0}
+  .top-row{display:flex;align-items:center;gap:12px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--teal);box-shadow:0 0 12px var(--teal)}
+  .top nav{margin-left:auto;display:flex;gap:16px;font-size:13px}
+  h1{font-size:26px;margin:30px 0 4px}
+  .updated{color:var(--dim);font-size:13px;margin-bottom:8px}
+  h2{font-size:17px;margin:28px 0 8px;color:#cfe8e6}
+  p,li{color:#d4e3e1;font-size:14.5px}
+  .box{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0}
+  .muted{color:var(--muted);font-size:13px}
+  footer{border-top:1px solid var(--line);margin-top:36px;padding:20px 0;color:var(--dim);font-size:12px}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap top-row">
+  <div class="brand"><span class="dot"></span> x402 Trust Layer</div>
+  <nav><a href="/">Home</a><a href="/pricing">Pricing</a><a href="/status">Status</a></nav>
+</div></header>
+
+<main class="wrap">
+  <h1>Legal — Terms, Privacy & Disclaimers</h1>
+  <p class="updated">Last updated June 2026 · operated by Mimran Chohan (entity formalization in progress — see <a href="https://github.com/mimranchohan/x402-trust-layer/blob/main/docs/TRUST.md">Trust posture</a>)</p>
+
+  <div class="box muted">
+    This is a plain-language summary intended to be fair and accurate. It is not a substitute for legal advice. For a contract, DPA, or jurisdiction-specific terms, contact <a href="mailto:mimran@x402trustlayer.xyz">mimran@x402trustlayer.xyz</a>.
+  </div>
+
+  <h2>1. What the service is</h2>
+  <p>x402 Trust Layer ("the Service") provides advisory trust, security, and settlement-operations APIs that AI agents call before, during, and after x402 payments. Responses are <strong>signals and recommendations</strong> (e.g. a security grade, a trust score, an allow/deny suggestion). You decide whether to act on them.</p>
+
+  <h2>2. No custody of funds</h2>
+  <p>The Service is <strong>not a custodian</strong>. You pay your own counterparties with your own wallet over x402. "Escrow" features are server-side ledger/state machines for coordination and reporting; they do not take possession of your USDC or other assets.</p>
+
+  <h2>3. No insurance or guarantee</h2>
+  <p>"Liability attestation" and similar features produce <strong>signed cryptographic claims</strong> about declared merchant bonds — they are not underwritten insurance policies and guarantee no payout. The Service does not guarantee that a merchant is safe, that a payment will succeed, or that any signal is 100% accurate. Settlement also depends on third-party facilitators (e.g. Dexter, Coinbase CDP) whose availability is outside our control.</p>
+
+  <h2>4. Acceptable use</h2>
+  <p>Do not use the Service to facilitate fraud, sanctions evasion, money laundering, or any unlawful activity, or to attack, overload, or reverse the Service's protections. We may rate-limit, blocklist, or refuse requests to protect the Service and its users.</p>
+
+  <h2>5. Payments</h2>
+  <p>Pay-per-call and wallet-session charges are settled in USDC over x402 at the prices shown at <a href="/pricing">/pricing</a> and <a href="/dashboard">/dashboard</a>. On-chain settlements are generally irreversible; review each call before paying. Team/Enterprise plans are billed per separate written agreement.</p>
+
+  <h2>6. Privacy</h2>
+  <p>The Service processes the operational data you send (e.g. wallet addresses, agent IDs, target URLs, policy parameters) to perform checks and to maintain ledgers, receipts, and audit trails. We do not sell personal data. We do not require accounts for pay-per-call use. Aggregate, de-identified signals may be used to improve trust scoring. To request deletion of records associated with an identifier you control, email us.</p>
+
+  <h2>7. Disclaimer of warranties & limitation of liability</h2>
+  <p>The Service is provided "as is", without warranties of any kind. To the maximum extent permitted by law, the operator's total liability for any claim arising from the Service is limited to the fees you paid for the specific calls giving rise to the claim. We are not liable for indirect, incidental, or consequential damages, including losses from on-chain transactions you chose to execute.</p>
+
+  <h2>8. Changes & contact</h2>
+  <p>We may update these terms; material changes will be reflected by the "last updated" date. Security issues: please follow responsible disclosure (see <a href="https://github.com/mimranchohan/x402-trust-layer/blob/main/docs/TRUST.md">Trust posture</a>). General contact: <a href="mailto:mimran@x402trustlayer.xyz">mimran@x402trustlayer.xyz</a>.</p>
+</main>
+
+<footer><div class="wrap">x402 Trust Layer · <a href="/pricing">Pricing</a> · <a href="/status">Status</a> · <a href="https://github.com/mimranchohan/x402-trust-layer">GitHub</a> · © 2026</div></footer>
+</body>
+</html>

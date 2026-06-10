@@ -151,6 +151,18 @@ app.get("/status", (_req, res) => {
   res.sendFile(join(process.cwd(), "public", "status.html"));
 });
 
+/** Pricing page. */
+app.get("/pricing", (_req, res) => {
+  res.setHeader("Cache-Control", "public, max-age=300");
+  res.sendFile(join(process.cwd(), "public", "pricing.html"));
+});
+
+/** Legal / terms / privacy page. */
+app.get("/legal", (_req, res) => {
+  res.setHeader("Cache-Control", "public, max-age=300");
+  res.sendFile(join(process.cwd(), "public", "legal.html"));
+});
+
 /** Static public files (landing.js, data, assets). index.html served via GET / negotiation. */
 app.use(
   express.static(join(process.cwd(), "public"), {
