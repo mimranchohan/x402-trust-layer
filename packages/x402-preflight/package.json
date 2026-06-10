@@ -1,6 +1,6 @@
 {
   "name": "x402-agent-suite-preflight",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Drop-in preflight guard for AI agents — one call to the x402 Trust Layer (guard + security grade + attestation) before any paid x402_fetch. Works with any agent framework (LangChain, CrewAI, Coinbase AgentKit).",
   "type": "module",
   "main": "dist/index.js",

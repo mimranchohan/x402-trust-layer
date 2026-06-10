@@ -1,18 +1,23 @@
 {
   "name": "@mimranakb/trust-layer-mcp",
-  "version": "5.5.0",
+  "version": "5.5.1",
   "description": "MCP server for the x402 Trust Layer — 13 agent-payment trust tools (preflight guard, KYM merchant score, mandate diff, semantic escrow, receipt audit, Agent Trust Protocol v4: passport, fraud scan, credit score). Pay-per-call in USDC over x402; no API keys.",
   "type": "module",
   "bin": {
     "x402trustlayer-mcp": "dist/index.js"
   },
   "main": "dist/index.js",
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build"
   },
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@dexterai/x402": "^3.9.0",
     "@modelcontextprotocol/sdk": "^1.12.1",
