@@ -27,6 +27,7 @@ import { applyVerifierExampleBody } from "./lib/apply-verifier-body.js";
 import { replayBindingMiddleware } from "./lib/replay-middleware.js";
 import { registerAgenticProbes, stripTrailingSlash } from "./lib/agentic-probes.js";
 import { registerWebhookRoutes } from "./lib/webhook-routes.js";
+import { registerGrowthRoutes } from "./routes/growth-routes.js";
 import {
   ADVANCED_ENTRYPOINTS,
   KILLER_SELLER_ENDPOINTS,
@@ -439,6 +440,7 @@ app.get("/", (req, res) => {
 
 const postHandlers = registerRoutes(app, paid, asyncRoute);
 registerWebhookRoutes(app);
+registerGrowthRoutes(app);
 
 /** Free ERC-8004 lookup — rate limited per IP (default 60/hr, override RATE_LIMIT_AGENT_LOOKUP_PER_HOUR) */
 app.get(
