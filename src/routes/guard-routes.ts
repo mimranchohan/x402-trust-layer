@@ -11,6 +11,7 @@ import { guardBodySchema } from "./schemas.js";
 import { parseWithVerifierFallback } from "../lib/parse-with-verifier-fallback.js";
 import { dispatchWebhooks } from "../lib/webhooks.js";
 import { rateLimitPerWallet, AGENT_RATE_LIMIT_PER_MIN } from "../lib/rate-limit.js";
+import { recordObservation } from "../lib/reputation-network.js";
 
 export function registerGuardRoutes(ctx: RouteContext) {
   const post = createPost(ctx);
@@ -29,6 +30,14 @@ export function registerGuardRoutes(ctx: RouteContext) {
       const parsed = parseWithVerifierFallback("/api/guard/pre-x402", guardBodySchema, req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       const result = await runPreX402Guard(withRequestHeaders(parsed.data, req));
+      void (async () => {
+        try {
+          const host = new URL(parsed.data.targetUrl).hostname.toLowerCase();
+          const sig = result.allowed ? ("guard_pass" as const) : ("guard_block" as const);
+          await recordObservation(host, "host", sig, "self");
+          if (parsed.data.walletAddress) await recordObservation(parsed.data.walletAddress, "wallet", sig, "self");
+        } catch { /* reputation recording is non-blocking */ }
+      })();
       const fleetId = parsed.data.agentId.split(":")[0] ?? parsed.data.agentId;
       void dispatchWebhooks(
         result.allowed ? "guard.allowed" : "guard.denied",
@@ -47,6 +56,14 @@ export function registerGuardRoutes(ctx: RouteContext) {
       const parsed = parseWithVerifierFallback("/api/guard/pre-x402-alchemy", guardBodySchema, req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
       const result = await runPreX402Guard(withRequestHeaders(parsed.data, req));
+      void (async () => {
+        try {
+          const host = new URL(parsed.data.targetUrl).hostname.toLowerCase();
+          const sig = result.allowed ? ("guard_pass" as const) : ("guard_block" as const);
+          await recordObservation(host, "host", sig, "self");
+          if (parsed.data.walletAddress) await recordObservation(parsed.data.walletAddress, "wallet", sig, "self");
+        } catch { /* reputation recording is non-blocking */ }
+      })();
       const fleetId = parsed.data.agentId.split(":")[0] ?? parsed.data.agentId;
       void dispatchWebhooks(
         result.allowed ? "guard.allowed" : "guard.denied",

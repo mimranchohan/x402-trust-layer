@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
+import { recordObservation } from "../lib/reputation-network.js";
 import { runAttestationIssue, runAttestationVerify, runTrustRegistryQuery } from "../agents/attestation-registry.js";
 import { runMerchantTrust } from "../agents/merchant-trust.js";
 import { runMandateCompile } from "../agents/mandate-compiler.js";
@@ -77,7 +78,17 @@ export function registerAttestationRoutes(ctx: RouteContext) {
         .refine((d) => d.host || d.targetUrl, { message: "host or targetUrl required" })
         .safeParse(req.body);
       if (!parsed.success) return void res.status(400).json({ error: parsed.error.flatten() });
-      res.json(await runMerchantTrust({ host: parsed.data.host ?? "", ...parsed.data }));
+      const kym = await runMerchantTrust({ host: parsed.data.host ?? "", ...parsed.data });
+      void (async () => {
+        try {
+          const k = kym as { host?: string; recommendation?: string };
+          if (k.host) {
+            const sig = k.recommendation === "pay" ? ("kym_pay" as const) : k.recommendation === "caution" ? ("kym_caution" as const) : ("kym_avoid" as const);
+            await recordObservation(k.host, "host", sig, "self");
+          }
+        } catch { /* non-blocking */ }
+      })();
+      res.json(kym);
     },
   );
 
